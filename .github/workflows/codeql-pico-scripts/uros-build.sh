@@ -1,5 +1,5 @@
 #!/bin/bash
-#  The ROS Robot Project - MicroROS build script for CodeQL analysis.
+#  The ROS Remote Project - MicroROS build script for CodeQL analysis.
 #  This is a modified version of the scripts from the MicroROS Build Action.
 #  This workaround is necessary because CodeQL needs run in the same environment as the build script.
 #
