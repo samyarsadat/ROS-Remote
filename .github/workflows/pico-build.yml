@@ -55,7 +55,7 @@ jobs:
               with:
                   microros_dir: "source_code/pico_ws/libmicroros"
                   clone_microros_setup: "false"
-                  #extra_build_packages: "remote_pico_coms"
+                  extra_build_packages: "remote_pico_coms"
 
             - name: Upload MicroROS Library Artifacts
               uses: actions/upload-artifact@v4
