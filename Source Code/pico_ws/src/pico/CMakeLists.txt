@@ -35,7 +35,6 @@ target_link_libraries(${PICO_NAME} micro_ros
                                    pico_stdlib
                                    hardware_pwm
                                    hardware_adc
-                                   hardware_i2c
                                    helpers_lib
                                    local_helpers_lib
                                    freertos_helpers_lib
@@ -52,9 +51,9 @@ target_compile_definitions(${PICO_NAME} PRIVATE
     PICO_RP2040_B0_SUPPORTED=0
     PICO_STACK_SIZE=0x1000
     PICO_USE_STACK_GUARDS=1
-    PICO_DEFAULT_UART=1
-    PICO_DEFAULT_UART_TX_PIN=8
-    PICO_DEFAULT_UART_RX_PIN=9
+    PICO_DEFAULT_UART=0
+    PICO_DEFAULT_UART_TX_PIN=16
+    PICO_DEFAULT_UART_RX_PIN=17
 )
 
 # PicoTool binary information

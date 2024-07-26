@@ -55,6 +55,9 @@ int main()
     init_pin(27, INPUT_ADC);
     init_pin(28, INPUT_ADC);
 
+    init_pin(23, OUTPUT);
+    gpio_put(23, HIGH);
+
     /*while (true)
     {
         for (int i = 0; i < 16; i++)
@@ -94,7 +97,7 @@ int main()
     while (true)
     {
         // ADC
-        /*adc_select_input(0);
+        adc_select_input(0);
         sleep_ms(1);
         float adc0 = adc_read();
         
@@ -106,13 +109,13 @@ int main()
         sleep_ms(1);
         float adc2 = adc_read();
         
-        printf("A0: %.2f, A1: %.2f, A2: %.2f\r\n", adc0, adc1, adc2);*/
+        printf("A0: %.2f, A1: %.2f, A2: %.2f\r\n", adc0, adc1, adc2);
 
         // DIGITAL
-        printf("D3 %i, D4 %i, D5 %i, D6 %i, D7 %i, D18 %i, D19 %i, D20 %i, D21 %i, D22 %i\r\n", gpio_get(3), gpio_get(4), gpio_get(5), 
-                                                                                                gpio_get(6), gpio_get(7), gpio_get(18), 
-                                                                                                gpio_get(19), gpio_get(20), gpio_get(21), 
-                                                                                                gpio_get(22));
+        //printf("D3 %i, D4 %i, D5 %i, D6 %i, D7 %i, D18 %i, D19 %i, D20 %i, D21 %i, D22 %i\r\n", gpio_get(3), gpio_get(4), gpio_get(5), 
+        //                                                                                        gpio_get(6), gpio_get(7), gpio_get(18), 
+        //                                                                                        gpio_get(19), gpio_get(20), gpio_get(21), 
+        //                                                                                        gpio_get(22));
     }
     
     return 0;

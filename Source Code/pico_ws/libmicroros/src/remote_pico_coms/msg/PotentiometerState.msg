@@ -1,5 +1,5 @@
-#  The ROS remote project - Firmware CMake config 
-#  (NOTE: THIS IS NOT THE TOP-LEVEL CMAKE FILE!)
+#  The ROS remote project - Raspberry Pi Pico Communication Messages Package
+#  Analog potentiometer state message.
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -16,10 +16,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
+builtin_interfaces/Time time
 
-# Custom library subdirectories
-add_subdirectory(lib)
 
-# Pico firmware
-add_subdirectory(pico)
-#add_subdirectory(systest)
+# Potentiometer readings go from 0 to +1024!
+uint16 potentiometer_reading

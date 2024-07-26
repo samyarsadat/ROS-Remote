@@ -42,18 +42,28 @@ std_msgs__msg__Empty e_stop_msg;
 
 // ---- Publishers ----
 
-// Sensor States
-rcl_publisher_t misc_sensor_pub, microsw_sensor_pub;
-rrp_pico_coms__msg__MiscSensorsB misc_sensor_msg;
-rrp_pico_coms__msg__MicroSwSensors microsw_sensor_msg;
+// Button, joystick, potentiometer states
+rcl_publisher_t button_state_pub, joystick_state_pub, potentiometer_state_pub;
+remote_pico_coms__msg__ButtonStates button_state_msg;
+remote_pico_coms__msg__JoystickState joystick_state_msg;
+remote_pico_coms__msg__PotentiometerState potentiometer_state_msg;
 
 
 // ---- Services ----
 
-// Motor Controller Enable/Disable
-rcl_service_t en_camera_leds_srv;
-rrp_pico_coms__srv__SetCameraLeds_Request en_camera_leds_req;
-rrp_pico_coms__srv__SetCameraLeds_Response en_camera_leds_res;
+// Get/set joystick config
+rcl_service_t get_joystick_config_srv, set_joystick_config_srv;
+remote_pico_coms__srv__GetJoystickConfig_Request get_joystick_config_req;
+remote_pico_coms__srv__GetJoystickConfig_Response get_joystick_config_res;
+remote_pico_coms__srv__SetJoystickConfig_Request set_joystick_config_req;
+remote_pico_coms__srv__SetJoystickConfig_Response set_joystick_config_res;
+
+// Get/set LED states
+rcl_service_t get_led_states_srv, set_led_states_srv;
+remote_pico_coms__srv__GetLedStates_Request get_led_states_req;
+remote_pico_coms__srv__GetLedStates_Response get_led_states_res;
+remote_pico_coms__srv__SetLedStates_Request set_led_states_req;
+remote_pico_coms__srv__SetLedStates_Response set_led_states_res;
 
 // Initiate the self-test function
 rcl_service_t run_self_test_srv;
@@ -63,7 +73,10 @@ diagnostic_msgs__srv__SelfTest_Response run_self_test_res;
 
 
 // ------- Subscriber & service callback prototypes -------
-extern void en_camera_leds_callback(const void *req, void *res);
+extern void get_joystick_config_callback(const void *req, void *res);
+extern void set_joystick_config_callback(const void *req, void *res);
+extern void get_led_states_callback(const void *req, void *res);
+extern void set_led_states_callback(const void *req, void *res);
 extern void run_self_test_callback(const void *req, void *res);
 extern void clean_shutdown();
 extern void start_timers();
@@ -79,15 +92,22 @@ void init_subs_pubs()
     write_log("Initializing publishers, subscribers, and services...", LOG_LVL_INFO, FUNCNAME_ONLY);
 
     const rosidl_message_type_support_t *empty_type = ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Empty);
-    const rosidl_message_type_support_t *misc_sensors_type = ROSIDL_GET_MSG_TYPE_SUPPORT(rrp_pico_coms, msg, MiscSensorsB);
-    const rosidl_message_type_support_t *microsw_sensors_type = ROSIDL_GET_MSG_TYPE_SUPPORT(rrp_pico_coms, msg, MicroSwSensors);
-    const rosidl_service_type_support_t *set_camera_leds_type = ROSIDL_GET_SRV_TYPE_SUPPORT(rrp_pico_coms, srv, SetCameraLeds);
+    const rosidl_message_type_support_t *button_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, ButtonStates);
+    const rosidl_message_type_support_t *joystick_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, JoystickState);
+    const rosidl_message_type_support_t *potentiometer_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, PotentiometerState);
+    const rosidl_service_type_support_t *get_joystick_config_type = ROSIDL_GET_SRV_TYPE_SUPPORT(remote_pico_coms, srv, GetJoystickConfig);
+    const rosidl_service_type_support_t *set_joystick_config_type = ROSIDL_GET_SRV_TYPE_SUPPORT(remote_pico_coms, srv, SetJoystickConfig);
+    const rosidl_service_type_support_t *get_led_states_type = ROSIDL_GET_SRV_TYPE_SUPPORT(remote_pico_coms, srv, GetLedStates);
+    const rosidl_service_type_support_t *set_led_states_type = ROSIDL_GET_SRV_TYPE_SUPPORT(remote_pico_coms, srv, SetLedStates);
     const rosidl_service_type_support_t *run_self_test_type = ROSIDL_GET_SRV_TYPE_SUPPORT(diagnostic_msgs, srv, SelfTest);
 
     // ---- Services ----
     write_log("Initializing services...", LOG_LVL_INFO, FUNCNAME_ONLY);
-    bridge->init_service(&en_camera_leds_srv, set_camera_leds_type, "enable_disable/camera_leds");
-    bridge->init_service(&run_self_test_srv, run_self_test_type, "self_test/pico_b");
+    bridge->init_service(&get_joystick_config_srv, get_joystick_config_type, "joystick/get_config");
+    bridge->init_service(&set_joystick_config_srv, set_joystick_config_type, "joystick/set_config");
+    bridge->init_service(&get_led_states_srv, get_led_states_type, "leds/get_states");
+    bridge->init_service(&set_led_states_srv, set_led_states_type, "leds/set_states");
+    bridge->init_service(&run_self_test_srv, run_self_test_type, "self_test/pico");
 
 
     // ---- Subscribers ----
@@ -105,10 +125,12 @@ void init_subs_pubs()
     diag_uros_init();
 
     // Sensor state topics
-    bridge->init_publisher(&misc_sensor_pub, misc_sensors_type, "sensors_raw/misc_b");
-    bridge->init_publisher(&microsw_sensor_pub, microsw_sensors_type, "sensors_raw/microswitches");
-    rrp_pico_coms__msg__MiscSensorsB__init(&misc_sensor_msg);
-    rrp_pico_coms__msg__MicroSwSensors__init(&microsw_sensor_msg);
+    bridge->init_publisher(&button_state_pub, button_state_type, "buttons/states");
+    bridge->init_publisher(&joystick_state_pub, joystick_state_type, "joystick/state");
+    bridge->init_publisher(&potentiometer_state_pub, potentiometer_state_type, "potentiometer/state");
+    remote_pico_coms__msg__ButtonStates__init(&button_state_msg);
+    remote_pico_coms__msg__JoystickState__init(&joystick_state_msg);
+    remote_pico_coms__msg__PotentiometerState__init(&potentiometer_state_msg);
 
 
     write_log("Init. completed.", LOG_LVL_INFO, FUNCNAME_ONLY);
@@ -121,7 +143,10 @@ void exec_init()
     write_log("Initializing MicroROS executor...", LOG_LVL_INFO, FUNCNAME_ONLY);
 
     bridge->uros_init_executor();
-    bridge->add_service(&en_camera_leds_srv, &en_camera_leds_req, &en_camera_leds_res, en_camera_leds_callback);
+    bridge->add_service(&get_joystick_config_srv, &get_joystick_config_req, &get_joystick_config_res, get_joystick_config_callback);
+    bridge->add_service(&set_joystick_config_srv, &set_joystick_config_req, &set_joystick_config_res, set_joystick_config_callback);
+    bridge->add_service(&get_led_states_srv, &get_led_states_req, &get_led_states_res, get_led_states_callback);
+    bridge->add_service(&set_led_states_srv, &set_led_states_req, &set_led_states_res, set_led_states_callback);
     bridge->add_service(&run_self_test_srv, &run_self_test_req, &run_self_test_res, run_self_test_callback);
     bridge->add_subscriber(&e_stop_sub, &e_stop_msg, clean_shutdown_callback);
 

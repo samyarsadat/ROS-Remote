@@ -30,9 +30,13 @@
 #include <sensor_msgs/msg/range.h>
 #include <std_srvs/srv/set_bool.h>
 #include <nav_msgs/msg/odometry.h>
-#include <rrp_pico_coms/msg/misc_sensors_b.h>
-#include <rrp_pico_coms/msg/micro_sw_sensors.h>
-#include <rrp_pico_coms/srv/set_camera_leds.h>
+#include <remote_pico_coms/msg/button_states.h>
+#include <remote_pico_coms/msg/joystick_state.h>
+#include <remote_pico_coms/msg/potentiometer_state.h>
+#include <remote_pico_coms/srv/get_joystick_config.h>
+#include <remote_pico_coms/srv/get_led_states.h>
+#include <remote_pico_coms/srv/set_joystick_config.h>
+#include <remote_pico_coms/srv/set_led_states.h>
 #include <diagnostic_msgs/srv/self_test.h>
 
 
@@ -48,18 +52,28 @@ extern std_msgs__msg__Empty e_stop_msg;
 
 // ---- Publishers ----
 
-// Sensor States
-extern rcl_publisher_t misc_sensor_pub, microsw_sensor_pub;
-extern rrp_pico_coms__msg__MiscSensorsB misc_sensor_msg;
-extern rrp_pico_coms__msg__MicroSwSensors microsw_sensor_msg;
+// Button, joystick, potentiometer states
+extern rcl_publisher_t button_state_pub, joystick_state_pub, potentiometer_state_pub;
+extern remote_pico_coms__msg__ButtonStates button_state_msg;
+extern remote_pico_coms__msg__JoystickState joystick_state_msg;
+extern remote_pico_coms__msg__PotentiometerState potentiometer_state_msg;
 
 
 // ---- Services ----
 
-// Motor Controller Enable/Disable
-extern rcl_service_t en_camera_leds_srv;
-extern rrp_pico_coms__srv__SetCameraLeds_Request en_camera_leds_req;
-extern rrp_pico_coms__srv__SetCameraLeds_Response en_camera_leds_res;
+// Get/set joystick config
+extern rcl_service_t get_joystick_config_srv, set_joystick_config_srv;
+extern remote_pico_coms__srv__GetJoystickConfig_Request get_joystick_config_req;
+extern remote_pico_coms__srv__GetJoystickConfig_Response get_joystick_config_res;
+extern remote_pico_coms__srv__SetJoystickConfig_Request set_joystick_config_req;
+extern remote_pico_coms__srv__SetJoystickConfig_Response set_joystick_config_res;
+
+// Get/set LED states
+extern rcl_service_t get_led_states_srv, set_led_states_srv;
+extern remote_pico_coms__srv__GetLedStates_Request get_led_states_req;
+extern remote_pico_coms__srv__GetLedStates_Response get_led_states_res;
+extern remote_pico_coms__srv__SetLedStates_Request set_led_states_req;
+extern remote_pico_coms__srv__SetLedStates_Response set_led_states_res;
 
 // Initiate the self-test function
 extern rcl_service_t run_self_test_srv;

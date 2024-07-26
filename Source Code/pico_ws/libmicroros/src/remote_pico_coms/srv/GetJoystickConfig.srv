@@ -1,5 +1,5 @@
-#  The ROS remote project - Firmware CMake config 
-#  (NOTE: THIS IS NOT THE TOP-LEVEL CMAKE FILE!)
+#  The ROS remote project - Raspberry Pi Pico Communication Messages Package
+#  Get joystick deadzone and offset configs.
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -17,9 +17,8 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 
-# Custom library subdirectories
-add_subdirectory(lib)
-
-# Pico firmware
-add_subdirectory(pico)
-#add_subdirectory(systest)
+---
+float32 joystick_y_center_offset
+float32 joystick_x_center_offset
+uint16 joystick_y_deadzone
+uint16 joystick_x_deadzone

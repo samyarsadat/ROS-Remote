@@ -1,5 +1,5 @@
-#  The ROS remote project - Firmware CMake config 
-#  (NOTE: THIS IS NOT THE TOP-LEVEL CMAKE FILE!)
+#  The ROS remote project - Raspberry Pi Pico Communication Messages Package
+#  Get LED states.
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -17,9 +17,13 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 
-# Custom library subdirectories
-add_subdirectory(lib)
+---
+# 0: Solid PWM output, 1: Flashing PWM output (slow), 2: Fading to and from PWM output (slow), 
+# 3: Flashing PWM output (fast), 4: Fading to and from PWM output (fast)
+uint8[11] led_modes
 
-# Pico firmware
-add_subdirectory(pico)
-#add_subdirectory(systest)
+# Array LED order:
+# [right_kd2_led, right_green_led, right_blue_led, left_top_yellow_led,
+# left_top_green_led, left_red_led, left_bottom_yellow_led, left_bottom_green_1_led,
+# left_bottom_green_2_led, left_red_kd2_led, left_green_kd2_led]
+uint16[11] pwm_outputs

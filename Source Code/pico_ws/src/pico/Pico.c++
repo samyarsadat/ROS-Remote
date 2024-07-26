@@ -33,12 +33,13 @@
 alarm_pool_t *core_1_alarm_pool;
 
 // ---- Timer execution times storage (milliseconds) ----
-uint32_t last_microsw_publish_time, last_other_sensors_publish_time;
+uint32_t last_btn_state_publish_time, last_joystick_state_publish_time, last_potentiometer_state_publish_time;
 
 // ---- Timers ----
-struct repeating_timer microsw_publish_rt, other_sensors_publish_rt;
-TaskHandle_t microsw_publish_th, other_sensors_publish_th;
-TimerHandle_t waiting_for_agent_timer;
+struct repeating_timer btn_state_publish_rt, joystick_publish_rt, potentiometer_publish_rt;
+TaskHandle_t btn_state_publish_th, joystick_publish_th, potentiometer_publish_th;
+TimerHandle_t waiting_for_agent_timer, fast_led_flash_handler_timer;
+TimerHandle_t slow_led_flash_handler_timer, led_fade_handler_timer;
 
 
 
@@ -58,11 +59,15 @@ void clean_shutdown()
     write_log("A clean shutdown has been triggered. The program will now shut down.", LOG_LVL_FATAL, FUNCNAME_ONLY);
 
     // Stop all repeating timers
-    cancel_repeating_timer(&microsw_publish_rt);
-    cancel_repeating_timer(&other_sensors_publish_rt);
+    cancel_repeating_timer(&btn_state_publish_rt);
+    cancel_repeating_timer(&joystick_publish_rt);
+    cancel_repeating_timer(&potentiometer_publish_rt);
+    xTimerStop(fast_led_flash_handler_timer, 0);
+    xTimerStop(slow_led_flash_handler_timer, 0);
+    xTimerStop(led_fade_handler_timer, 0);
 
     // IO cleanup
-    set_camera_leds(0, 0, 0, 0);
+    all_leds_off();
     init_pin(onboard_led, OUTPUT);
     gpio_put(onboard_led, LOW);
 
@@ -96,18 +101,26 @@ void vApplicationMallocFailedHook()
 
 
 // ---- Timer callbacks for task notification ----
-bool publish_microsw_notify(struct repeating_timer *rt)
+bool publish_btn_state_notify(struct repeating_timer *rt)
 {
     BaseType_t higher_prio_woken;
-    vTaskNotifyGiveFromISR(microsw_publish_th, &higher_prio_woken);
+    vTaskNotifyGiveFromISR(btn_state_publish_th, &higher_prio_woken);
     portYIELD_FROM_ISR(higher_prio_woken);
     return true;
 }
 
-bool publish_misc_sens_notify(struct repeating_timer *rt)
+bool publish_joystick_notify(struct repeating_timer *rt)
 {
     BaseType_t higher_prio_woken;
-    vTaskNotifyGiveFromISR(other_sensors_publish_th, &higher_prio_woken);
+    vTaskNotifyGiveFromISR(joystick_publish_th, &higher_prio_woken);
+    portYIELD_FROM_ISR(higher_prio_woken);
+    return true;
+}
+
+bool publish_potentiometer_notify(struct repeating_timer *rt)
+{
+    BaseType_t higher_prio_woken;
+    vTaskNotifyGiveFromISR(potentiometer_publish_th, &higher_prio_woken);
     portYIELD_FROM_ISR(higher_prio_woken);
     return true;
 }
@@ -116,28 +129,77 @@ bool publish_misc_sens_notify(struct repeating_timer *rt)
 // ---- IRQ callback ----
 void irq_call(uint pin, uint32_t events)
 {
-    if (pin == ms_front_r || pin == ms_front_l || pin == ms_back_r || pin == ms_back_l)
-    {
-        // Publish microswitch states if they are triggered, regardless of the timer.
-        publish_microsw_notify(NULL);   
-    }
+    publish_btn_state_notify(NULL);
 }
 
 
 
 // ------- MicroROS subscriber & service callbacks ------- 
 
-// ---- Set camera LED outputs ----
-void en_camera_leds_callback(const void *req, void *res) 
+// ---- Get/set joystick configuration services ----
+void get_joystick_config_callback(const void *req, void *res)
 {
-    rrp_pico_coms__srv__SetCameraLeds_Request *req_in = (rrp_pico_coms__srv__SetCameraLeds_Request *) req;
-    rrp_pico_coms__srv__SetCameraLeds_Response *res_in = (rrp_pico_coms__srv__SetCameraLeds_Response *) res;
+    remote_pico_coms__srv__GetJoystickConfig_Request *req_in = (remote_pico_coms__srv__GetJoystickConfig_Request *) req;
+    remote_pico_coms__srv__GetJoystickConfig_Response *res_in = (remote_pico_coms__srv__GetJoystickConfig_Response *) res;
 
-    char buffer[75];
-    snprintf(buffer, sizeof(buffer), "Received set_camera_leds: [c1: %u, c2: %u, c3: %u, c4: %u]", req_in->led_outputs[0], req_in->led_outputs[1], req_in->led_outputs[2], req_in->led_outputs[3]);
+    write_log("Get joystick configuration request received!", LOG_LVL_INFO, FUNCNAME_ONLY);
+
+    res_in->joystick_x_center_offset = joystick_x_center_offset;
+    res_in->joystick_y_center_offset = joystick_y_center_offset;
+    res_in->joystick_x_deadzone = joystick_x_deadzone;
+    res_in->joystick_y_deadzone = joystick_y_deadzone;
+}
+
+void set_joystick_config_callback(const void *req, void *res)
+{
+    remote_pico_coms__srv__SetJoystickConfig_Request *req_in = (remote_pico_coms__srv__SetJoystickConfig_Request *) req;
+    remote_pico_coms__srv__SetJoystickConfig_Response *res_in = (remote_pico_coms__srv__SetJoystickConfig_Response *) res;
+
+    char buffer[100];
+    snprintf(buffer, sizeof(buffer), "Set joystick configuration request received! [xd: %d, yd: %d, xco: %.2f, yco: %.2f]", 
+             req_in->joystick_x_deadzone, req_in->joystick_y_deadzone, req_in->joystick_x_center_offset, req_in->joystick_y_center_offset);
     write_log(buffer, LOG_LVL_INFO, FUNCNAME_ONLY);
 
-    set_camera_leds(req_in->led_outputs[0], req_in->led_outputs[1], req_in->led_outputs[2], req_in->led_outputs[3]);
+    joystick_x_deadzone = req_in->joystick_x_deadzone;
+    joystick_y_deadzone = req_in->joystick_y_deadzone;
+    joystick_x_center_offset = req_in->joystick_x_center_offset;
+    joystick_y_center_offset = req_in->joystick_y_center_offset;
+
+    res_in->success = true;
+}
+
+
+// ---- Get/set LED states service ----
+void get_led_states_callback(const void *req, void *res)
+{
+    remote_pico_coms__srv__GetLedStates_Request *req_in = (remote_pico_coms__srv__GetLedStates_Request *) req;
+    remote_pico_coms__srv__GetLedStates_Response *res_in = (remote_pico_coms__srv__GetLedStates_Response *) res;
+
+    // NOTE: This service is called very frequently, so there will be no logging!
+
+    for (int i = 0; i < number_of_leds; i++)
+    {
+        led_state_t state = get_led_state(led_pins_order[i]);
+        res_in->led_modes[i] = state.mode;
+        res_in->pwm_outputs[i] = state.pwm_set_out;
+    }
+}
+
+void set_led_states_callback(const void *req, void *res)
+{
+    remote_pico_coms__srv__SetLedStates_Request *req_in = (remote_pico_coms__srv__SetLedStates_Request *) req;
+    remote_pico_coms__srv__SetLedStates_Response *res_in = (remote_pico_coms__srv__SetLedStates_Response *) res;
+
+    // NOTE: This service is called very frequently, so there will be no logging!
+
+    for (int i = 0; i < number_of_leds; i++)
+    {
+        if (req_in->set_state_mask[i])
+        {
+            set_led_state(led_pins_order[i], req_in->led_modes[i], req_in->pwm_outputs[i]);
+        }
+    }
+
     res_in->success = true;
 }
 
@@ -174,8 +236,14 @@ void uros_post_exec_call()
 void start_timers()
 {
     write_log("Starting hardware timers...", LOG_LVL_INFO, FUNCNAME_ONLY);
-    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, microsw_pub_rt_interval, publish_microsw_notify, NULL, &microsw_publish_rt);
-    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, sensors_pub_rt_interval, publish_misc_sens_notify, NULL, &other_sensors_publish_rt);
+    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, btn_state_pub_rt_interval, publish_btn_state_notify, NULL, &btn_state_publish_rt);
+    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, joystick_pub_rt_interval, publish_joystick_notify, NULL, &joystick_publish_rt);
+    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, potentiometer_pub_rt_interval, publish_potentiometer_notify, NULL, &potentiometer_publish_rt);
+
+    write_log("Starting FreeRTOS timer...", LOG_LVL_INFO, FUNCNAME_ONLY);
+    xTimerStart(fast_led_flash_handler_timer, 0);
+    xTimerStart(slow_led_flash_handler_timer, 0);
+    xTimerStart(led_fade_handler_timer, 0);
 }
 
 
@@ -223,26 +291,42 @@ void setup(void *parameters)
     diag_mutex_init();
 
     // Pin init
-    init_pin(ready_sig, INPUT);
-    init_pin(batt_adc, INPUT_ADC);
-    init_pin(ms_front_r, INPUT_PULLUP);
-    init_pin(ms_front_l, INPUT_PULLUP);
-    init_pin(ms_back_r, INPUT_PULLUP);
-    init_pin(ms_back_l, INPUT_PULLUP);
-    init_pin(speed_sw_1, INPUT_PULLUP);
-    init_pin(speed_sw_2, INPUT_PULLUP);
-    init_pin(mode_sw, INPUT_PULLUP);
+    init_leds();
     init_pin(onboard_led, OUTPUT);
-    init_pin(cam_led_1, OUTPUT_PWM);
-    init_pin(cam_led_2, OUTPUT_PWM);
-    init_pin(cam_led_3, OUTPUT_PWM);
-    init_pin(cam_led_4, OUTPUT_PWM);
+    init_pin(right_top_toggle_sw_pin, INPUT_PULLUP);
+    init_pin(left_key_sw_pin, INPUT_PULLUP);
+    init_pin(left_top_toggle_sw_pin, INPUT_PULLUP);
+    init_pin(right_e_stop_btn_pin, INPUT_PULLUP);
+    init_pin(right_kd2_btn_pin, INPUT_PULLUP);
+    init_pin(left_green_right_btn_pin, INPUT_PULLUP);
+    init_pin(left_red_btn_pin, INPUT_PULLUP);
+    init_pin(left_green_kd2_btn_pin, INPUT_PULLUP);
+    init_pin(left_red_kd2_btn_pin, INPUT_PULLUP);
+    init_pin(left_green_left_btn_pin, INPUT_PULLUP);
+    init_pin(joystick_y_axis_pin, INPUT_ADC);
+    init_pin(joystick_x_axis_pin, INPUT_ADC);
+    init_pin(potentiometer_pin, INPUT_ADC);
 
-    // Microswitch interrupts
-    gpio_set_irq_enabled_with_callback(ms_front_r, GPIO_IRQ_EDGE_FALL, true, irq_call);
-    gpio_set_irq_enabled(ms_front_l, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(ms_back_r, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(ms_back_l, GPIO_IRQ_EDGE_FALL, true);
+    // Interrupts
+    gpio_set_irq_enabled_with_callback(right_top_toggle_sw_pin, GPIO_IRQ_EDGE_FALL, true, irq_call);
+    gpio_set_irq_enabled(left_key_sw_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_top_toggle_sw_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(right_e_stop_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(right_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_green_right_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_red_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_green_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_red_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_green_left_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(right_top_toggle_sw_pin, GPIO_IRQ_EDGE_RISE, true);
+    gpio_set_irq_enabled(left_key_sw_pin, GPIO_IRQ_EDGE_RISE, true);
+    gpio_set_irq_enabled(left_top_toggle_sw_pin, GPIO_IRQ_EDGE_RISE, true);
+    gpio_set_irq_enabled(right_e_stop_btn_pin, GPIO_IRQ_EDGE_RISE, true);
+    gpio_set_irq_enabled(right_kd2_btn_pin, GPIO_IRQ_EDGE_RISE, true);
+
+    // Force SMPS into PWM mode
+    init_pin(smps_power_save_pin, OUTPUT);
+    gpio_put(smps_power_save_pin, HIGH);
 
     // Misc. init
     adc_init();
@@ -251,14 +335,19 @@ void setup(void *parameters)
 
     // Create timer tasks
     write_log("Creating timer tasks...", LOG_LVL_INFO, FUNCNAME_ONLY);
-    xTaskCreate(publish_microsw_sens, "microsw_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 3, &microsw_publish_th);
-    xTaskCreate(publish_misc_sens, "other_sensors_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &other_sensors_publish_th);
-    vTaskCoreAffinitySet(microsw_publish_th, (1 << 1));
-    vTaskCoreAffinitySet(other_sensors_publish_th, (1 << 1));
+    xTaskCreate(publish_joystick_state, "joystick_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 3, &joystick_publish_th);
+    xTaskCreate(publish_potentiometer_state, "potentiometer_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &potentiometer_publish_th);
+    xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 5, &btn_state_publish_th);
+    vTaskCoreAffinitySet(joystick_publish_th, (1 << 1));        // Lock task to core 1
+    vTaskCoreAffinitySet(potentiometer_publish_th, (1 << 1));   // Lock task to core 1
+    vTaskCoreAffinitySet(btn_state_publish_th, (1 << 1));       // Lock task to core 1
 
     // Create FreeRTOS timers
     write_log("Creating FreeRTOS software timers...", LOG_LVL_INFO, FUNCNAME_ONLY);
     waiting_for_agent_timer = xTimerCreate("waiting_for_agent_timer", pdMS_TO_TICKS(AGENT_WAITING_LED_TOGGLE_DELAY_MS), pdTRUE, NULL, waiting_for_agent_timer_call);
+    slow_led_flash_handler_timer = xTimerCreate("slow_led_flash_timer", pdMS_TO_TICKS(led_slow_flash_interval), pdTRUE, NULL, led_slow_flashing_timer_call);
+    fast_led_flash_handler_timer = xTimerCreate("fast_led_flash_timer", pdMS_TO_TICKS(led_fast_flash_interval), pdTRUE, NULL, led_fast_flashing_timer_call);
+    led_fade_handler_timer = xTimerCreate("led_fade_handler_timer", pdMS_TO_TICKS(led_fade_exec_interval), pdTRUE, NULL, led_fading_timer_call);
 
     // Start MicroROS tasks
     write_log("Starting MicroROS tasks...", LOG_LVL_INFO, FUNCNAME_ONLY);
@@ -296,7 +385,8 @@ int main()
 {
     // UART & USB STDIO outputs
     stdio_init_all();
-    stdio_filter_driver(&stdio_usb);   // Filter the output of STDIO to USB.
+    stdio_filter_driver(&stdio_uart);   // Filter the output of STDIO to UART.
+    print_uart_usb_override();
     write_log("STDIO init, program starting...", LOG_LVL_INFO, FUNCNAME_LINE_ONLY);
 
     // Wait for 3 seconds

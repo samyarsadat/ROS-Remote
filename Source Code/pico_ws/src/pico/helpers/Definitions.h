@@ -19,59 +19,83 @@
 
 #pragma once
 #include "local_helpers_lib/Common_Definitions.h"
-#include "hardware/i2c.h"
 #include "Diag_Msgs.h"
 
 
 // ------- Pin definitions -------
 
-// ---- Misc. ----
-#define ready_sig   2
-#define dht11_sens  14
-#define batt_adc    28   // Battery voltage divider
+// ---- LEDs ----
+#define right_kd2_led_pin            0
+#define right_green_led_pin          1
+#define right_blue_led_pin           2
+#define left_top_yellow_led_pin      8
+#define left_top_green_led_pin       9
+#define left_red_led_pin             10
+#define left_bottom_yellow_led_pin   11
+#define left_bottom_green_1_led_pin  12
+#define left_bottom_green_2_led_pin  13
+#define left_red_kd2_led_pin         14
+#define left_green_kd2_led_pin       15
+#define number_of_leds               11
 
-// ---- Settings switches ----
-#define speed_sw_1  16
-#define speed_sw_2  17
-#define mode_sw     22
+// ---- Toggle switches ----
+#define right_top_toggle_sw_pin  3
+#define left_key_sw_pin          18
+#define left_top_toggle_sw_pin   19
 
-// ---- Raspberry Pi camera LEDs ----
-#define cam_led_1  20
-#define cam_led_2  18
-#define cam_led_3  19
-#define cam_led_4  21
+// ---- Buttons ----
+#define right_e_stop_btn_pin      4
+#define right_kd2_btn_pin         5
+#define left_green_right_btn_pin  6
+#define left_red_btn_pin          7
+#define left_green_kd2_btn_pin   20
+#define left_red_kd2_btn_pin      21
+#define left_green_left_btn_pin   22
 
-// ---- Micro switches ----
-#define ms_front_l  11
-#define ms_front_r  10
-#define ms_back_l   12
-#define ms_back_r   13
+// ---- Joystick ----
+#define joystick_y_axis_pin  26
+#define joystick_x_axis_pin  27
 
-// ---- I2C ----
-#define i2c_inst  i2c0   // I2C instance (0 & 1 are on I2C0)
-#define i2c_sda   0
-#define i2c_scl   1
+// ---- Potentiometer ----
+#define potentiometer_pin  28
+
+// ---- Pico ----
+#define smps_power_save_pin  23
 
 
 // ------- Other definitions -------
 
-// ---- Battery ----
-#define batt_voltage_divider_r1  10 * 1000     // In ohms (10k ohms)
-#define batt_voltage_divider_r2  2.67 * 1000   // In ohms (2.7k ohms)
-
 // ---- MicroROS node config ----
-#define UROS_NODE_NAME                     "pico_b"
-#define UROS_NODE_NAMESPACE                "io"
+#define UROS_NODE_NAME                     "pico"
+#define UROS_NODE_NAMESPACE                "remote_io"
 #define AGENT_WAITING_LED_TOGGLE_DELAY_MS  500   // In milliseconds
 #define AGENT_AVAIL_LED_TOGGLE_DELAY_MS    250   // In milliseconds
 
 // ---- Repeating timer intervals ----
-#define microsw_pub_rt_interval  200   // In milliseconds
-#define sensors_pub_rt_interval  80    // In milliseconds
+#define btn_state_pub_rt_interval      500   // In milliseconds
+#define joystick_pub_rt_interval       50    // In milliseconds
+#define potentiometer_pub_rt_interval  80    // In milliseconds
+#define led_slow_flash_interval        800   // In milliseconds
+#define led_fast_flash_interval        400   // In milliseconds
+#define led_fade_exec_interval         10    // In milliseconds
+
+// ---- LEDs ----
+#define led_fast_fading_time_ms  400   // In milliseconds
+#define led_slow_fading_time_ms  800   // In milliseconds
+
+// ---- Joystick ----
+#define default_joystick_x_deadzone       100
+#define default_joystick_y_deadzone       100
+#define default_joystick_x_center_offset  0
+#define default_joystick_y_center_offset  0
+#define joystick_y_inverted               false
+#define joystick_x_inverted               false
+
+// ---- Potentiometer ----
+#define potentiometer_inverted  true
 
 // ---- Misc. ----
-#define SETUP_TASK_STACK_DEPTH       1024       // In FreeRTOS words
-#define TIMER_TASK_STACK_DEPTH       1024       // In FreeRTOS words
-#define GENERIC_TASK_STACK_DEPTH     1024       // In FreeRTOS words
-#define STARTUP_WAIT_TIME_S          3          // In seconds
-#define microsw_led_test_timeout_ms  15 * 1000  // 15 seconds
+#define SETUP_TASK_STACK_DEPTH    1024       // In FreeRTOS words
+#define TIMER_TASK_STACK_DEPTH    1024       // In FreeRTOS words
+#define GENERIC_TASK_STACK_DEPTH  1024       // In FreeRTOS words
+#define STARTUP_WAIT_TIME_S       3          // In seconds

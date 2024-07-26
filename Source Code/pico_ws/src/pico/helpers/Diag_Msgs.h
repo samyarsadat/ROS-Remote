@@ -21,11 +21,10 @@
 
 
 // ---- STATUS OK ----
-#define DIAG_OK_MSG_MICROSW_LED_TEST_PASS  "Camera LED and microswitch test passed."
+#define DIAG_OK_MSG_LED_TEST_PASS  "LED self-test passed!"
 
 // ---- STATUS WARN ----
 
 // ---- STATUS ERROR ----
-#define DIAG_ERR_MSG_MICROSW_LED_TEST_FAIL  "Camera LED and microswitch test failed."
 
 // ---- STATUS STALE ----

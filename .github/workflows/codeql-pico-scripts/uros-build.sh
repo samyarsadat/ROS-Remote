@@ -28,8 +28,7 @@ MICROROS_SRC_PATH="src"
 MICROROS_SETUP_PATH="micro_ros_setup"
 COLCON_META_NAME="my_colcon.meta"
 TOOLCHAIN_CMAKE_NAME="my_toolchain.cmake"
-#EXTRA_BUILD_PACKAGES="remote_pico_coms"
-EXTRA_BUILD_PACKAGES=""
+EXTRA_BUILD_PACKAGES="remote_pico_coms"
 
 # Split package names into array
 IFS=" " read -r -a EXTRA_BUILD_PACKAGES <<< "$EXTRA_BUILD_PACKAGES"

@@ -1,5 +1,5 @@
-#  The ROS remote project - Firmware CMake config 
-#  (NOTE: THIS IS NOT THE TOP-LEVEL CMAKE FILE!)
+#  The ROS remote project - Raspberry Pi Pico Communication Messages Package
+#  Button & switch states message.
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -16,10 +16,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
+builtin_interfaces/Time time
 
-# Custom library subdirectories
-add_subdirectory(lib)
 
-# Pico firmware
-add_subdirectory(pico)
-#add_subdirectory(systest)
+# ---- Toggle switches ----
+bool right_top_toggle_sw
+bool left_key_sw
+bool left_top_toggle_sw
+
+# ---- Buttons ----
+bool right_e_stop_btn
+bool right_kd2_btn
+bool left_green_right_btn
+bool left_red_btn
+bool left_green_kd2_btn
+bool left_red_kd2_btn
+bool left_green_left_btn

@@ -34,9 +34,8 @@ if [ "$FULL_REBUILD" == "true" ]; then
             && echo "Generating firmware..." \
             && sudo apt update \
             && ros2 run micro_ros_setup create_firmware_ws.sh generate_lib \
-            #&& ros2 run remote_pico_coms create_firmware_ws.sh \
-            #&& ros2 run micro_ros_setup build_firmware.sh "$(pwd)/my_toolchain.cmake" "$(pwd)/my_colcon.meta"
-            ros2 run micro_ros_setup build_firmware.sh "$(pwd)/my_toolchain.cmake" "$(pwd)/my_colcon.meta"
+            && ros2 run remote_pico_coms create_firmware_ws.sh \
+            && ros2 run micro_ros_setup build_firmware.sh "$(pwd)/my_toolchain.cmake" "$(pwd)/my_colcon.meta"
             echo "Build completed successfully (probably)!"
             ;;
         [nN]) 

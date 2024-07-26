@@ -20,7 +20,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Set project name and Pico A/B name suffixes.
-set(PROJ_NAME ROS_Robot)
+set(PROJ_NAME ROS_Remote)
 set(PICO_NAME ${PROJ_NAME}_Pico)
 
 # Include build functions from the Pico SDK

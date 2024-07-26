@@ -26,7 +26,6 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(geometry_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -46,8 +45,14 @@ endif()
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-                            # ADD MESSAGES AND SERVICES HERE!
-                            DEPENDENCIES builtin_interfaces geometry_msgs
+                            "msg/ButtonStates.msg"
+                            "msg/JoystickState.msg"
+                            "msg/PotentiometerState.msg"
+                            "srv/GetJoystickConfig.srv"
+                            "srv/GetLedStates.srv"
+                            "srv/SetJoystickConfig.srv"
+                            "srv/SetLedStates.srv"
+                            DEPENDENCIES builtin_interfaces
                           )
 
 ament_export_dependencies(rosidl_default_runtime)
