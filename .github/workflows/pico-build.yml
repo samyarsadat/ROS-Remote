@@ -96,6 +96,7 @@ jobs:
                   output_dir: "build"
                   output_ext: "*.uf2 *.elf *.elf.map *.hex *.bin *.dis"
                   output_ignored_dirs: "src/lib"
+                  cmake_args: "-DCMAKE_BUILD_TYPE=Release"
 
             - name: Upload Pico Source Code Artifacts
               uses: actions/upload-artifact@v4
