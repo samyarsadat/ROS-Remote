@@ -1,0 +1,62 @@
+/*
+    The ROS remote project - ROS 2 Workspace Devcontainer
+    Copyright 2024 Samyar Sadat Akhavi
+    Prepared by Samyar Sadat Akhavi, 2024.
+ 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+  
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https: www.gnu.org/licenses/>.
+
+    Bits of code taken from:
+    https://github.com/BrunoB81HK/ros2-workspace-devcontainer-template
+*/
+
+
+{
+    "name": "ROS 2 Workspace",
+    "remoteUser": "nonroot",
+    "overrideCommand": true,
+    "postCreateCommand": "/devcon_post_create.sh",
+    "postStartCommand": "/devcon_post_start.sh",
+    
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-iot.vscode-ros",
+                "smilerobotics.urdf",
+                "redhat.vscode-xml",
+                "redhat.vscode-yaml",
+                "tamasfe.even-better-toml",
+                "timonwong.shellcheck",
+                "yzhang.markdown-all-in-one",
+                "zainchen.json"
+            ]
+        }
+    },
+
+    "workspaceFolder": "/home/nonroot/ros_ws",
+    "mounts": [{"source": "${localWorkspaceFolder}", "target": "/home/nonroot/ros_ws", "type": "bind"}],
+
+    "runArgs": ["--net=host",
+                "--cap-add=SYS_PTRACE",
+                "--security-opt", "seccomp=unconfined",
+                "--gpus", "all",
+                "-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+                "--env=DISPLAY",
+                "-v", "/dev:/dev",
+                "--device-cgroup-rule=c *:* rmw"]
+}

@@ -6,6 +6,10 @@ Source Code/pico_ws/libmicroros/src/log
 Source Code/pico_ws/libmicroros/src/rrp_pico_coms/build
 Source Code/pico_ws/libmicroros/src/rrp_pico_coms/install
 Source Code/pico_ws/libmicroros/src/rrp_pico_coms/log
+Source Code/ros_ws_remote/src/ros_remote_gui/*.pyproject.*
+**/.idea
+**/.venv
+**/__pycache__
 CAD Files/swxJRNL.swj
 CAD Files/Sliced
 CAD Files/~$*.sldprt
