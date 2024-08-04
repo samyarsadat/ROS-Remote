@@ -3,13 +3,14 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 from PySide6.QtGui import QPixmap
+from PySide6 import QtCore
 
-from gui.ui_main_window import Ui_MainWindow as UiMainWindow
-from gui.ui_about_dialog import Ui_Dialog as UiAboutDialog
-from gui.ui_calibration_result_dialog import Ui_Dialog as UiCalibResultDialog
-from gui.ui_joystick_dialog import Ui_Dialog as UiJoystickConfigDialog
-from gui.ui_selftest_result_dialog import Ui_Dialog as UiSelftestResultDialog
-from gui.ui_test_remote_buttons_dialog import Ui_Dialog as UiButtonTestDialog
+from gui_files.ui_main_window import Ui_MainWindow as UiMainWindow
+from gui_files.ui_about_dialog import Ui_Dialog as UiAboutDialog
+from gui_files.ui_calibration_result_dialog import Ui_Dialog as UiCalibResultDialog
+from gui_files.ui_joystick_dialog import Ui_Dialog as UiJoystickConfigDialog
+from gui_files.ui_selftest_result_dialog import Ui_Dialog as UiSelftestResultDialog
+from gui_files.ui_test_remote_buttons_dialog import Ui_Dialog as UiButtonTestDialog
 
 
 class AboutDialog(QDialog):
@@ -68,21 +69,27 @@ class MainWindow(QMainWindow):
         self.ui.viewport.setScaledContents(True)
         self.ui.camLedsBrightnessSlider.valueChanged.connect(self.slider_changed)
 
-    def show_joystick_dialog(self, s):
+    @QtCore.Slot()
+    def show_joystick_dialog(self):
         self.joystick_conf_dialog.show()
 
-    def show_about_dialog(self, s):
+    @QtCore.Slot()
+    def show_about_dialog(self):
         self.about_dialog.show()
 
-    def show_selftest(self, s):
+    @QtCore.Slot()
+    def show_selftest(self):
         self.selftest_result_dialog.show()
 
-    def show_calib(self, s):
+    @QtCore.Slot()
+    def show_calib(self):
         self.calib_res_dialog.show()
 
-    def show_button_test(self, s):
+    @QtCore.Slot()
+    def show_button_test(self):
         self.button_test_dialog.show()
 
+    @QtCore.Slot()
     def slider_changed(self, value):
         self.ui.camLedsBrightnessLabel.setText(str(value))
 

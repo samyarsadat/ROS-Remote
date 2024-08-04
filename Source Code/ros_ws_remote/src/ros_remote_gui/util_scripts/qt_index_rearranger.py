@@ -30,6 +30,7 @@ for name in fix_name_array:
 
                 if not end_index > start_index:
                     print(f"Error! String end not found! (Line: {line_no + 1})")
+                    file.close()
                     exit(1)
 
                 replacement = f"{name}_{replace_index}"

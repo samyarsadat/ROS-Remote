@@ -1,11 +1,11 @@
 {
     "files": [
         "src/maintest.py",
-        "src/gui/main_window.ui",
-        "src/gui/joystick_dialog.ui",
-        "src/gui/about_dialog.ui",
-        "src/gui/calibration_result_dialog.ui",
-        "src/gui/selftest_result_dialog.ui",
-        "src/gui/test_remote_buttons_dialog.ui"
+        "src/gui_files/main_window.ui",
+        "src/gui_files/joystick_dialog.ui",
+        "src/gui_files/about_dialog.ui",
+        "src/gui_files/calibration_result_dialog.ui",
+        "src/gui_files/selftest_result_dialog.ui",
+        "src/gui_files/test_remote_buttons_dialog.ui"
     ]
 }
