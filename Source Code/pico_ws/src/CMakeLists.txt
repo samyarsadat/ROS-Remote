@@ -22,4 +22,3 @@ add_subdirectory(lib)
 
 # Pico firmware
 add_subdirectory(pico)
-#add_subdirectory(systest)
