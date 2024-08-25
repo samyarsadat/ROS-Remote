@@ -68,6 +68,7 @@
 // ---- MicroROS node config ----
 #define UROS_NODE_NAME                     "pico"
 #define UROS_NODE_NAMESPACE                "remote_io"
+#define UROS_DOMAIN_ID                     75
 #define AGENT_WAITING_LED_TOGGLE_DELAY_MS  500   // In milliseconds
 #define AGENT_AVAIL_LED_TOGGLE_DELAY_MS    250   // In milliseconds
 

@@ -159,7 +159,7 @@ bool uros_init()
 {
     write_log("MicroROS init...", LOG_LVL_INFO, FUNCNAME_ONLY);
 
-    bridge->uros_init_node(UROS_NODE_NAME, UROS_NODE_NAMESPACE);
+    bridge->uros_init_node(UROS_NODE_NAME, UROS_NODE_NAMESPACE, UROS_DOMAIN_ID);
     init_subs_pubs();
     exec_init();
     start_timers();
