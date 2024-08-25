@@ -7,7 +7,7 @@ set -e
 UI_FILES_LIST=("about_dialog" "calibration_result_dialog" "joystick_dialog" "main_window"
                "selftest_result_dialog" "test_remote_buttons_dialog")
 
-cd ../src/gui || exit 1
+cd ../ros_remote_gui/gui_files || exit 1
 echo "Starting..."
 
 # Remove old Python files and generate new ones.

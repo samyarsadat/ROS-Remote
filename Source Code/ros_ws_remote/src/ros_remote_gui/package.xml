@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<package format="3">
+    <name>ros_remote_gui</name>
+    <version>2024.8.8</version>
+    <description>The GUI package of the ROS Remote Project.</description>
+    <maintainer email="samyarsadat@gigawhat.net">Samyar Sadat Akhavi</maintainer>
+    <license>GPL-3.0-only</license>
+
+    <exec_depend>rclpy</exec_depend>
+    <exec_depend>python3-pyside6-pip</exec_depend>
+
+    <test_depend>ament_copyright</test_depend>
+    <test_depend>ament_flake8</test_depend>
+    <test_depend>ament_pep257</test_depend>
+    <test_depend>python3-pytest</test_depend>
+
+    <export>
+        <build_type>ament_python</build_type>
+    </export>
+</package>

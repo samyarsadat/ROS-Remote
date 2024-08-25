@@ -1,4 +1,4 @@
-#  The ROS remote project
+#  The ROS remote project (GUI package)
 #  PySide6 UI classes init file (excluding the main window)
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
@@ -16,15 +16,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-from config import ProgramInfoConfig
+from ros_remote_gui.config import ProgramInfoConfig
 from PySide6.QtWidgets import QDialog
 from PySide6 import __version__ as pyside_version
 from PySide6.QtCore import qVersion
-from gui_process.gui_files.ui_test_remote_buttons_dialog import Ui_Dialog as UiTestRemoteButtonsDialog
-from gui_process.gui_files.ui_about_dialog import Ui_Dialog as UiAboutDialog
-from gui_process.gui_files.ui_joystick_dialog import Ui_Dialog as UiJoystickDialog
-from gui_process.gui_files.ui_selftest_result_dialog import Ui_Dialog as UiSelftestResultDialog
-from gui_process.gui_files.ui_calibration_result_dialog import Ui_Dialog as UiCalibrationResultDialog
+from ros_remote_gui.gui_files.ui_test_remote_buttons_dialog import Ui_Dialog as UiTestRemoteButtonsDialog
+from ros_remote_gui.gui_files.ui_about_dialog import Ui_Dialog as UiAboutDialog
+from ros_remote_gui.gui_files.ui_joystick_dialog import Ui_Dialog as UiJoystickDialog
+from ros_remote_gui.gui_files.ui_selftest_result_dialog import Ui_Dialog as UiSelftestResultDialog
+from ros_remote_gui.gui_files.ui_calibration_result_dialog import Ui_Dialog as UiCalibrationResultDialog
 
 
 # ---- Classes ----

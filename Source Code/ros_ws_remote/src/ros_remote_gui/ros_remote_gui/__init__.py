@@ -1,4 +1,4 @@
-#  The ROS remote project
+#  The ROS remote project (GUI package)
 #  Empty package init file
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.

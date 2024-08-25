@@ -1,11 +1,11 @@
 {
     "files": [
-        "src/maintest.py",
-        "src/gui_files/main_window.ui",
-        "src/gui_files/joystick_dialog.ui",
-        "src/gui_files/about_dialog.ui",
-        "src/gui_files/calibration_result_dialog.ui",
-        "src/gui_files/selftest_result_dialog.ui",
-        "src/gui_files/test_remote_buttons_dialog.ui"
+        "ros_remote_gui/main.py",
+        "ros_remote_gui/gui_files/main_window.ui",
+        "ros_remote_gui/gui_files/joystick_dialog.ui",
+        "ros_remote_gui/gui_files/about_dialog.ui",
+        "ros_remote_gui/gui_files/calibration_result_dialog.ui",
+        "ros_remote_gui/gui_files/selftest_result_dialog.ui",
+        "ros_remote_gui/gui_files/test_remote_buttons_dialog.ui"
     ]
 }

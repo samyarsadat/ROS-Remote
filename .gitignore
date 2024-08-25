@@ -7,8 +7,13 @@ Source Code/pico_ws/libmicroros/src/rrp_pico_coms/build
 Source Code/pico_ws/libmicroros/src/rrp_pico_coms/install
 Source Code/pico_ws/libmicroros/src/rrp_pico_coms/log
 Source Code/ros_ws_remote/src/ros_remote_gui/*.pyproject.*
+Source Code/ros_ws_remote/**/*.egg-info
+Source Code/ros_ws_remote/build
+Source Code/ros_ws_remote/install
+Source Code/ros_ws_remote/log
 **/.idea
 **/.venv
+**/.venv-linux
 **/__pycache__
 CAD Files/swxJRNL.swj
 CAD Files/Sliced

@@ -1,5 +1,4 @@
-#  The ROS remote project
-#  Empty package init file
+#  The ROS remote project (GUI package) - Motor controllers tab
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
