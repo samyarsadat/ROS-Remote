@@ -7,6 +7,7 @@
 	path = Source Code/pico_ws/libfreertos/FreeRTOS-Kernel
 	url = https://github.com/FreeRTOS/FreeRTOS-Kernel
 	ignore = all
+
 [submodule "Common Helper Libraries"]
 	path = Source Code/pico_ws/src/lib/Common_libs
 	url = https://github.com/samyarsadat/Pico-Libraries
