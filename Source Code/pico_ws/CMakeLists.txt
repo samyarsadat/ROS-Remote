@@ -19,7 +19,7 @@
 # Set minimum required version of CMake
 cmake_minimum_required(VERSION 3.12)
 
-# Set project name and Pico A/B name suffixes.
+# Set project name and Pico name suffixes.
 set(PROJ_NAME ROS_Remote)
 set(PICO_NAME ${PROJ_NAME}_Pico)
 
