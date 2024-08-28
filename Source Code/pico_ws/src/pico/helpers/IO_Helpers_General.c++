@@ -63,7 +63,7 @@ int16_t calc_joystick_reading(uint16_t adc_reading, bool inverted, float center_
     // Inversion
     if (inverted)
     {
-        adc_reading = map(adc_reading, 0, 4095, 4095, 0);
+        adc_reading = 4095 - adc_reading;
     }
 
     // Center offset
@@ -152,12 +152,12 @@ uint16_t get_potentiometer_val()
 
         if (!potentiometer_inverted)
         {
-            return map(adc_reading, 0, 4095, 0, 1024);
+            return (uint16_t) map(adc_reading, 0, 4095, 0, 1024);
         }
 
         else
         {
-            return map(adc_reading, 0, 4095, 1024, 0);
+            return (uint16_t) map(adc_reading, 0, 4095, 1024, 0);
         }
     }
 

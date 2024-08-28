@@ -34,13 +34,44 @@
 extern uRosPublishingHandler *pub_handler;
 
 // ---- Timer execution times storage (milliseconds) ----
-extern uint32_t last_btn_state_publish_time, last_joystick_state_publish_time, last_potentiometer_state_publish_time;
+extern uint32_t last_sw_state_publish_time, last_btn_state_publish_time;
+extern uint32_t last_joystick_state_publish_time, last_potentiometer_state_publish_time;
 
 
 
 // ------- Functions ------- 
 
-// ---- Button states ----
+// ---- Permanent switch states ----
+void publish_sw_states(void *parameters)
+{
+    while (true)
+    {
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);   // Wait for notification indefinitely
+
+        // Check execution time
+        check_exec_interval(last_sw_state_publish_time, (sw_state_pub_rt_interval + 15), "Publish interval exceeded limits!", true);
+
+        uint32_t timestamp_sec = to_ms_since_boot(get_absolute_time()) / 1000;
+        uint32_t timestamp_nanosec = (to_ms_since_boot(get_absolute_time()) - (timestamp_sec * 1000)) * 1000000;
+
+        switch_state_msg.time.sec = timestamp_sec;
+        switch_state_msg.time.nanosec = timestamp_nanosec;
+
+        switch_state_msg.left_key_sw = !gpio_get(left_key_sw_pin);
+        switch_state_msg.left_top_toggle_sw = !gpio_get(left_top_toggle_sw_pin);
+        switch_state_msg.right_e_stop_btn = !gpio_get(right_e_stop_btn_pin);
+        switch_state_msg.right_kd2_btn = !gpio_get(right_kd2_btn_pin);
+        switch_state_msg.right_top_toggle_sw = !gpio_get(right_top_toggle_sw_pin);
+
+        uRosPublishingHandler::PublishItem_t pub_item;
+        pub_item.publisher = &switch_state_pub;
+        pub_item.message = &switch_state_msg;
+        xQueueSendToBack(pub_handler->get_queue_handle(), (void *) &pub_item, 0);
+    }
+}
+
+
+// ---- Momentary button states ----
 void publish_btn_states(void *parameters)
 {
     while (true)
@@ -48,7 +79,7 @@ void publish_btn_states(void *parameters)
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);   // Wait for notification indefinitely
 
         // Check execution time
-        check_exec_interval(last_btn_state_publish_time, (btn_state_pub_rt_interval + 15), "Publish interval exceeded limits!", true);
+        check_exec_interval(last_btn_state_publish_time, (btn_state_pub_rt_interval + 10), "Publish interval exceeded limits!", true);
 
         uint32_t timestamp_sec = to_ms_since_boot(get_absolute_time()) / 1000;
         uint32_t timestamp_nanosec = (to_ms_since_boot(get_absolute_time()) - (timestamp_sec * 1000)) * 1000000;
@@ -59,13 +90,8 @@ void publish_btn_states(void *parameters)
         button_state_msg.left_green_kd2_btn = !gpio_get(left_green_kd2_btn_pin);
         button_state_msg.left_green_left_btn = !gpio_get(left_green_left_btn_pin);
         button_state_msg.left_green_right_btn = !gpio_get(left_green_right_btn_pin);
-        button_state_msg.left_key_sw = gpio_get(left_key_sw_pin);
         button_state_msg.left_red_btn = !gpio_get(left_red_btn_pin);
         button_state_msg.left_red_kd2_btn = !gpio_get(left_red_kd2_btn_pin);
-        button_state_msg.left_top_toggle_sw = !gpio_get(left_top_toggle_sw_pin);
-        button_state_msg.right_e_stop_btn = !gpio_get(right_e_stop_btn_pin);
-        button_state_msg.right_kd2_btn = !gpio_get(right_kd2_btn_pin);
-        button_state_msg.right_top_toggle_sw = !gpio_get(right_top_toggle_sw_pin);
 
         uRosPublishingHandler::PublishItem_t pub_item;
         pub_item.publisher = &button_state_pub;

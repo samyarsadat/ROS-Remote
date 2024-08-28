@@ -48,7 +48,7 @@
 #define right_kd2_btn_pin         5
 #define left_green_right_btn_pin  6
 #define left_red_btn_pin          7
-#define left_green_kd2_btn_pin   20
+#define left_green_kd2_btn_pin    20
 #define left_red_kd2_btn_pin      21
 #define left_green_left_btn_pin   22
 
@@ -67,13 +67,14 @@
 
 // ---- MicroROS node config ----
 #define UROS_NODE_NAME                     "pico"
-#define UROS_NODE_NAMESPACE                "remote_io"
+#define UROS_NODE_NAMESPACE                ""
 #define UROS_DOMAIN_ID                     75
 #define AGENT_WAITING_LED_TOGGLE_DELAY_MS  500   // In milliseconds
 #define AGENT_AVAIL_LED_TOGGLE_DELAY_MS    250   // In milliseconds
 
 // ---- Repeating timer intervals ----
-#define btn_state_pub_rt_interval      500   // In milliseconds
+#define sw_state_pub_rt_interval       100   // In milliseconds
+#define btn_state_pub_rt_interval      50    // In milliseconds
 #define joystick_pub_rt_interval       50    // In milliseconds
 #define potentiometer_pub_rt_interval  80    // In milliseconds
 #define led_slow_flash_interval        800   // In milliseconds

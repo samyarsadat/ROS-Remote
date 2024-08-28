@@ -31,6 +31,7 @@
 #include <std_srvs/srv/set_bool.h>
 #include <nav_msgs/msg/odometry.h>
 #include <remote_pico_coms/msg/button_states.h>
+#include <remote_pico_coms/msg/switch_states.h>
 #include <remote_pico_coms/msg/joystick_state.h>
 #include <remote_pico_coms/msg/potentiometer_state.h>
 #include <remote_pico_coms/srv/get_joystick_config.h>
@@ -52,9 +53,10 @@ extern std_msgs__msg__Empty e_stop_msg;
 
 // ---- Publishers ----
 
-// Button, joystick, potentiometer states
-extern rcl_publisher_t button_state_pub, joystick_state_pub, potentiometer_state_pub;
+// Button, switch, joystick, potentiometer states
+extern rcl_publisher_t button_state_pub, switch_state_pub, joystick_state_pub, potentiometer_state_pub;
 extern remote_pico_coms__msg__ButtonStates button_state_msg;
+extern remote_pico_coms__msg__SwitchStates switch_state_msg;
 extern remote_pico_coms__msg__JoystickState joystick_state_msg;
 extern remote_pico_coms__msg__PotentiometerState potentiometer_state_msg;
 

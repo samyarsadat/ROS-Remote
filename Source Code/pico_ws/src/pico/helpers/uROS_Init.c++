@@ -42,9 +42,10 @@ std_msgs__msg__Empty e_stop_msg;
 
 // ---- Publishers ----
 
-// Button, joystick, potentiometer states
-rcl_publisher_t button_state_pub, joystick_state_pub, potentiometer_state_pub;
+// Button, switch, joystick, potentiometer states
+rcl_publisher_t button_state_pub, switch_state_pub, joystick_state_pub, potentiometer_state_pub;
 remote_pico_coms__msg__ButtonStates button_state_msg;
+remote_pico_coms__msg__SwitchStates switch_state_msg;
 remote_pico_coms__msg__JoystickState joystick_state_msg;
 remote_pico_coms__msg__PotentiometerState potentiometer_state_msg;
 
@@ -93,6 +94,7 @@ void init_subs_pubs()
 
     const rosidl_message_type_support_t *empty_type = ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Empty);
     const rosidl_message_type_support_t *button_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, ButtonStates);
+    const rosidl_message_type_support_t *switch_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, SwitchStates);
     const rosidl_message_type_support_t *joystick_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, JoystickState);
     const rosidl_message_type_support_t *potentiometer_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, PotentiometerState);
     const rosidl_service_type_support_t *get_joystick_config_type = ROSIDL_GET_SRV_TYPE_SUPPORT(remote_pico_coms, srv, GetJoystickConfig);
@@ -103,10 +105,10 @@ void init_subs_pubs()
 
     // ---- Services ----
     write_log("Initializing services...", LOG_LVL_INFO, FUNCNAME_ONLY);
-    bridge->init_service(&get_joystick_config_srv, get_joystick_config_type, "joystick/get_config");
-    bridge->init_service(&set_joystick_config_srv, set_joystick_config_type, "joystick/set_config");
-    bridge->init_service(&get_led_states_srv, get_led_states_type, "leds/get_states");
-    bridge->init_service(&set_led_states_srv, set_led_states_type, "leds/set_states");
+    bridge->init_service(&get_joystick_config_srv, get_joystick_config_type, "inputs/joystick/get_config");
+    bridge->init_service(&set_joystick_config_srv, set_joystick_config_type, "inputs/joystick/set_config");
+    bridge->init_service(&get_led_states_srv, get_led_states_type, "outputs/leds/get_states");
+    bridge->init_service(&set_led_states_srv, set_led_states_type, "outputs/leds/set_states");
     bridge->init_service(&run_self_test_srv, run_self_test_type, "self_test/pico");
 
 
@@ -125,10 +127,12 @@ void init_subs_pubs()
     diag_uros_init();
 
     // Sensor state topics
-    bridge->init_publisher(&button_state_pub, button_state_type, "buttons/states");
-    bridge->init_publisher(&joystick_state_pub, joystick_state_type, "joystick/state");
-    bridge->init_publisher(&potentiometer_state_pub, potentiometer_state_type, "potentiometer/state");
+    bridge->init_publisher(&button_state_pub, button_state_type, "inputs/buttons");
+    bridge->init_publisher(&switch_state_pub, switch_state_type, "inputs/switches");
+    bridge->init_publisher(&joystick_state_pub, joystick_state_type, "inputs/joystick");
+    bridge->init_publisher(&potentiometer_state_pub, potentiometer_state_type, "inputs/potentiometer");
     remote_pico_coms__msg__ButtonStates__init(&button_state_msg);
+    remote_pico_coms__msg__SwitchStates__init(&switch_state_msg);
     remote_pico_coms__msg__JoystickState__init(&joystick_state_msg);
     remote_pico_coms__msg__PotentiometerState__init(&potentiometer_state_msg);
 

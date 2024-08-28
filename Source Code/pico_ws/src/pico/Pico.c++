@@ -33,11 +33,12 @@
 alarm_pool_t *core_1_alarm_pool;
 
 // ---- Timer execution times storage (milliseconds) ----
-uint32_t last_btn_state_publish_time, last_joystick_state_publish_time, last_potentiometer_state_publish_time;
+uint32_t last_sw_state_publish_time, last_btn_state_publish_time;
+uint32_t last_joystick_state_publish_time, last_potentiometer_state_publish_time;
 
 // ---- Timers ----
-struct repeating_timer btn_state_publish_rt, joystick_publish_rt, potentiometer_publish_rt;
-TaskHandle_t btn_state_publish_th, joystick_publish_th, potentiometer_publish_th;
+struct repeating_timer sw_state_publish_rt, btn_state_publish_rt, joystick_publish_rt, potentiometer_publish_rt;
+TaskHandle_t btn_state_publish_th, sw_state_publish_th, joystick_publish_th, potentiometer_publish_th;
 TimerHandle_t waiting_for_agent_timer, fast_led_flash_handler_timer;
 TimerHandle_t slow_led_flash_handler_timer, led_fade_handler_timer;
 
@@ -59,6 +60,7 @@ void clean_shutdown()
     write_log("A clean shutdown has been triggered. The program will now shut down.", LOG_LVL_FATAL, FUNCNAME_ONLY);
 
     // Stop all repeating timers
+    cancel_repeating_timer(&sw_state_publish_rt);
     cancel_repeating_timer(&btn_state_publish_rt);
     cancel_repeating_timer(&joystick_publish_rt);
     cancel_repeating_timer(&potentiometer_publish_rt);
@@ -101,6 +103,14 @@ void vApplicationMallocFailedHook()
 
 
 // ---- Timer callbacks for task notification ----
+bool publish_sw_state_notify(struct repeating_timer *rt)
+{
+    BaseType_t higher_prio_woken;
+    vTaskNotifyGiveFromISR(sw_state_publish_th, &higher_prio_woken);
+    portYIELD_FROM_ISR(higher_prio_woken);
+    return true;
+}
+
 bool publish_btn_state_notify(struct repeating_timer *rt)
 {
     BaseType_t higher_prio_woken;
@@ -124,14 +134,6 @@ bool publish_potentiometer_notify(struct repeating_timer *rt)
     portYIELD_FROM_ISR(higher_prio_woken);
     return true;
 }
-
-
-// ---- IRQ callback ----
-void irq_call(uint pin, uint32_t events)
-{
-    publish_btn_state_notify(NULL);
-}
-
 
 
 // ------- MicroROS subscriber & service callbacks ------- 
@@ -236,6 +238,7 @@ void uros_post_exec_call()
 void start_timers()
 {
     write_log("Starting hardware timers...", LOG_LVL_INFO, FUNCNAME_ONLY);
+    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, sw_state_pub_rt_interval, publish_sw_state_notify, NULL, &sw_state_publish_rt);
     alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, btn_state_pub_rt_interval, publish_btn_state_notify, NULL, &btn_state_publish_rt);
     alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, joystick_pub_rt_interval, publish_joystick_notify, NULL, &joystick_publish_rt);
     alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, potentiometer_pub_rt_interval, publish_potentiometer_notify, NULL, &potentiometer_publish_rt);
@@ -307,23 +310,6 @@ void setup(void *parameters)
     init_pin(joystick_x_axis_pin, INPUT_ADC);
     init_pin(potentiometer_pin, INPUT_ADC);
 
-    // Interrupts
-    gpio_set_irq_enabled_with_callback(right_top_toggle_sw_pin, GPIO_IRQ_EDGE_FALL, true, irq_call);
-    gpio_set_irq_enabled(left_key_sw_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(left_top_toggle_sw_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(right_e_stop_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(right_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(left_green_right_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(left_red_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(left_green_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(left_red_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(left_green_left_btn_pin, GPIO_IRQ_EDGE_FALL, true);
-    gpio_set_irq_enabled(right_top_toggle_sw_pin, GPIO_IRQ_EDGE_RISE, true);
-    gpio_set_irq_enabled(left_key_sw_pin, GPIO_IRQ_EDGE_RISE, true);
-    gpio_set_irq_enabled(left_top_toggle_sw_pin, GPIO_IRQ_EDGE_RISE, true);
-    gpio_set_irq_enabled(right_e_stop_btn_pin, GPIO_IRQ_EDGE_RISE, true);
-    gpio_set_irq_enabled(right_kd2_btn_pin, GPIO_IRQ_EDGE_RISE, true);
-
     // Force SMPS into PWM mode
     init_pin(smps_power_save_pin, OUTPUT);
     gpio_put(smps_power_save_pin, HIGH);
@@ -337,10 +323,12 @@ void setup(void *parameters)
     write_log("Creating timer tasks...", LOG_LVL_INFO, FUNCNAME_ONLY);
     xTaskCreate(publish_joystick_state, "joystick_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 3, &joystick_publish_th);
     xTaskCreate(publish_potentiometer_state, "potentiometer_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &potentiometer_publish_th);
-    xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 5, &btn_state_publish_th);
-    vTaskCoreAffinitySet(joystick_publish_th, (1 << 1));        // Lock task to core 1
+    xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &btn_state_publish_th);
+    xTaskCreate(publish_sw_states, "sw_states_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &sw_state_publish_th);
+    //vTaskCoreAffinitySet(joystick_publish_th, (1 << 1));      // Lock task to core 1
     vTaskCoreAffinitySet(potentiometer_publish_th, (1 << 1));   // Lock task to core 1
     vTaskCoreAffinitySet(btn_state_publish_th, (1 << 1));       // Lock task to core 1
+    vTaskCoreAffinitySet(sw_state_publish_th, (1 << 1));        // Lock task to core 1
 
     // Create FreeRTOS timers
     write_log("Creating FreeRTOS software timers...", LOG_LVL_INFO, FUNCNAME_ONLY);
@@ -380,7 +368,7 @@ void setup1(void *parameters)
 // ******** END OF MAIN PROGRAM *********
 // *********** STARTUP & INIT ***********
 
-// ---- Main function (Runs setup, loop, and loop1) ----
+// ---- Entrypoint ----
 int main() 
 {
     // UART & USB STDIO outputs
