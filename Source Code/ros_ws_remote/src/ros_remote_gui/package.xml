@@ -9,7 +9,7 @@
     <license>GPL-3.0-only</license>
 
     <exec_depend>rclpy</exec_depend>
-    <exec_depend>python3-pyside6-pip</exec_depend>
+    <depend>python3-pyside6</depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

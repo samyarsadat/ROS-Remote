@@ -50,14 +50,20 @@ class MainWindow(QMainWindow):
 
     @QtCore.Slot()
     def shutdown_host_rpi(self):
+        from ros_remote_gui.ros_main import get_ros_node
+        get_ros_node().get_logger().warn("System shutdown requested!")
         subprocess.run(["sudo", "shutdown", "now"])
 
     @QtCore.Slot()
     def reboot_host_rpi(self):
+        from ros_remote_gui.ros_main import get_ros_node
+        get_ros_node().get_logger().warn("System reboot requested!")
         subprocess.run(["sudo", "reboot", "now"])
 
     @QtCore.Slot()
     def restart_qt_app(self):
+        from ros_remote_gui.ros_main import get_ros_node
+        get_ros_node().get_logger().warn("Application restart requested!")
         self.restart_on_quit = True
         qt_app.quit()
 
@@ -68,3 +74,7 @@ class MainWindow(QMainWindow):
 
 # ---- Main window instance ----
 qt_main_window = MainWindow()
+
+def get_main_window() -> MainWindow:
+    global qt_main_window
+    return qt_main_window

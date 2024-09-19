@@ -15,11 +15,41 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-from ros_remote_gui.init import qt_app
-from ros_remote_gui.ros_main import gui_ros_node
-from ros_remote_gui.main_window import qt_main_window
+from PySide6.QtCore import QTimer, Slot
+from ros_remote_gui.ros_main import get_ros_node
+from ros_remote_gui.main_window import get_main_window
+from ros_remote_gui.config import ProgramConfig
+from typing import Any
 
 
 class MainTab:
+    _batt_voltage: float
+    _cv_image_cam: Any
+    _cv_image_cam_overlay: Any
+
     def __init__(self):
-        gui_ros_node.create_client()
+        self._batt_voltage = 0.0
+        self._cv_image_cam = None
+        self._cv_image_cam_overlay = None
+
+        get_main_window().ui.camLedsBrightnessSlider.valueChanged.connect(self._cam_led_slider_change)
+
+        # UI data update timer
+        self._update_ui_tmr = QTimer()
+        self._update_ui_tmr.timeout.connect(self._update_ui_tmr_call)
+        self._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
+
+        # Viewport update timer
+        self._update_viewport_tmr = QTimer()
+        self._update_viewport_tmr.timeout.connect(self._update_viewport_tmr_call)
+        self._update_viewport_tmr.start(ProgramConfig.UI_VIEWPORT_UPDATE_INTERVAL_MS)
+
+    def _update_ui_tmr_call(self):
+        pass
+
+    def _update_viewport_tmr_call(self):
+        pass
+
+    @Slot()
+    def _cam_led_slider_change(self, value):
+        print(str(value))

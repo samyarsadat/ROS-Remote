@@ -18,32 +18,60 @@
 
 import sys
 import threading
-from PySide6.QtCore import QProcess
+from PySide6.QtCore import QProcess, QTimer
 from ros_remote_gui.init import qt_app
-from ros_remote_gui.main_window import qt_main_window
-from ros_remote_gui.ros_main import ros_executor_thread
+from ros_remote_gui.main_window import get_main_window
+from ros_remote_gui.ros_main import ros_executor_thread, is_ros_node_initialized, get_ros_node
+from ros_remote_gui.config import ProgramConfig
+
+
+
+# ---- Page-specific UI handlers ----
+main_tab_ui_handler = None
+
 
 
 # ---- Run the program ----
+def init_ui_handlers():
+    from ros_remote_gui.modules.main_tab import MainTab
+
+    global main_tab_ui_handler
+    main_tab_ui_handler = MainTab()
+
+
 def main():
     # Start the ROS thread
     stop_ros_thread = False
     ros_thread = threading.Thread(target=ros_executor_thread, args=(lambda: stop_ros_thread, ), name="ros_thread")
     ros_thread.start()
 
+    # Create a timer for checking ROS thread liveliness
+    def ros_liveliness_check() -> None:
+        if not ros_thread.is_alive():
+            if is_ros_node_initialized():
+                get_ros_node().get_logger().fatal("The ROS thread has died! Terminating program.")
+            else:
+                print("The ROS thread has died! Terminating program.")
+            qt_app.exit(1)
+
+    ros_liveliness_timer = QTimer()
+    ros_liveliness_timer.timeout.connect(ros_liveliness_check)
+    ros_liveliness_timer.start(ProgramConfig.THREADS_LIVELINESS_CHECK_INTERVAL_S * 1000)
+
     # Start the application
-    qt_main_window.show()
+    init_ui_handlers()
+    get_main_window().show()
     qt_ret_code = qt_app.exec()
 
     # Shutdown
     stop_ros_thread = True
     ros_thread.join()
 
-    if qt_main_window.restart_on_quit:
-        QProcess.startDetached(qt_app.arguments()[0], qt_app.arguments().pop(0))
+    if is_ros_node_initialized():
+        get_ros_node().get_logger().info(f"Program exiting with code {qt_ret_code}")
+
+    if get_main_window().restart_on_quit:
+        qt_app_args = qt_app.arguments(); qt_app_args.pop(0)
+        QProcess.startDetached(qt_app.arguments()[0], qt_app_args)
 
     sys.exit(qt_ret_code)
-
-
-if __name__ == "__main__":
-    main()

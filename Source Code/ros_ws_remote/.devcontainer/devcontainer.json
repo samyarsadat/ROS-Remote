@@ -49,7 +49,8 @@
     },
 
     "workspaceFolder": "/home/nonroot/ros_ws",
-    //"mounts": [{"source": "${localWorkspaceFolder}", "target": "/home/nonroot/ros_ws", "type": "bind"}],
+    "mounts": [{"source": "${localWorkspaceFolder}/../ros_robot_project/Source Code/ros_ws_robot/src/ros_robot_msgs", 
+                "target": "/home/nonroot/ros_ws/src/ros_robot_msgs", "type": "bind"}],
 
     "runArgs": ["--net=host",
                 "--cap-add=SYS_PTRACE",

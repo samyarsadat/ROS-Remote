@@ -8,7 +8,7 @@
 
 import sys
 
-fix_name_array = ["horizontalSpacer", "verticalSpacer", "horizontalLayout", "verticalLayout"]
+fix_name_array = ["horizontalSpacer", "verticalSpacer", "horizontalLayout", "verticalLayout", "gridLayout"]
 filename = sys.argv[1]
 print(f"Fixing indexes for: {filename}")
 

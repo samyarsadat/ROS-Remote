@@ -1,4 +1,4 @@
-#  The ROS remote project (GUI package) - Power tab
+#  The ROS remote project (GUI package) - GUI utilities.
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -14,3 +14,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
+
+
+# Generate stylesheet for an indicator label
+def generate_indicator_stylesheet(enabled: bool, active_color="red") -> str:
+    return f"background-color: {active_color}" if enabled else "background-color: transparent"
