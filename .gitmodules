@@ -12,3 +12,7 @@
 	url = https://github.com/micro-ROS/micro_ros_setup
 	branch = humble
 	ignore = all
+[submodule "The ROS Robot Project"]
+	path = Source Code/ros_robot_project
+	url = https://github.com/samyarsadat/ROS-Robot
+	branch = stage-1
