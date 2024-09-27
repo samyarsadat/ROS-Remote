@@ -18,19 +18,20 @@
 
 import threading
 import rclpy
+import ros_remote_gui.main
 from typing import Union
 from rclpy import Context
 from rclpy.client import Client, SrvTypeRequest, SrvTypeResponse
 from rclpy.executors import ExternalShutdownException
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from ros_remote_gui.config import RosConfig, RosNames, RosFrameIds, RosNames
+from ros_remote_gui.config import RosConfig, RosFrameIds, RosNames
 from ros_remote_gui.main_window import get_main_window
 from diagnostic_msgs.msg import DiagnosticStatus
 from diagnostic_msgs.srv import SelfTest
 from nav_msgs.msg import Odometry
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
-from sensor_msgs.msg import BatteryState, Imu, Temperature, RelativeHumidity, Range
+from sensor_msgs.msg import BatteryState, Imu, Temperature, RelativeHumidity, Range, CompressedImage, Image
 from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
 from ros_robot_msgs.srv import SetCameraLeds, GetCameraLeds, SetPidTunings, RunCalibrationsA, GetBool
@@ -68,6 +69,11 @@ class RosNode(Node):
         self._reentrant_cb_group = ReentrantCallbackGroup()
         self._selftest_calib_cb_group = MutuallyExclusiveCallbackGroup()
         self._emer_stop_cb_group = MutuallyExclusiveCallbackGroup()
+        self._viewport_cb_group = ReentrantCallbackGroup()
+
+        # Viewport camera & camera overlay
+        self.front_camera_comp_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_FEED_TOPIC, self.front_camera_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
+        self.front_overlay_comp_sub = self.create_subscription(Image, RosNames.CAMERA_OVERLAY_TOPIC, self.front_overlay_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
 
         self.diagnostics_sub = self.create_subscription(DiagnosticStatus, RosNames.DIAGNOSTICS_TOPIC, self.diagnostics_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
         self.enable_relay_srvcl = self.create_client(SetBool, RosNames.ENABLE_RELAY_SRV, qos_profile=RosConfig.QOS_RELIABLE)
@@ -108,6 +114,14 @@ class RosNode(Node):
 
     def diagnostics_callback(self, msg: DiagnosticStatus) -> None:
         pass
+
+    @staticmethod
+    def front_camera_comp_callback(msg: CompressedImage):
+        ros_remote_gui.main.main_tab_ui_handler.viewport_thread.ros_image_cam = msg
+
+    @staticmethod
+    def front_overlay_comp_callback(msg: CompressedImage):
+        ros_remote_gui.main.main_tab_ui_handler.viewport_thread.ros_image_overlay = msg
 
     @staticmethod
     def battery_info_callback(msg: BatteryState) -> None:

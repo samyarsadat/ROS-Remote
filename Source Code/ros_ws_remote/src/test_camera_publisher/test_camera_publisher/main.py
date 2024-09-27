@@ -1,4 +1,4 @@
-#  The ROS remote project (GUI package)
+#  The ROS remote project (Test Camera Publisher)
 #  Main file - everything is ran from here
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
@@ -16,62 +16,52 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-import sys
 import threading
-from PySide6.QtCore import QProcess, QTimer
-from ros_remote_gui.init import qt_app
-from ros_remote_gui.main_window import get_main_window
-from ros_remote_gui.ros_main import ros_executor_thread, is_ros_node_initialized, get_ros_node
-from ros_remote_gui.config import ProgramConfig, RosConfig
-
-
-
-# ---- Page-specific UI handlers ----
-main_tab_ui_handler = None
-
+from time import sleep, time_ns
+from cv_bridge import CvBridge
+from test_camera_publisher.ros_main import ros_executor_thread, is_ros_node_initialized, get_ros_node
+from test_camera_publisher.config import RosConfig, ProgramConfig
+from test_camera_publisher.pattern_gen import get_camera_image, get_camera_overlay
 
 
 # ---- Run the program ----
-def init_ui_handlers():
-    from ros_remote_gui.modules.main_tab import MainTab
-
-    global main_tab_ui_handler
-    main_tab_ui_handler = MainTab()
-
-
 def main():
     # Start the ROS thread
     stop_ros_thread = False
     ros_thread = threading.Thread(target=ros_executor_thread, args=(lambda: stop_ros_thread, ), name=RosConfig.THREAD_NAME)
     ros_thread.start()
 
-    # Create a timer for checking ROS thread liveliness
+    # Check ROS thread liveliness
     def ros_liveliness_check() -> None:
         if not ros_thread.is_alive():
             if is_ros_node_initialized():
                 get_ros_node().get_logger().fatal("The ROS thread has died! Terminating program.")
             else:
                 print("The ROS thread has died! Terminating program.")
-            qt_app.exit(1)
+            exit(1)
 
-    ros_liveliness_timer = QTimer()
-    ros_liveliness_timer.timeout.connect(ros_liveliness_check)
-    ros_liveliness_timer.start(ProgramConfig.THREADS_LIVELINESS_CHECK_INTERVAL_S * 1000)
+    try:
+        img_bridge = CvBridge()
 
-    # Start the application
-    init_ui_handlers()
-    get_main_window().show()
-    qt_ret_code = qt_app.exec()
+        while True:
+            frame_start_time = time_ns()
+            ros_liveliness_check()
+
+            if is_ros_node_initialized():
+                cam_img, width, height = get_camera_image("FRONT CAMERA")
+                get_ros_node().front_camera_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(cam_img, "jpg"))
+                get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_imgmsg(get_camera_overlay(width, height), "rgba8"))
+
+            # Framerate limiting
+            sleep_time_ms = (1000 / ProgramConfig.TARGET_PUBLISH_FPS) - ((time_ns() - frame_start_time) / 1000000)
+            sleep((sleep_time_ms / 1000) if sleep_time_ms > 0 else 0)
+    except KeyboardInterrupt:
+        if is_ros_node_initialized():
+            get_ros_node().get_logger().info("Keyboard interrupt!")
 
     # Shutdown
     stop_ros_thread = True
     ros_thread.join()
 
     if is_ros_node_initialized():
-        get_ros_node().get_logger().info(f"Program exiting with code {qt_ret_code}")
-
-    if get_main_window().restart_on_quit:
-        qt_app_args = qt_app.arguments(); qt_app_args.pop(0)
-        QProcess.startDetached(qt_app.arguments()[0], qt_app_args)
-
-    sys.exit(qt_ret_code)
+        get_ros_node().get_logger().info(f"Program exiting...")

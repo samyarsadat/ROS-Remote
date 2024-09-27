@@ -16,20 +16,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.8.8"
+PROGRAM_VERSION = "2024.9.27"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/08/08 @ 12:15PM UTC"
+    VERSION_DATE = "2024/09/27 @ 3:40 UTC"
 
 
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
     UI_DATA_UPDATE_INTERVAL_MS = 100
     UI_VIEWPORT_UPDATE_INTERVAL_MS = 50
+    VIEWPORT_TARGET_FPS = 40
 
 
 # ---- ROS Config ----
@@ -41,11 +42,14 @@ class RosConfig:
     EXECUTOR_SHUTDOWN_TIMEOUT = 5   # 5s
     QOS_BEST_EFFORT = QoSProfile(reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST, depth=1, liveliness=LivelinessPolicy.AUTOMATIC)
     QOS_RELIABLE = QoSProfile(reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=1, liveliness=LivelinessPolicy.AUTOMATIC)
-    THREAD_NAME = "robot_ros_thread"
+    THREAD_NAME = "ros_thread"
 
 
 class RosNames:
     ROBOT_NAMESPACE = "ros_robot"
+
+    CAMERA_FEED_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front/image_raw/compressed"
+    CAMERA_OVERLAY_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front_overlay/image"
 
     DIAGNOSTICS_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics"
     ENABLE_RELAY_SRV = f"{ROBOT_NAMESPACE}/enable/set_relay"

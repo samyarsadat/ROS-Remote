@@ -135,8 +135,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_1.setContentsMargins(12, -1, -1, -1)
         self.camLedsBrightnessSlider = QSlider(self.camLedsBox)
         self.camLedsBrightnessSlider.setObjectName(u"camLedsBrightnessSlider")
-        self.camLedsBrightnessSlider.setMaximum(4095)
-        self.camLedsBrightnessSlider.setSingleStep(4)
+        self.camLedsBrightnessSlider.setMaximum(100)
+        self.camLedsBrightnessSlider.setSingleStep(10)
+        self.camLedsBrightnessSlider.setPageStep(10)
         self.camLedsBrightnessSlider.setOrientation(Qt.Orientation.Horizontal)
 
         self.horizontalLayout_1.addWidget(self.camLedsBrightnessSlider)
