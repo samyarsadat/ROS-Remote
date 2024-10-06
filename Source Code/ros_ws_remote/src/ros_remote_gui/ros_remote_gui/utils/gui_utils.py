@@ -15,7 +15,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
+import ros_remote_gui
+from PySide6.QtWidgets import QMessageBox
+
 
 # Generate stylesheet for an indicator label
-def generate_indicator_stylesheet(enabled: bool, active_color="red") -> str:
-    return f"background-color: {active_color}" if enabled else "background-color: transparent"
+def generate_indicator_stylesheet(enabled: bool, active_color="red", inactive_color="transparent") -> str:
+    return f"background-color: {active_color}" if enabled else f"background-color: {inactive_color}"
+
+
+# Service call callback helpers
+def srvcl_failed_show_err(unavail: bool):
+    if not unavail:
+        QMessageBox.critical(ros_remote_gui.main_window.get_main_window(), "Error", "ROS service call failed!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
+    else:
+        QMessageBox.warning(ros_remote_gui.main_window.get_main_window(), "Warning", "ROS service unavailable!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)

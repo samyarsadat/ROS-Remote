@@ -124,7 +124,14 @@
     </spacer>
    </item>
    <item>
-    <widget class="QTextBrowser" name="resultMessage"/>
+    <widget class="QTextBrowser" name="resultMessage">
+     <property name="font">
+      <font>
+       <family>Liberation Mono</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer_2">

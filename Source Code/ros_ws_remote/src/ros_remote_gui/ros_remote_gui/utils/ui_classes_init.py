@@ -27,8 +27,6 @@ from ros_remote_gui.gui_files.ui_selftest_result_dialog import Ui_Dialog as UiSe
 from ros_remote_gui.gui_files.ui_calibration_result_dialog import Ui_Dialog as UiCalibrationResultDialog
 
 
-# ---- Classes ----
-
 # About dialog
 class AboutDialog(QDialog):
     def __init__(self, parent=None):

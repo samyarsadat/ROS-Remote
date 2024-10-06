@@ -16,21 +16,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.9.27"
+PROGRAM_VERSION = "2024.10.6"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/09/27 @ 3:40 UTC"
+    VERSION_DATE = "2024/10/06 @ 2:12 UTC"
 
 
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
     UI_DATA_UPDATE_INTERVAL_MS = 100
     UI_VIEWPORT_UPDATE_INTERVAL_MS = 50
-    VIEWPORT_TARGET_FPS = 40
+    VIEWPORT_TARGET_FPS = 30
+    MAX_DIAG_MSG_HISTORY = 100
+    STALE_DATA_TIMEOUT = 4   # 4s
 
 
 # ---- ROS Config ----
@@ -52,6 +54,7 @@ class RosNames:
     CAMERA_OVERLAY_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front_overlay/image"
 
     DIAGNOSTICS_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics"
+    PING_DRIVER_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics/ping_driver"
     ENABLE_RELAY_SRV = f"{ROBOT_NAMESPACE}/enable/set_relay"
     BATTERY_INFO_TOPIC = f"{ROBOT_NAMESPACE}/electrical/battery_state"
     ENCODER_ODOM_TOPIC = f"{ROBOT_NAMESPACE}/pos_data/encoder_odom"
@@ -79,7 +82,7 @@ class RosNames:
     ULTRASONIC_SENS_TOPIC_BASE = ROBOT_NAMESPACE + "/range_sens/ultrasonic/{}"
     ULTRASONIC_SENS_TOPIC_NAMES = ["front", "back", "right", "left"]
 
-    CLIFF_SENS_TOPIC_BASE = ROBOT_NAMESPACE + "/range_base/cliff/{}"
+    CLIFF_SENS_TOPIC_BASE = ROBOT_NAMESPACE + "/range_sens/cliff/{}"
     CLIFF_SENS_TOPIC_NAMES = ["front_1", "front_2", "front_3", "front_4", "back_1", "back_2", "back_3", "back_4"]
 
 

@@ -79,9 +79,9 @@
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>20</y>
+          <y>18</y>
           <width>980</width>
-          <height>430</height>
+          <height>440</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -93,13 +93,13 @@
         <property name="minimumSize">
          <size>
           <width>980</width>
-          <height>430</height>
+          <height>440</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>980</width>
-          <height>430</height>
+          <height>440</height>
          </size>
         </property>
         <property name="mouseTracking">
@@ -122,15 +122,27 @@
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>460</y>
+          <y>470</y>
           <width>360</width>
-          <height>70</height>
+          <height>64</height>
          </rect>
         </property>
         <property name="title">
          <string>Viewport</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>9</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
          <item row="0" column="2">
           <widget class="QLabel" name="viewportFpsLabel">
            <property name="text">
@@ -221,9 +233,9 @@
         <property name="geometry">
          <rect>
           <x>400</x>
-          <y>460</y>
+          <y>470</y>
           <width>375</width>
-          <height>70</height>
+          <height>64</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -238,6 +250,15 @@
         <layout class="QHBoxLayout" name="horizontalLayout_1">
          <property name="leftMargin">
           <number>12</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
          </property>
          <item>
           <widget class="QSlider" name="camLedsBrightnessSlider">
@@ -312,9 +333,9 @@
         <property name="geometry">
          <rect>
           <x>795</x>
-          <y>460</y>
+          <y>470</y>
           <width>204</width>
-          <height>70</height>
+          <height>64</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -328,10 +349,16 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="leftMargin">
-          <number>12</number>
+          <number>9</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
          </property>
          <property name="rightMargin">
-          <number>12</number>
+          <number>9</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
          </property>
          <item>
           <widget class="QLabel" name="teleBatteryLabel">
@@ -534,11 +561,6 @@
           <layout class="QHBoxLayout" name="imuSensAccelXBox">
            <item>
             <widget class="QLabel" name="imuSensAccelXLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Accel. X</string>
              </property>
@@ -606,11 +628,6 @@
           <layout class="QHBoxLayout" name="imuSensAccelYBox">
            <item>
             <widget class="QLabel" name="imuSensAccelYLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Accel. Y</string>
              </property>
@@ -678,11 +695,6 @@
           <layout class="QHBoxLayout" name="imuSensAccelZBox">
            <item>
             <widget class="QLabel" name="imuSensAccelZLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Accel. Z</string>
              </property>
@@ -766,11 +778,6 @@
           <layout class="QHBoxLayout" name="imuSensGyroXBox">
            <item>
             <widget class="QLabel" name="imuSensGyroXLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Gyro. X</string>
              </property>
@@ -838,11 +845,6 @@
           <layout class="QHBoxLayout" name="imuSensGyroYBox">
            <item>
             <widget class="QLabel" name="imuSensGyroYLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Gyro. Y</string>
              </property>
@@ -910,11 +912,6 @@
           <layout class="QHBoxLayout" name="imuSensGyroZBox">
            <item>
             <widget class="QLabel" name="imuSensGyroZLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Gyro. Z</string>
              </property>
@@ -998,11 +995,6 @@
           <layout class="QHBoxLayout" name="imuSensCompXBox">
            <item>
             <widget class="QLabel" name="imuSensCompXLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Comp. X</string>
              </property>
@@ -1070,11 +1062,6 @@
           <layout class="QHBoxLayout" name="imuSensCompYBox">
            <item>
             <widget class="QLabel" name="imuSensCompYLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Comp. Y</string>
              </property>
@@ -1142,11 +1129,6 @@
           <layout class="QHBoxLayout" name="imuSensCompZBox">
            <item>
             <widget class="QLabel" name="imuSensCompZLabel">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="text">
               <string>Comp. Z</string>
              </property>
@@ -1975,28 +1957,28 @@
            <item>
             <widget class="QLabel" name="ultrasonicSensUnitF">
              <property name="text">
-              <string>m</string>
+              <string>cm</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="ultrasonicSensUnitB">
              <property name="text">
-              <string>m</string>
+              <string>cm</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="ultrasonicSensUnitR">
              <property name="text">
-              <string>m</string>
+              <string>cm</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="ultrasonicSensUnitL">
              <property name="text">
-              <string>m</string>
+              <string>cm</string>
              </property>
             </widget>
            </item>
@@ -2150,7 +2132,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QPushButton" name="togglePicoARelaEnable">
+          <widget class="QPushButton" name="togglePicoARelayEnable">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -4023,9 +4005,9 @@
        <widget class="QGroupBox" name="diagMsgsBox">
         <property name="geometry">
          <rect>
-          <x>305</x>
+          <x>280</x>
           <y>20</y>
-          <width>695</width>
+          <width>720</width>
           <height>505</height>
          </rect>
         </property>
@@ -4047,6 +4029,14 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <family>Liberation Mono</family>
+             <pointsize>11</pointsize>
+             <italic>false</italic>
+             <bold>false</bold>
+            </font>
+           </property>
            <property name="html">
             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -4054,8 +4044,8 @@ p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Liberation Mono'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu Sans';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -4110,6 +4100,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <property name="text">
               <string>Show timestamps</string>
              </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
@@ -4139,6 +4132,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <property name="text">
               <string>Show key-values</string>
              </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
@@ -4154,6 +4150,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </property>
             </spacer>
            </item>
+           <item>
+            <widget class="QPushButton" name="diagMsgOptsClearBtn">
+             <property name="text">
+              <string>Clear</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
@@ -4163,7 +4166,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <rect>
           <x>28</x>
           <y>20</y>
-          <width>255</width>
+          <width>230</width>
           <height>170</height>
          </rect>
         </property>
@@ -4209,7 +4212,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <rect>
           <x>28</x>
           <y>210</y>
-          <width>255</width>
+          <width>230</width>
           <height>110</height>
          </rect>
         </property>
@@ -4276,8 +4279,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <string>Connection</string>
     </property>
     <addaction name="actionCheck_Robot_Connection"/>
-    <addaction name="separator"/>
-    <addaction name="actionCheck_Wi_Fi_Connection"/>
     <addaction name="actionCheck_WAN_Connection"/>
    </widget>
    <widget class="QMenu" name="menuConfiguration">

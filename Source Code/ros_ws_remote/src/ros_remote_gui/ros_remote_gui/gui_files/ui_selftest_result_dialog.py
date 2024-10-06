@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'selftest_result_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -73,6 +73,10 @@ class Ui_Dialog(object):
 
         self.resultMessage = QTextBrowser(Dialog)
         self.resultMessage.setObjectName(u"resultMessage")
+        font = QFont()
+        font.setFamilies([u"Liberation Mono"])
+        font.setPointSize(10)
+        self.resultMessage.setFont(font)
 
         self.verticalLayout_1.addWidget(self.resultMessage)
 

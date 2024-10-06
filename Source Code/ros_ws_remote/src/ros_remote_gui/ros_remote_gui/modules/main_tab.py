@@ -22,11 +22,11 @@ import numpy as np
 from asyncio import Future
 from PySide6.QtCore import QTimer, Slot, Qt, QThread, Signal
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtWidgets import QMessageBox
 from ros_remote_gui.init import qt_app
 from ros_remote_gui.ros_main import get_ros_node, is_ros_node_initialized
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.config import ProgramConfig
+from ros_remote_gui.utils.gui_utils import srvcl_failed_show_err
 from ros_robot_msgs.srv import SetCameraLeds
 from sensor_msgs.msg import CompressedImage, Image
 from cv_bridge import CvBridge
@@ -36,6 +36,7 @@ from time import sleep
 # ---- Viewport frame preparation thread ----
 class ViewportThread(QThread):
     update_pixmap_sig = Signal(QPixmap, float)
+    test_sig = Signal(int)
     ros_image_cam: CompressedImage
     ros_image_overlay: Image
 
@@ -47,11 +48,11 @@ class ViewportThread(QThread):
         self._current_fps = 0.0
 
         # Initialize image messages
-        blank_rgb = np.zeros((430, 980, 3), dtype=np.uint8)
+        blank_rgb = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
         self.gen_info_txt_img(blank_rgb, "NO IMAGE RECEIVED!")
         blank_rgb = cv2.cvtColor(blank_rgb, cv2.COLOR_RGB2BGR)
         self.ros_image_cam = self._img_bridge.cv2_to_compressed_imgmsg(blank_rgb, "jpg")
-        self.ros_image_overlay = self._img_bridge.cv2_to_imgmsg(np.zeros((430, 980, 4), dtype=np.uint8), "rgba8")
+        self.ros_image_overlay = self._img_bridge.cv2_to_imgmsg(np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 4), dtype=np.uint8), "rgba8")
 
     @staticmethod
     def gen_info_txt_img(rgb_img: np.ndarray, text: str):
@@ -144,18 +145,12 @@ class MainTab:
         self.viewport_fps = fps
 
     @staticmethod
-    def _srvcl_failed_show_err(unavail: bool):
-        if not unavail:
-            get_ros_node().get_logger().warn("ROS service call failed! (Camera LED)")
-            QMessageBox.critical(get_main_window(), "Error", "ROS service call failed!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
-        else:
-            QMessageBox.warning(get_main_window(), "Warning", "ROS service unavailable!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
-
-    def _cam_led_srvcl_done_call(self, future: Future) -> None:
+    def _cam_srvcl_done_call(future: Future) -> None:
         if future.exception() or not future.result().success:
-            self._srvcl_failed_show_err(False)
+            get_ros_node().get_logger().warn("ROS service call failed! (Camera LED)")
+            srvcl_failed_show_err(False)
 
-    @Slot()
+    @Slot(int)
     def _cam_led_slider_change(self, value) -> None:
         if get_ros_node().set_camera_leds_srvcl.service_is_ready():
             cam_led_req = SetCameraLeds.Request()
@@ -166,11 +161,11 @@ class MainTab:
             value = int(value * 655.35)
             cam_led_req.led_outputs = array.array("I", [value, value, value, value])
             future = get_ros_node().set_camera_leds_srvcl.call_async(cam_led_req)
-            future.add_done_callback(self._cam_led_srvcl_done_call)
+            future.add_done_callback(self._cam_srvcl_done_call)
         else:
-            self._srvcl_failed_show_err(True)
+            srvcl_failed_show_err(True)
 
-    def _set_led_state_checkbox(self, led_num: int, checkbox_state) -> None:
+    def _set_led_state_checkbox(self, led_num: int, checkbox_state: Qt.CheckState) -> None:
         if get_ros_node().set_camera_leds_srvcl.service_is_ready():
             cam_led_req = SetCameraLeds.Request()
             cam_led_req.set_output_mask = [False, False, False, False]
@@ -181,22 +176,22 @@ class MainTab:
                 cam_led_req.led_outputs[led_num] = int(get_main_window().ui.camLedsBrightnessSlider.value() * 655.35)
 
             future = get_ros_node().set_camera_leds_srvcl.call_async(cam_led_req)
-            future.add_done_callback(self._cam_led_srvcl_done_call)
+            future.add_done_callback(self._cam_srvcl_done_call)
         else:
-            self._srvcl_failed_show_err(True)
+            srvcl_failed_show_err(True)
 
-    @Slot()
+    @Slot(Qt.CheckState)
     def _check_led_1_box(self, state) -> None:
         self._set_led_state_checkbox(0, state)
 
-    @Slot()
+    @Slot(Qt.CheckState)
     def _check_led_2_box(self, state) -> None:
         self._set_led_state_checkbox(1, state)
 
-    @Slot()
+    @Slot(Qt.CheckState)
     def _check_led_3_box(self, state) -> None:
         self._set_led_state_checkbox(2, state)
 
-    @Slot()
+    @Slot(Qt.CheckState)
     def _check_led_4_box(self, state) -> None:
         self._set_led_state_checkbox(3, state)

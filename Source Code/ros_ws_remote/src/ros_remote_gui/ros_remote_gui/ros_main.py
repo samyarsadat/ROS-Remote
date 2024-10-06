@@ -16,17 +16,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-import threading
 import rclpy
 import ros_remote_gui.main
-from typing import Union
+from datetime import datetime
+from copy import deepcopy
 from rclpy import Context
-from rclpy.client import Client, SrvTypeRequest, SrvTypeResponse
 from rclpy.executors import ExternalShutdownException
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from ros_remote_gui.config import RosConfig, RosFrameIds, RosNames
-from ros_remote_gui.main_window import get_main_window
 from diagnostic_msgs.msg import DiagnosticStatus
 from diagnostic_msgs.srv import SelfTest
 from nav_msgs.msg import Odometry
@@ -36,32 +34,10 @@ from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
 from ros_robot_msgs.srv import SetCameraLeds, GetCameraLeds, SetPidTunings, RunCalibrationsA, GetBool
 from ros_robot_msgs.msg import MotorCtrlState
-from ros_remote_gui.utils.gui_utils import generate_indicator_stylesheet
 
 
 # ---- ROS Node ----
 class RosNode(Node):
-    # Client.call() implementation with timeout.
-    def srv_call_with_timeout(self, client: Client, request: SrvTypeRequest, timeout_s: int) -> Union[SrvTypeResponse, None]:
-        event = threading.Event()
-
-        def unblock(ftr):
-            event.set()
-
-        future = client.call_async(request)
-        future.add_done_callback(unblock)
-
-        if not future.done():
-            if not event.wait(float(timeout_s)):
-                self.get_logger().error(f"Service call failure [{client.srv_name}]: timed out! Cancelling.")
-                future.cancel()
-                return None
-
-        if future.exception() is not None:
-            raise future.exception()
-
-        return future.result()
-
     def __init__(self, context: Context):
         super().__init__(node_name=RosConfig.NODE_NAME, namespace=RosConfig.NODE_NAMESPACE, context=context)
         self.get_logger().info("Creating publishers, subscribers, and services servers...")
@@ -76,6 +52,7 @@ class RosNode(Node):
         self.front_overlay_comp_sub = self.create_subscription(Image, RosNames.CAMERA_OVERLAY_TOPIC, self.front_overlay_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
 
         self.diagnostics_sub = self.create_subscription(DiagnosticStatus, RosNames.DIAGNOSTICS_TOPIC, self.diagnostics_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
+        self.ping_driver_srvcl = self.create_client(GetBool, RosNames.PING_DRIVER_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
         self.enable_relay_srvcl = self.create_client(SetBool, RosNames.ENABLE_RELAY_SRV, qos_profile=RosConfig.QOS_RELIABLE)
         self.battery_info_sub = self.create_subscription(BatteryState, RosNames.BATTERY_INFO_TOPIC, self.battery_info_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._reentrant_cb_group)
         self.encoder_odom_sub = self.create_subscription(Odometry, RosNames.ENCODER_ODOM_TOPIC, self.encoder_odom_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
@@ -112,154 +89,124 @@ class RosNode(Node):
             t_name = RosNames.CLIFF_SENS_TOPIC_BASE.format(RosNames.CLIFF_SENS_TOPIC_NAMES[i])
             self.cliff_sens_subs.append(self.create_subscription(Range, t_name, self.cliff_sens_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group))
 
-    def diagnostics_callback(self, msg: DiagnosticStatus) -> None:
-        pass
+    @staticmethod
+    def diagnostics_callback(msg: DiagnosticStatus) -> None:
+        ros_remote_gui.main.diag_tab_ui_handler.rcv_diag_msg_sig.emit(msg)
 
     @staticmethod
     def front_camera_comp_callback(msg: CompressedImage):
         ros_remote_gui.main.main_tab_ui_handler.viewport_thread.ros_image_cam = msg
 
     @staticmethod
-    def front_overlay_comp_callback(msg: CompressedImage):
+    def front_overlay_comp_callback(msg: Image):
         ros_remote_gui.main.main_tab_ui_handler.viewport_thread.ros_image_overlay = msg
 
     @staticmethod
     def battery_info_callback(msg: BatteryState) -> None:
         rounded_voltage = round(msg.voltage, 2)
         rounded_current = round(msg.current, 3)
-
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            get_main_window().ui.batterySensCurrentValue.display(rounded_current)
-            get_main_window().ui.batterySensVoltageValue.display(rounded_voltage)
-
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.powerTab.objectName():
-            get_main_window().ui.batteryVoltageValue.display(rounded_voltage)
-            get_main_window().ui.batteryCurrentValue.display(rounded_current)
-
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.mainTab.objectName():
-            get_main_window().ui.teleBatteryValue.setText(str(rounded_voltage))
+        ros_remote_gui.main.sensors_tab_ui_handler.batt_voltage = rounded_voltage
+        ros_remote_gui.main.sensors_tab_ui_handler.batt_current = rounded_current
+        ros_remote_gui.main.power_tab_ui_handler.batt_voltage = rounded_voltage
+        ros_remote_gui.main.power_tab_ui_handler.batt_current = rounded_current
+        ros_remote_gui.main.main_tab_ui_handler.batt_voltage = rounded_voltage
 
     @staticmethod
     def encoder_odom_callback(msg: Odometry) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.motorCtrlTab.objectName():
-            get_main_window().ui.encOdomPosXValue.setText(str(round(msg.pose.pose.position.x, 3)))
-            get_main_window().ui.encOdomPosYValue.setText(str(round(msg.pose.pose.position.y, 3)))
-            get_main_window().ui.encOdomYawValue.setText(str(round(msg.pose.pose.orientation.z, 1)))
-            get_main_window().ui.encOdomLinVelValue.setText(str(round(msg.twist.twist.linear.x, 2)))
-            get_main_window().ui.encOdomAngVelValue.setText(str(round(msg.twist.twist.angular.z, 2)))
+        ros_remote_gui.main.motor_tab_ui_handler.position_x = msg.pose.pose.position.x
+        ros_remote_gui.main.motor_tab_ui_handler.position_y = msg.pose.pose.position.y
+        ros_remote_gui.main.motor_tab_ui_handler.orientation_yaw = msg.pose.pose.orientation.z
+        ros_remote_gui.main.motor_tab_ui_handler.linear_velocity = msg.twist.twist.linear.x
+        ros_remote_gui.main.motor_tab_ui_handler.angular_velocity = msg.twist.twist.angular.z
 
     @staticmethod
     def imu_sens_callback(msg: Imu) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            get_main_window().ui.imuSensAccelXValue.setText(str(round(msg.linear_acceleration.x, 2)))
-            get_main_window().ui.imuSensAccelYValue.setText(str(round(msg.linear_acceleration.y, 2)))
-            get_main_window().ui.imuSensAccelZValue.setText(str(round(msg.linear_acceleration.z, 2)))
-            get_main_window().ui.imuSensGyroXValue.setText(str(round(msg.angular_velocity.x, 2)))
-            get_main_window().ui.imuSensGyroYValue.setText(str(round(msg.angular_velocity.y, 2)))
-            get_main_window().ui.imuSensGyroZValue.setText(str(round(msg.angular_velocity.z, 2)))
-            get_main_window().ui.imuSensCompXValue.setText(str(round(msg.orientation.x, 1)))
-            get_main_window().ui.imuSensCompYValue.setText(str(round(msg.orientation.y, 1)))
-            get_main_window().ui.imuSensCompZValue.setText(str(round(msg.orientation.z, 1)))
+        ros_remote_gui.main.sensors_tab_ui_handler.imu_accels = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
+        ros_remote_gui.main.sensors_tab_ui_handler.imu_gyros = [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
+        ros_remote_gui.main.sensors_tab_ui_handler.imu_comps = [msg.orientation.x, msg.orientation.y, msg.orientation.z]
 
     @staticmethod
     def env_temp_sens_callback(msg: Temperature) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            get_main_window().ui.envSensTempValue.setText(str(round(msg.temperature, 2)))
+        ros_remote_gui.main.sensors_tab_ui_handler.env_dht_temp = msg.temperature
 
     @staticmethod
     def env_humidity_sens_callback(msg: RelativeHumidity) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            get_main_window().ui.envSensHumValue.setText(str(round(msg.relative_humidity, 1)))
+        ros_remote_gui.main.sensors_tab_ui_handler.env_dht_humidity = msg.relative_humidity
 
     @staticmethod
     def pico_a_cpu_temp_callback(msg: Temperature) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            get_main_window().ui.envSensPicoATempValue.setText(str(round(msg.temperature, 2)))
+        ros_remote_gui.main.sensors_tab_ui_handler.env_pico_a_temp = msg.temperature
 
     @staticmethod
     def pico_b_cpu_temp_callback(msg: Temperature) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            get_main_window().ui.envSensPicoBTempValue.setText(str(round(msg.temperature, 2)))
+        ros_remote_gui.main.sensors_tab_ui_handler.env_pico_b_temp = msg.temperature
 
     @staticmethod
     def left_mtr_ctrl_callback(msg: MotorCtrlState) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.motorCtrlTab.objectName():
-            get_main_window().ui.mtrCtrlEnableRIndicator.setStyleSheet(generate_indicator_stylesheet(msg.controller_enabled, "green"))
-            get_main_window().ui.rpmMeasuredFRValue.setText(str(round(msg.measured_rpms[0], 1)))
-            get_main_window().ui.rpmMeasuredBRValue.setText(str(round(msg.measured_rpms[1], 1)))
-            get_main_window().ui.rpmTargetFRValue.setText(str(round(msg.target_rpm, 1)))
-            get_main_window().ui.rpmTargetBRValue.setText(str(round(msg.target_rpm, 1)))
-            get_main_window().ui.rightPidOutValue.setText(str(msg.pid_output))
-            get_main_window().ui.rightPidPValue.setText(str(round(msg.pid_tunings[0], 2)))
-            get_main_window().ui.rightPidIValue.setText(str(round(msg.pid_tunings[1], 2)))
-            get_main_window().ui.rightPidDValue.setText(str(round(msg.pid_tunings[2], 2)))
-            get_main_window().ui.encPulseCtrsFRValue.setText(str(msg.total_enc_counts[0]))
-            get_main_window().ui.encPulseCtrsBRValue.setText(str(msg.total_enc_counts[1]))
+        ros_remote_gui.main.motor_tab_ui_handler.left_ctrl_enabled = msg.controller_enabled
+        ros_remote_gui.main.motor_tab_ui_handler.rpm_measured_left = deepcopy(msg.measured_rpms)
+        ros_remote_gui.main.motor_tab_ui_handler.rpm_target_left = msg.target_rpm
+        ros_remote_gui.main.motor_tab_ui_handler.left_ctrl_pid_out = msg.pid_output
+        ros_remote_gui.main.motor_tab_ui_handler.left_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
+        ros_remote_gui.main.motor_tab_ui_handler.encoder_pulse_ctrs_left = deepcopy(msg.total_enc_counts)
+        ros_remote_gui.main.motor_tab_ui_handler.last_left_data_rcv = datetime.now()
 
     @staticmethod
     def right_mtr_ctrl_callback(msg: MotorCtrlState) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.motorCtrlTab.objectName():
-            get_main_window().ui.mtrCtrlEnableLIndicator.setStyleSheet(generate_indicator_stylesheet(msg.controller_enabled, "green"))
-            get_main_window().ui.rpmMeasuredFLValue.setText(str(round(msg.measured_rpms[0], 1)))
-            get_main_window().ui.rpmMeasuredBLValue.setText(str(round(msg.measured_rpms[1], 1)))
-            get_main_window().ui.rpmTargetFLValue.setText(str(round(msg.target_rpm, 1)))
-            get_main_window().ui.rpmTargetBLValue.setText(str(round(msg.target_rpm, 1)))
-            get_main_window().ui.leftPidOutValue.setText(str(msg.pid_output))
-            get_main_window().ui.leftPidPValue.setText(str(round(msg.pid_tunings[0], 2)))
-            get_main_window().ui.leftPidIValue.setText(str(round(msg.pid_tunings[1], 2)))
-            get_main_window().ui.leftPidDValue.setText(str(round(msg.pid_tunings[2], 2)))
-            get_main_window().ui.encPulseCtrsFLValue.setText(str(msg.total_enc_counts[0]))
-            get_main_window().ui.encPulseCtrsBLValue.setText(str(msg.total_enc_counts[1]))
+        ros_remote_gui.main.motor_tab_ui_handler.right_ctrl_enabled = msg.controller_enabled
+        ros_remote_gui.main.motor_tab_ui_handler.rpm_measured_right = deepcopy(msg.measured_rpms)
+        ros_remote_gui.main.motor_tab_ui_handler.rpm_target_right = msg.target_rpm
+        ros_remote_gui.main.motor_tab_ui_handler.right_ctrl_pid_out = msg.pid_output
+        ros_remote_gui.main.motor_tab_ui_handler.right_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
+        ros_remote_gui.main.motor_tab_ui_handler.encoder_pulse_ctrs_right = deepcopy(msg.total_enc_counts)
+        ros_remote_gui.main.motor_tab_ui_handler.last_right_data_rcv = datetime.now()
 
     @staticmethod
     def micro_switch_callback(msg: Range) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            if msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[0]):
-                get_main_window().ui.microswSensIndicatorFR.setStyleSheet(generate_indicator_stylesheet(msg.range == float("-inf")))
-            elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[1]):
-                get_main_window().ui.microswSensIndicatorFL.setStyleSheet(generate_indicator_stylesheet(msg.range == float("-inf")))
-            elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[2]):
-                get_main_window().ui.microswSensIndicatorBR.setStyleSheet(generate_indicator_stylesheet(msg.range == float("-inf")))
-            elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[3]):
-                get_main_window().ui.microswSensIndicatorBL.setStyleSheet(generate_indicator_stylesheet(msg.range == float("-inf")))
-            else:
-                get_ros_node().get_logger().error("Received micro switch data for unknown sensor.")
+        if msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[0]):
+            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[0] = msg.range
+        elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[1]):
+            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[1] = msg.range
+        elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[2]):
+            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[2] = msg.range
+        elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[3]):
+            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[3] = msg.range
+        else:
+            get_ros_node().get_logger().error("Received micro switch data for unknown sensor.")
 
     @staticmethod
     def ultrasonic_sens_callback(msg: Range) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            if msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[0]):
-                get_main_window().ui.ultrasonicSensValueF.setText(str(round(msg.range, 2)))
-            elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[1]):
-                get_main_window().ui.ultrasonicSensValueB.setText(str(round(msg.range, 2)))
-            elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[2]):
-                get_main_window().ui.ultrasonicSensValueR.setText(str(round(msg.range, 2)))
-            elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[3]):
-                get_main_window().ui.ultrasonicSensValueL.setText(str(round(msg.range, 2)))
-            else:
-                get_ros_node().get_logger().error("Received ultrasonic sensor data for unknown sensor.")
+        if msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[0]):
+            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[0] = msg.range
+        elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[1]):
+            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[1] = msg.range
+        elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[2]):
+            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[2] = msg.range
+        elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[3]):
+            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[3] = msg.range
+        else:
+            get_ros_node().get_logger().error("Received ultrasonic sensor data for unknown sensor.")
 
     @staticmethod
     def cliff_sens_callback(msg: Range) -> None:
-        if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.sensorsTab.objectName():
-            if msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[0]):
-                get_main_window().ui.cliffSensIndicatorF1.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[1]):
-                get_main_window().ui.cliffSensIndicatorF2.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[2]):
-                get_main_window().ui.cliffSensIndicatorF3.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[3]):
-                get_main_window().ui.cliffSensIndicatorF4.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[4]):
-                get_main_window().ui.cliffSensIndicatorB1.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[5]):
-                get_main_window().ui.cliffSensIndicatorB2.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[6]):
-                get_main_window().ui.cliffSensIndicatorB3.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[7]):
-                get_main_window().ui.cliffSensIndicatorB4.setStyleSheet(generate_indicator_stylesheet(msg.range == float("inf")))
-            else:
-                get_ros_node().get_logger().error("Received cliff sensor data for unknown sensor.")
+        if msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[0]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[0] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[1]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[1] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[2]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[2] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[3]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[3] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[4]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[0] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[5]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[1] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[6]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[2] = msg.range
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[7]):
+            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[3] = msg.range
+        else:
+            get_ros_node().get_logger().error("Received cliff sensor data for unknown sensor.")
 
 
 # ---- Node object ----

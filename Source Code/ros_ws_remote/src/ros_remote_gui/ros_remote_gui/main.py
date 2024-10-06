@@ -25,18 +25,31 @@ from ros_remote_gui.ros_main import ros_executor_thread, is_ros_node_initialized
 from ros_remote_gui.config import ProgramConfig, RosConfig
 
 
-
 # ---- Page-specific UI handlers ----
 main_tab_ui_handler = None
-
+sensors_tab_ui_handler = None
+power_tab_ui_handler = None
+motor_tab_ui_handler = None
+diag_tab_ui_handler = None
 
 
 # ---- Run the program ----
 def init_ui_handlers():
     from ros_remote_gui.modules.main_tab import MainTab
-
+    from ros_remote_gui.modules.sensors_tab import SensorTab
+    from ros_remote_gui.modules.power_tab import PowerTab
+    from ros_remote_gui.modules.motor_tab import MotorTab
+    from ros_remote_gui.modules.diag_tab import DiagnosticsTab
     global main_tab_ui_handler
+    global sensors_tab_ui_handler
+    global power_tab_ui_handler
+    global motor_tab_ui_handler
+    global diag_tab_ui_handler
     main_tab_ui_handler = MainTab()
+    sensors_tab_ui_handler = SensorTab()
+    power_tab_ui_handler = PowerTab()
+    motor_tab_ui_handler = MotorTab()
+    diag_tab_ui_handler = DiagnosticsTab()
 
 
 def main():

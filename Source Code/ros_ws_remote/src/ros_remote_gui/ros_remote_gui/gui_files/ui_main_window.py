@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -74,20 +74,21 @@ class Ui_MainWindow(object):
         self.mainTab.setObjectName(u"mainTab")
         self.viewport = QLabel(self.mainTab)
         self.viewport.setObjectName(u"viewport")
-        self.viewport.setGeometry(QRect(20, 20, 980, 430))
+        self.viewport.setGeometry(QRect(20, 18, 980, 440))
         sizePolicy.setHeightForWidth(self.viewport.sizePolicy().hasHeightForWidth())
         self.viewport.setSizePolicy(sizePolicy)
-        self.viewport.setMinimumSize(QSize(980, 430))
-        self.viewport.setMaximumSize(QSize(980, 430))
+        self.viewport.setMinimumSize(QSize(980, 440))
+        self.viewport.setMaximumSize(QSize(980, 440))
         self.viewport.setMouseTracking(False)
         self.viewport.setFrameShape(QFrame.Shape.Box)
         self.viewport.setFrameShadow(QFrame.Shadow.Sunken)
         self.viewport.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.viewportOptsBox = QGroupBox(self.mainTab)
         self.viewportOptsBox.setObjectName(u"viewportOptsBox")
-        self.viewportOptsBox.setGeometry(QRect(20, 460, 360, 70))
+        self.viewportOptsBox.setGeometry(QRect(20, 470, 360, 64))
         self.gridLayout_2 = QGridLayout(self.viewportOptsBox)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.gridLayout_2.setContentsMargins(9, 5, 9, 5)
         self.viewportFpsLabel = QLabel(self.viewportOptsBox)
         self.viewportFpsLabel.setObjectName(u"viewportFpsLabel")
 
@@ -127,12 +128,12 @@ class Ui_MainWindow(object):
 
         self.camLedsBox = QGroupBox(self.mainTab)
         self.camLedsBox.setObjectName(u"camLedsBox")
-        self.camLedsBox.setGeometry(QRect(400, 460, 375, 70))
+        self.camLedsBox.setGeometry(QRect(400, 470, 375, 64))
         sizePolicy.setHeightForWidth(self.camLedsBox.sizePolicy().hasHeightForWidth())
         self.camLedsBox.setSizePolicy(sizePolicy)
         self.horizontalLayout_1 = QHBoxLayout(self.camLedsBox)
         self.horizontalLayout_1.setObjectName(u"horizontalLayout_1")
-        self.horizontalLayout_1.setContentsMargins(12, -1, -1, -1)
+        self.horizontalLayout_1.setContentsMargins(12, 5, 5, 5)
         self.camLedsBrightnessSlider = QSlider(self.camLedsBox)
         self.camLedsBrightnessSlider.setObjectName(u"camLedsBrightnessSlider")
         self.camLedsBrightnessSlider.setMaximum(100)
@@ -173,12 +174,12 @@ class Ui_MainWindow(object):
 
         self.telemetryBox = QGroupBox(self.mainTab)
         self.telemetryBox.setObjectName(u"telemetryBox")
-        self.telemetryBox.setGeometry(QRect(795, 460, 204, 70))
+        self.telemetryBox.setGeometry(QRect(795, 470, 204, 64))
         sizePolicy.setHeightForWidth(self.telemetryBox.sizePolicy().hasHeightForWidth())
         self.telemetryBox.setSizePolicy(sizePolicy)
         self.horizontalLayout_2 = QHBoxLayout(self.telemetryBox)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(12, -1, 12, -1)
+        self.horizontalLayout_2.setContentsMargins(9, 5, 9, 5)
         self.teleBatteryLabel = QLabel(self.telemetryBox)
         self.teleBatteryLabel.setObjectName(u"teleBatteryLabel")
         sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -274,9 +275,6 @@ class Ui_MainWindow(object):
         self.imuSensAccelXBox.setObjectName(u"imuSensAccelXBox")
         self.imuSensAccelXLabel = QLabel(self.imuSensBox)
         self.imuSensAccelXLabel.setObjectName(u"imuSensAccelXLabel")
-        font1 = QFont()
-        font1.setPointSize(11)
-        self.imuSensAccelXLabel.setFont(font1)
         self.imuSensAccelXLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensAccelXBox.addWidget(self.imuSensAccelXLabel)
@@ -309,7 +307,6 @@ class Ui_MainWindow(object):
         self.imuSensAccelYBox.setObjectName(u"imuSensAccelYBox")
         self.imuSensAccelYLabel = QLabel(self.imuSensBox)
         self.imuSensAccelYLabel.setObjectName(u"imuSensAccelYLabel")
-        self.imuSensAccelYLabel.setFont(font1)
         self.imuSensAccelYLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensAccelYBox.addWidget(self.imuSensAccelYLabel)
@@ -342,7 +339,6 @@ class Ui_MainWindow(object):
         self.imuSensAccelZBox.setObjectName(u"imuSensAccelZBox")
         self.imuSensAccelZLabel = QLabel(self.imuSensBox)
         self.imuSensAccelZLabel.setObjectName(u"imuSensAccelZLabel")
-        self.imuSensAccelZLabel.setFont(font1)
         self.imuSensAccelZLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensAccelZBox.addWidget(self.imuSensAccelZLabel)
@@ -379,7 +375,6 @@ class Ui_MainWindow(object):
         self.imuSensGyroXBox.setObjectName(u"imuSensGyroXBox")
         self.imuSensGyroXLabel = QLabel(self.imuSensBox)
         self.imuSensGyroXLabel.setObjectName(u"imuSensGyroXLabel")
-        self.imuSensGyroXLabel.setFont(font1)
         self.imuSensGyroXLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensGyroXBox.addWidget(self.imuSensGyroXLabel)
@@ -412,7 +407,6 @@ class Ui_MainWindow(object):
         self.imuSensGyroYBox.setObjectName(u"imuSensGyroYBox")
         self.imuSensGyroYLabel = QLabel(self.imuSensBox)
         self.imuSensGyroYLabel.setObjectName(u"imuSensGyroYLabel")
-        self.imuSensGyroYLabel.setFont(font1)
         self.imuSensGyroYLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensGyroYBox.addWidget(self.imuSensGyroYLabel)
@@ -445,7 +439,6 @@ class Ui_MainWindow(object):
         self.imuSensGyroZBox.setObjectName(u"imuSensGyroZBox")
         self.imuSensGyroZLabel = QLabel(self.imuSensBox)
         self.imuSensGyroZLabel.setObjectName(u"imuSensGyroZLabel")
-        self.imuSensGyroZLabel.setFont(font1)
         self.imuSensGyroZLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensGyroZBox.addWidget(self.imuSensGyroZLabel)
@@ -482,7 +475,6 @@ class Ui_MainWindow(object):
         self.imuSensCompXBox.setObjectName(u"imuSensCompXBox")
         self.imuSensCompXLabel = QLabel(self.imuSensBox)
         self.imuSensCompXLabel.setObjectName(u"imuSensCompXLabel")
-        self.imuSensCompXLabel.setFont(font1)
         self.imuSensCompXLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensCompXBox.addWidget(self.imuSensCompXLabel)
@@ -515,7 +507,6 @@ class Ui_MainWindow(object):
         self.imuSensCompYBox.setObjectName(u"imuSensCompYBox")
         self.imuSensCompYLabel = QLabel(self.imuSensBox)
         self.imuSensCompYLabel.setObjectName(u"imuSensCompYLabel")
-        self.imuSensCompYLabel.setFont(font1)
         self.imuSensCompYLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensCompYBox.addWidget(self.imuSensCompYLabel)
@@ -548,7 +539,6 @@ class Ui_MainWindow(object):
         self.imuSensCompZBox.setObjectName(u"imuSensCompZBox")
         self.imuSensCompZLabel = QLabel(self.imuSensBox)
         self.imuSensCompZLabel.setObjectName(u"imuSensCompZLabel")
-        self.imuSensCompZLabel.setFont(font1)
         self.imuSensCompZLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.imuSensCompZBox.addWidget(self.imuSensCompZLabel)
@@ -995,10 +985,12 @@ class Ui_MainWindow(object):
         self.batterySensVoltageValue.setObjectName(u"batterySensVoltageValue")
         sizePolicy1.setHeightForWidth(self.batterySensVoltageValue.sizePolicy().hasHeightForWidth())
         self.batterySensVoltageValue.setSizePolicy(sizePolicy1)
+        font1 = QFont()
+        font1.setPointSize(11)
         self.batterySensVoltageValue.setFont(font1)
         self.batterySensVoltageValue.setDigitCount(6)
         self.batterySensVoltageValue.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
-        self.batterySensVoltageValue.setProperty("value", 12.458000000000000)
+        self.batterySensVoltageValue.setProperty(u"value", 12.458000000000000)
 
         self.batterySensValuesBox.addWidget(self.batterySensVoltageValue)
 
@@ -1009,7 +1001,7 @@ class Ui_MainWindow(object):
         self.batterySensCurrentValue.setFont(font1)
         self.batterySensCurrentValue.setDigitCount(6)
         self.batterySensCurrentValue.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
-        self.batterySensCurrentValue.setProperty("value", 3.284000000000000)
+        self.batterySensCurrentValue.setProperty(u"value", 3.284000000000000)
 
         self.batterySensValuesBox.addWidget(self.batterySensCurrentValue)
 
@@ -1033,14 +1025,14 @@ class Ui_MainWindow(object):
 
         self.gridLayout_5.addWidget(self.toggleEmittersEnabled, 0, 1, 1, 1)
 
-        self.togglePicoARelaEnable = QPushButton(self.enableDisableBox)
-        self.togglePicoARelaEnable.setObjectName(u"togglePicoARelaEnable")
-        sizePolicy7.setHeightForWidth(self.togglePicoARelaEnable.sizePolicy().hasHeightForWidth())
-        self.togglePicoARelaEnable.setSizePolicy(sizePolicy7)
-        self.togglePicoARelaEnable.setCheckable(True)
-        self.togglePicoARelaEnable.setChecked(False)
+        self.togglePicoARelayEnable = QPushButton(self.enableDisableBox)
+        self.togglePicoARelayEnable.setObjectName(u"togglePicoARelayEnable")
+        sizePolicy7.setHeightForWidth(self.togglePicoARelayEnable.sizePolicy().hasHeightForWidth())
+        self.togglePicoARelayEnable.setSizePolicy(sizePolicy7)
+        self.togglePicoARelayEnable.setCheckable(True)
+        self.togglePicoARelayEnable.setChecked(False)
 
-        self.gridLayout_5.addWidget(self.togglePicoARelaEnable, 1, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.togglePicoARelayEnable, 1, 1, 1, 1)
 
         self.pages.addTab(self.sensorsTab, "")
         self.motorCtrlTab = QWidget()
@@ -1851,7 +1843,7 @@ class Ui_MainWindow(object):
         self.batteryVoltageValue.setFont(font1)
         self.batteryVoltageValue.setDigitCount(6)
         self.batteryVoltageValue.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
-        self.batteryVoltageValue.setProperty("value", 12.458000000000000)
+        self.batteryVoltageValue.setProperty(u"value", 12.458000000000000)
 
         self.batteryInfoValues.addWidget(self.batteryVoltageValue)
 
@@ -1862,7 +1854,7 @@ class Ui_MainWindow(object):
         self.batteryCurrentValue.setFont(font1)
         self.batteryCurrentValue.setDigitCount(6)
         self.batteryCurrentValue.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
-        self.batteryCurrentValue.setProperty("value", 3.284000000000000)
+        self.batteryCurrentValue.setProperty(u"value", 3.284000000000000)
 
         self.batteryInfoValues.addWidget(self.batteryCurrentValue)
 
@@ -1877,7 +1869,7 @@ class Ui_MainWindow(object):
         self.diagTab.setObjectName(u"diagTab")
         self.diagMsgsBox = QGroupBox(self.diagTab)
         self.diagMsgsBox.setObjectName(u"diagMsgsBox")
-        self.diagMsgsBox.setGeometry(QRect(305, 20, 695, 505))
+        self.diagMsgsBox.setGeometry(QRect(280, 20, 720, 505))
         sizePolicy1.setHeightForWidth(self.diagMsgsBox.sizePolicy().hasHeightForWidth())
         self.diagMsgsBox.setSizePolicy(sizePolicy1)
         self.verticalLayout_2 = QVBoxLayout(self.diagMsgsBox)
@@ -1889,6 +1881,12 @@ class Ui_MainWindow(object):
         sizePolicy8.setVerticalStretch(0)
         sizePolicy8.setHeightForWidth(self.diagMsgsText.sizePolicy().hasHeightForWidth())
         self.diagMsgsText.setSizePolicy(sizePolicy8)
+        font2 = QFont()
+        font2.setFamilies([u"Liberation Mono"])
+        font2.setPointSize(11)
+        font2.setBold(False)
+        font2.setItalic(False)
+        self.diagMsgsText.setFont(font2)
 
         self.verticalLayout_2.addWidget(self.diagMsgsText)
 
@@ -1911,6 +1909,7 @@ class Ui_MainWindow(object):
         self.diagMsgOptsShowTimeCheck.setObjectName(u"diagMsgOptsShowTimeCheck")
         sizePolicy2.setHeightForWidth(self.diagMsgOptsShowTimeCheck.sizePolicy().hasHeightForWidth())
         self.diagMsgOptsShowTimeCheck.setSizePolicy(sizePolicy2)
+        self.diagMsgOptsShowTimeCheck.setChecked(True)
 
         self.diagMsgsOptionsBox.addWidget(self.diagMsgOptsShowTimeCheck)
 
@@ -1922,6 +1921,7 @@ class Ui_MainWindow(object):
         self.diagMsgOptsShowKeyValCheck.setObjectName(u"diagMsgOptsShowKeyValCheck")
         sizePolicy2.setHeightForWidth(self.diagMsgOptsShowKeyValCheck.sizePolicy().hasHeightForWidth())
         self.diagMsgOptsShowKeyValCheck.setSizePolicy(sizePolicy2)
+        self.diagMsgOptsShowKeyValCheck.setChecked(True)
 
         self.diagMsgsOptionsBox.addWidget(self.diagMsgOptsShowKeyValCheck)
 
@@ -1929,12 +1929,17 @@ class Ui_MainWindow(object):
 
         self.diagMsgsOptionsBox.addItem(self.horizontalSpacer_24)
 
+        self.diagMsgOptsClearBtn = QPushButton(self.diagMsgsBox)
+        self.diagMsgOptsClearBtn.setObjectName(u"diagMsgOptsClearBtn")
+
+        self.diagMsgsOptionsBox.addWidget(self.diagMsgOptsClearBtn)
+
 
         self.verticalLayout_2.addLayout(self.diagMsgsOptionsBox)
 
         self.calibBox = QGroupBox(self.diagTab)
         self.calibBox.setObjectName(u"calibBox")
-        self.calibBox.setGeometry(QRect(28, 20, 255, 170))
+        self.calibBox.setGeometry(QRect(28, 20, 230, 170))
         self.verticalLayout_3 = QVBoxLayout(self.calibBox)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(-1, -1, -1, 7)
@@ -1960,7 +1965,7 @@ class Ui_MainWindow(object):
 
         self.selftestBox = QGroupBox(self.diagTab)
         self.selftestBox.setObjectName(u"selftestBox")
-        self.selftestBox.setGeometry(QRect(28, 210, 255, 110))
+        self.selftestBox.setGeometry(QRect(28, 210, 230, 110))
         self.verticalLayout_4 = QVBoxLayout(self.selftestBox)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(-1, -1, -1, 7)
@@ -2003,8 +2008,6 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionRestart_RPi)
         self.menuFile.addAction(self.actionShutdown_System)
         self.menuConnection.addAction(self.actionCheck_Robot_Connection)
-        self.menuConnection.addSeparator()
-        self.menuConnection.addAction(self.actionCheck_Wi_Fi_Connection)
         self.menuConnection.addAction(self.actionCheck_WAN_Connection)
         self.menuConfiguration.addAction(self.actionJoystick)
         self.menuConfiguration.addAction(self.actionTest_Buttons_Switches)
@@ -2120,16 +2123,16 @@ class Ui_MainWindow(object):
         self.ultrasonicSensValueB.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.ultrasonicSensValueR.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.ultrasonicSensValueL.setText(QCoreApplication.translate("MainWindow", u"0", None))
-        self.ultrasonicSensUnitF.setText(QCoreApplication.translate("MainWindow", u"m", None))
-        self.ultrasonicSensUnitB.setText(QCoreApplication.translate("MainWindow", u"m", None))
-        self.ultrasonicSensUnitR.setText(QCoreApplication.translate("MainWindow", u"m", None))
-        self.ultrasonicSensUnitL.setText(QCoreApplication.translate("MainWindow", u"m", None))
+        self.ultrasonicSensUnitF.setText(QCoreApplication.translate("MainWindow", u"cm", None))
+        self.ultrasonicSensUnitB.setText(QCoreApplication.translate("MainWindow", u"cm", None))
+        self.ultrasonicSensUnitR.setText(QCoreApplication.translate("MainWindow", u"cm", None))
+        self.ultrasonicSensUnitL.setText(QCoreApplication.translate("MainWindow", u"cm", None))
         self.batterySensBox.setTitle(QCoreApplication.translate("MainWindow", u"Battery", None))
         self.batterySensVoltageLabel.setText(QCoreApplication.translate("MainWindow", u"Voltage", None))
         self.batterySensCurrentLabel.setText(QCoreApplication.translate("MainWindow", u"Current", None))
         self.enableDisableBox.setTitle(QCoreApplication.translate("MainWindow", u"Enable/Disable", None))
         self.toggleEmittersEnabled.setText(QCoreApplication.translate("MainWindow", u"Emitters", None))
-        self.togglePicoARelaEnable.setText(QCoreApplication.translate("MainWindow", u"Pico A Relay", None))
+        self.togglePicoARelayEnable.setText(QCoreApplication.translate("MainWindow", u"Pico A Relay", None))
         self.pages.setTabText(self.pages.indexOf(self.sensorsTab), QCoreApplication.translate("MainWindow", u"Sensors", None))
         self.encOdomBox.setTitle(QCoreApplication.translate("MainWindow", u"Encoder Odometry", None))
         self.encOdomPosXLabel.setText(QCoreApplication.translate("MainWindow", u"Pos. X", None))
@@ -2218,11 +2221,12 @@ class Ui_MainWindow(object):
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Ubuntu Sans'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
+"</style></head><body style=\" font-family:'Liberation Mono'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu Sans';\"><br /></p></body></html>", None))
         self.diagMsgOptsAutoScrollCheck.setText(QCoreApplication.translate("MainWindow", u"Auto-scroll", None))
         self.diagMsgOptsShowTimeCheck.setText(QCoreApplication.translate("MainWindow", u"Show timestamps", None))
         self.diagMsgOptsShowKeyValCheck.setText(QCoreApplication.translate("MainWindow", u"Show key-values", None))
+        self.diagMsgOptsClearBtn.setText(QCoreApplication.translate("MainWindow", u"Clear", None))
         self.calibBox.setTitle(QCoreApplication.translate("MainWindow", u"Calibration", None))
         self.calibPidTuneButtonL.setText(QCoreApplication.translate("MainWindow", u"PID Auto-tune (Left)", None))
         self.calibPidTuneButtonR.setText(QCoreApplication.translate("MainWindow", u"PID Auto-tune (Right)", None))

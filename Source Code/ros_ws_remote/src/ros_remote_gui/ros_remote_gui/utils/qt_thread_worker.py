@@ -45,7 +45,6 @@ class Worker(QtCore.QRunnable):
             result = self.func(*self.args, **self.kwargs)
             self.signals.result.emit(result)
             self.signals.finished.emit()
-
         except Exception:
             traceback.print_exc()
             exception_type, exception_value = sys.exc_info()[:2]

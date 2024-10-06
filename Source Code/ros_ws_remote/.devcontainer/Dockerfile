@@ -25,18 +25,17 @@ FROM samyarsadat/custom_base_images:desktop-full-ros-humble
 ENV USERNAME=nonroot
 
 
-# Install pip
+# Install pip & libxcb-cursor0
 RUN apt-get update \
-    && apt-get install -y python3-pip \
+    && apt-get install -y python3-pip libxcb-cursor0 \
     && rm -rf /var/lib/apt/lists/* && apt-get autoremove && apt-get autoclean
+
+# Install PySide6
+RUN pip install --no-cache-dir PySide6
 
 # Copy configuration files
 USER ${USERNAME}
 COPY vscode_config/* /home/$USERNAME/ros_ws/.vscode/
-
-# OpenOCD Debug Probe permission fix
-USER root
-RUN usermod -aG plugdev ${USERNAME}
 
 # Raspberry Pi Pico TTY permission fix
 USER root
