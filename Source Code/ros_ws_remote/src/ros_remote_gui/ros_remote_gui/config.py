@@ -1,5 +1,5 @@
 #  The ROS remote project (GUI package)
-#  Empty package init file
+#  Program configuration
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -16,14 +16,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.10.6"
+PROGRAM_VERSION = "2024.10.8"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/10/06 @ 2:12 UTC"
+    VERSION_DATE = "2024/10/08 @ 2:26 UTC"
 
 
 class ProgramConfig:
