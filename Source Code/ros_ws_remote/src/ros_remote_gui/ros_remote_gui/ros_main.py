@@ -40,7 +40,7 @@ from ros_robot_msgs.msg import MotorCtrlState
 class RosNode(Node):
     def __init__(self, context: Context):
         super().__init__(node_name=RosConfig.NODE_NAME, namespace=RosConfig.NODE_NAMESPACE, context=context)
-        self.get_logger().info("Creating publishers, subscribers, and services servers...")
+        self.get_logger().info("Creating publishers, subscribers, and services clients...")
 
         self._reentrant_cb_group = ReentrantCallbackGroup()
         self._selftest_calib_cb_group = MutuallyExclusiveCallbackGroup()
@@ -210,38 +210,38 @@ class RosNode(Node):
 
 
 # ---- Node object ----
-gui_ros_node = RosNode
+_gui_ros_node = RosNode
 
 
 # ---- Executor ----
 def is_ros_node_initialized() -> bool:
-    global gui_ros_node
-    return isinstance(gui_ros_node, RosNode)
+    global _gui_ros_node
+    return isinstance(_gui_ros_node, RosNode)
 
 def get_ros_node() -> RosNode:
-    global gui_ros_node
-    return gui_ros_node
+    global _gui_ros_node
+    return _gui_ros_node
 
 def ros_executor_thread(stop_thread):
     try:
         internal_context = rclpy.Context()
         rclpy.init(context=internal_context, domain_id=RosConfig.EXECUTOR_DOMAIN_ID)
 
-        global gui_ros_node
-        gui_ros_node = RosNode(context=internal_context)
-        gui_ros_node.get_logger().info("Node initialized!")
+        global _gui_ros_node
+        _gui_ros_node = RosNode(context=internal_context)
+        _gui_ros_node.get_logger().info("Node initialized!")
 
         executor = MultiThreadedExecutor(context=internal_context)
-        executor.add_node(gui_ros_node)
-        gui_ros_node.get_logger().info("Executor initialized!")
+        executor.add_node(_gui_ros_node)
+        _gui_ros_node.get_logger().info("Executor initialized!")
 
-        gui_ros_node.get_logger().info("Starting the executor...")
+        _gui_ros_node.get_logger().info("Starting the executor...")
 
         while not stop_thread():
             executor.spin_once(timeout_sec=RosConfig.EXECUTOR_TIMEOUT)
 
         # Cleanup
-        gui_ros_node.get_logger().warn("ROS thread stopping. Shutting the executor down.")
+        _gui_ros_node.get_logger().warn("ROS thread stopping. Shutting the executor down.")
         executor.shutdown(timeout_sec=RosConfig.EXECUTOR_SHUTDOWN_TIMEOUT)
         rclpy.shutdown(context=internal_context)
 

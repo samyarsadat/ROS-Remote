@@ -18,11 +18,17 @@
 
 import sys
 import threading
+from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QProcess, QTimer
-from ros_remote_gui.init import qt_app
-from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.ros_main import ros_executor_thread, is_ros_node_initialized, get_ros_node
 from ros_remote_gui.config import ProgramConfig, RosConfig
+from ros_remote_pui.ros_main import RemotePuiThread
+
+# ---- QT application ----
+qt_app = QApplication(sys.argv)
+
+# Must import main_window after qt_app init!
+from ros_remote_gui.main_window import get_main_window
 
 
 # ---- Page-specific UI handlers ----
@@ -57,6 +63,7 @@ def main():
     stop_ros_thread = False
     ros_thread = threading.Thread(target=ros_executor_thread, args=(lambda: stop_ros_thread, ), name=RosConfig.THREAD_NAME)
     ros_thread.start()
+    RemotePuiThread.start_thread()
 
     # Create a timer for checking ROS thread liveliness
     def ros_liveliness_check() -> None:
@@ -65,6 +72,13 @@ def main():
                 get_ros_node().get_logger().fatal("The ROS thread has died! Terminating program.")
             else:
                 print("The ROS thread has died! Terminating program.")
+            qt_app.exit(1)
+
+        if not RemotePuiThread.is_alive():
+            if is_ros_node_initialized():
+                get_ros_node().get_logger().fatal("The remote PUI ROS thread has died! Terminating program.")
+            else:
+                print("The remote PUI ROS thread has died! Terminating program.")
             qt_app.exit(1)
 
     ros_liveliness_timer = QTimer()
@@ -78,6 +92,7 @@ def main():
 
     # Shutdown
     stop_ros_thread = True
+    RemotePuiThread.stop_thread(True)
     ros_thread.join()
 
     if is_ros_node_initialized():

@@ -3,7 +3,7 @@
 
 <package format="3">
     <name>ros_remote_gui</name>
-    <version>2024.10.8</version>
+    <version>2024.10.16</version>
     <description>The GUI package of the ROS Remote Project.</description>
     <maintainer email="samyarsadat@gigawhat.net">Samyar Sadat Akhavi</maintainer>
     <license>GPL-3.0-only</license>

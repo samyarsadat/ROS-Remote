@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-from PySide6.QtCore import QTimer, Slot
+from PySide6.QtCore import QTimer
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.config import ProgramConfig
 

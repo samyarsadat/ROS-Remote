@@ -18,7 +18,6 @@
 import socket
 import subprocess
 from asyncio import Future
-from ros_remote_gui.init import qt_app
 from ros_remote_gui.ros_main import get_ros_node
 from ros_remote_gui.utils.ui_classes_init import AboutDialog
 from ros_remote_gui.gui_files.ui_main_window import Ui_MainWindow
@@ -67,6 +66,7 @@ class MainWindow(QMainWindow):
     @QtCore.Slot()
     def _restart_qt_app(self) -> None:
         from ros_remote_gui.ros_main import get_ros_node
+        from ros_remote_gui.main import qt_app
         get_ros_node().get_logger().warn("Application restart requested!")
         self.restart_on_quit = True
         qt_app.quit()
@@ -101,8 +101,8 @@ class MainWindow(QMainWindow):
 
 
 # ---- Main window instance ----
-qt_main_window = MainWindow()
+_qt_main_window = MainWindow()
 
 def get_main_window() -> MainWindow:
-    global qt_main_window
-    return qt_main_window
+    global _qt_main_window
+    return _qt_main_window

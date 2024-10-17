@@ -75,10 +75,19 @@ void run_self_test_callback(const void *req, void *res)
     }
 
     set_in_self_test(false);
-            
     diag_publish_item_t pub_item = prepare_diag_publish_item(DIAG_LVL_OK, DIAG_NAME_SYSTEM, DIAG_ID_SYS_GENERAL, DIAG_OK_MSG_LED_TEST_PASS, NULL);
-    self_test_diag_status_reports.push_back(*pub_item.diag_msg);
-    self_test_diag_data_slot_nums.push_back(pub_item.allocated_slot);
+    
+    if (pub_item.allocated_slot >= 0)
+    {
+        self_test_diag_status_reports.push_back(*pub_item.diag_msg);
+        self_test_diag_data_slot_nums.push_back(pub_item.allocated_slot);
+        res_in->passed = true;
+    }
+
+    else
+    {
+        write_log("Failed to allocate diagnostic slot!", LOG_LVL_ERROR, FUNCNAME_ONLY);
+    }
 
     res_in->status.data = self_test_diag_status_reports.data();
     res_in->status.size = self_test_diag_status_reports.size();

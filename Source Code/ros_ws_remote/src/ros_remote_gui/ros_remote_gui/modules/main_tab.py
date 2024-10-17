@@ -22,7 +22,7 @@ import numpy as np
 from asyncio import Future
 from PySide6.QtCore import QTimer, Slot, Qt, QThread, Signal
 from PySide6.QtGui import QImage, QPixmap
-from ros_remote_gui.init import qt_app
+from ros_remote_gui.main import qt_app
 from ros_remote_gui.ros_main import get_ros_node, is_ros_node_initialized
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.config import ProgramConfig

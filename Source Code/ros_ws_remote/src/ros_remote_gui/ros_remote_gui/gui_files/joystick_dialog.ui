@@ -358,7 +358,10 @@
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::StandardButton::Ok</set>
+        <set>QDialogButtonBox::StandardButton::Apply|QDialogButtonBox::StandardButton::Ok</set>
+       </property>
+       <property name="centerButtons">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

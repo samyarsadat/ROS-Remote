@@ -1,4 +1,5 @@
-#  The ROS remote project - Init file (GUI package)
+#  The ROS remote project (PUI package)
+#  Raspberry Pi IO handler for the rotary encoder and 3 toggle switches.
 #  Copyright 2024 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2024.
 #
@@ -14,10 +15,3 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
-
-import sys
-from PySide6.QtWidgets import QApplication
-
-
-# ---- QT ----
-qt_app = QApplication(sys.argv)

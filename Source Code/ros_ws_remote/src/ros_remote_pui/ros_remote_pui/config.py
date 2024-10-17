@@ -16,18 +16,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.10.8"
+PROGRAM_VERSION = "2024.10.16"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/10/08 @ 3:09 UTC"
+    VERSION_DATE = "2024/10/16 @ 15:19 UTC"
 
 
-"""class ProgramConfig:
-    THREADS_LIVELINESS_CHECK_INTERVAL_S = 2"""
+class ProgramConfig:
+    THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
+    BUTTON_DEBOUNCE_TIME_MS = 350
 
 
 # ---- ROS Config ----
