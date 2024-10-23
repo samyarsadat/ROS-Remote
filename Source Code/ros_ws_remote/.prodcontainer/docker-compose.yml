@@ -27,13 +27,13 @@ services:
           - SYS_PTRACE
         security_opt:
           - "seccomp=unconfined"
-        deploy:
-            resources:
-                reservations:
-                    devices:
-                      - driver: nvidia
-                        count: 1
-                        capabilities: [gpu]
+        #deploy:
+        #    resources:
+        #        reservations:
+        #            devices:
+        #              - driver: nvidia
+        #                count: 1
+        #                capabilities: [gpu]
         environment:
           - DISPLAY
         device_cgroup_rules:
