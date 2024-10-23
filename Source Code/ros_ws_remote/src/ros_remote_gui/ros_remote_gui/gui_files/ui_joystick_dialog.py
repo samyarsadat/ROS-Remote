@@ -183,7 +183,8 @@ class Ui_Dialog(object):
         self.buttonBox = QDialogButtonBox(Dialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Apply|QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setCenterButtons(False)
 
         self.mainBox.addWidget(self.buttonBox)
 

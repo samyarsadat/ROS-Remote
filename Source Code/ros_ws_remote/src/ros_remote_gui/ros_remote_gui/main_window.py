@@ -18,6 +18,7 @@
 import socket
 import subprocess
 from asyncio import Future
+from PySide6.QtGui import Qt
 from ros_remote_gui.ros_main import get_ros_node
 from ros_remote_gui.utils.ui_classes_init import AboutDialog
 from ros_remote_gui.gui_files.ui_main_window import Ui_MainWindow
@@ -32,6 +33,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowState(Qt.WindowFullScreen)
         self.restart_on_quit = False
 
         self.default_thread_pool = QtCore.QThreadPool()
