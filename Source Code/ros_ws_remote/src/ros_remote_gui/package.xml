@@ -8,8 +8,16 @@
     <maintainer email="samyarsadat@gigawhat.net">Samyar Sadat Akhavi</maintainer>
     <license>GPL-3.0-only</license>
 
-    <exec_depend>rclpy</exec_depend>
+    <depend>rclpy</depend>
+    <depend>std_msgs</depend>
+    <depend>sensor_msgs</depend>
+    <depend>diagnostic_msgs</depend>
+    <depend>nav_msgs</depend>
+    <depend>cv_bridge</depend>
+    <depend>python3-opencv</depend>
     <depend>python3-pyside6</depend>
+    <depend>ros_robot_msgs</depend>
+    <depend>ros_remote_pui</depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

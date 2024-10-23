@@ -8,8 +8,10 @@
     <maintainer email="samyarsadat@gigawhat.net">Samyar Sadat Akhavi</maintainer>
     <license>GPL-3.0-only</license>
 
-    <exec_depend>rclpy</exec_depend>
-    <depend>python3-pyside6</depend>
+    <depend>rclpy</depend>
+    <depend>std_msgs</depend>
+    <depend>sensor_msgs</depend>
+    <depend>remote_pico_coms</depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

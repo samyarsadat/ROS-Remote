@@ -10,7 +10,6 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
     ],
-    requires=["PySide6"],
     install_requires=["setuptools"],
     zip_safe=True,
     maintainer="Samyar Sadat Akhavi",
