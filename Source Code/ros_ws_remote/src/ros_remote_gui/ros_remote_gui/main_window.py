@@ -18,8 +18,9 @@
 import socket
 import subprocess
 from asyncio import Future
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import Qt
-from ros_remote_gui.ros_main import get_ros_node
+from ros_remote_gui.config import ProgramConfig
 from ros_remote_gui.utils.ui_classes_init import AboutDialog
 from ros_remote_gui.gui_files.ui_main_window import Ui_MainWindow
 from PySide6.QtWidgets import QMainWindow, QMessageBox
@@ -33,10 +34,21 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowState(Qt.WindowFullScreen)
+        #self.setWindowState(Qt.WindowFullScreen)
         self.restart_on_quit = False
 
         self.default_thread_pool = QtCore.QThreadPool()
+
+        self.main_tab_ui_handler = None
+        self.sensors_tab_ui_handler = None
+        self.power_tab_ui_handler = None
+        self.motor_tab_ui_handler = None
+        self.diag_tab_ui_handler = None
+        self._previous_tab_sel = None
+
+        self._update_ui_tmr_states = QTimer()
+        self._update_ui_tmr_states.timeout.connect(self._update_ui_update_timer_states)
+        self._update_ui_tmr_states.start(ProgramConfig.UI_TIMER_STATE_UPDATE_INTERVAL_MS)
 
         self.ui.actionAbout.triggered.connect(self._show_about_dialog)
         self.ui.actionRestart_RPi.triggered.connect(self._reboot_host_rpi)
@@ -48,6 +60,50 @@ class MainWindow(QMainWindow):
 
         self.ui.camLedsBrightnessSlider.valueChanged.connect(self._slider_changed)
         self._about_dialog = AboutDialog(self)
+
+    def init_ui_handlers(self) -> None:
+        from ros_remote_gui.modules.main_tab import MainTab
+        from ros_remote_gui.modules.sensors_tab import SensorTab
+        from ros_remote_gui.modules.power_tab import PowerTab
+        from ros_remote_gui.modules.motor_tab import MotorTab
+        from ros_remote_gui.modules.diag_tab import DiagnosticsTab
+        self.main_tab_ui_handler = MainTab()
+        self.sensors_tab_ui_handler = SensorTab()
+        self.power_tab_ui_handler = PowerTab()
+        self.motor_tab_ui_handler = MotorTab()
+        self.diag_tab_ui_handler = DiagnosticsTab()
+
+    def _update_ui_update_timer_states(self) -> None:
+        if not self._previous_tab_sel:
+            self._previous_tab_sel = self.ui.pages.currentWidget().objectName()
+
+        if self.ui.pages.currentWidget().objectName() == self.ui.mainTab.objectName():
+            if self._previous_tab_sel != self.ui.mainTab.objectName() or not self.main_tab_ui_handler._update_ui_tmr.isActive():
+                self.main_tab_ui_handler._update_ui_tmr.start()
+                self.main_tab_ui_handler.viewport_thread.start()
+        else:
+            self.main_tab_ui_handler._update_ui_tmr.stop()
+            self.main_tab_ui_handler.viewport_thread.stop()
+
+        if self.ui.pages.currentWidget().objectName() == self.ui.sensorsTab.objectName():
+            if self._previous_tab_sel != self.ui.sensorsTab.objectName() or not self.sensors_tab_ui_handler._update_ui_tmr.isActive():
+                self.sensors_tab_ui_handler._update_ui_tmr.start()
+        else:
+            self.sensors_tab_ui_handler._update_ui_tmr.stop()
+
+        if self.ui.pages.currentWidget().objectName() == self.ui.powerTab.objectName():
+            if self._previous_tab_sel != self.ui.powerTab.objectName() or not self.power_tab_ui_handler._update_ui_tmr.isActive():
+                self.power_tab_ui_handler._update_ui_tmr.start()
+        else:
+            self.power_tab_ui_handler._update_ui_tmr.stop()
+
+        if self.ui.pages.currentWidget().objectName() == self.ui.motorCtrlTab.objectName():
+            if self._previous_tab_sel != self.ui.motorCtrlTab.objectName() or not self.motor_tab_ui_handler._update_ui_tmr.isActive():
+                self.motor_tab_ui_handler._update_ui_tmr.start()
+        else:
+            self.motor_tab_ui_handler._update_ui_tmr.stop()
+
+        self._previous_tab_sel = self.ui.pages.currentWidget().objectName()
 
     @QtCore.Slot()
     def _show_about_dialog(self) -> None:
@@ -95,6 +151,8 @@ class MainWindow(QMainWindow):
 
     @QtCore.Slot()
     def _ping_robot_driver_node(self) -> None:
+        from ros_remote_gui.ros_main import get_ros_node
+
         if get_ros_node().ping_driver_srvcl.service_is_ready():
             future = get_ros_node().ping_driver_srvcl.call_async(GetBool.Request())
             future.add_done_callback(self._ping_robot_driver_srv_call)

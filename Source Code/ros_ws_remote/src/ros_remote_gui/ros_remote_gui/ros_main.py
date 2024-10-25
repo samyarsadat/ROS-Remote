@@ -17,7 +17,6 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 import rclpy
-import ros_remote_gui.main
 from datetime import datetime
 from copy import deepcopy
 from rclpy import Context
@@ -29,6 +28,7 @@ from diagnostic_msgs.msg import DiagnosticStatus
 from diagnostic_msgs.srv import SelfTest
 from nav_msgs.msg import Odometry
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
+from ros_remote_gui.main_window import get_main_window
 from sensor_msgs.msg import BatteryState, Imu, Temperature, RelativeHumidity, Range, CompressedImage, Image
 from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
@@ -91,120 +91,120 @@ class RosNode(Node):
 
     @staticmethod
     def diagnostics_callback(msg: DiagnosticStatus) -> None:
-        ros_remote_gui.main.diag_tab_ui_handler.rcv_diag_msg_sig.emit(msg)
+        get_main_window().diag_tab_ui_handler.rcv_diag_msg_sig.emit(msg)
 
     @staticmethod
     def front_camera_comp_callback(msg: CompressedImage):
-        ros_remote_gui.main.main_tab_ui_handler.viewport_thread.ros_image_cam = msg
+        get_main_window().main_tab_ui_handler.viewport_thread.ros_image_cam = msg
 
     @staticmethod
     def front_overlay_callback(msg: Image):
-        ros_remote_gui.main.main_tab_ui_handler.viewport_thread.ros_image_overlay = msg
+        get_main_window().main_tab_ui_handler.viewport_thread.ros_image_overlay = msg
 
     @staticmethod
     def battery_info_callback(msg: BatteryState) -> None:
         rounded_voltage = round(msg.voltage, 2)
         rounded_current = round(msg.current, 3)
-        ros_remote_gui.main.sensors_tab_ui_handler.batt_voltage = rounded_voltage
-        ros_remote_gui.main.sensors_tab_ui_handler.batt_current = rounded_current
-        ros_remote_gui.main.power_tab_ui_handler.batt_voltage = rounded_voltage
-        ros_remote_gui.main.power_tab_ui_handler.batt_current = rounded_current
-        ros_remote_gui.main.main_tab_ui_handler.batt_voltage = rounded_voltage
+        get_main_window().sensors_tab_ui_handler.batt_voltage = rounded_voltage
+        get_main_window().sensors_tab_ui_handler.batt_current = rounded_current
+        get_main_window().power_tab_ui_handler.batt_voltage = rounded_voltage
+        get_main_window().power_tab_ui_handler.batt_current = rounded_current
+        get_main_window().main_tab_ui_handler.batt_voltage = rounded_voltage
 
     @staticmethod
     def encoder_odom_callback(msg: Odometry) -> None:
-        ros_remote_gui.main.motor_tab_ui_handler.position_x = msg.pose.pose.position.x
-        ros_remote_gui.main.motor_tab_ui_handler.position_y = msg.pose.pose.position.y
-        ros_remote_gui.main.motor_tab_ui_handler.orientation_yaw = msg.pose.pose.orientation.z
-        ros_remote_gui.main.motor_tab_ui_handler.linear_velocity = msg.twist.twist.linear.x
-        ros_remote_gui.main.motor_tab_ui_handler.angular_velocity = msg.twist.twist.angular.z
+        get_main_window().motor_tab_ui_handler.position_x = msg.pose.pose.position.x
+        get_main_window().motor_tab_ui_handler.position_y = msg.pose.pose.position.y
+        get_main_window().motor_tab_ui_handler.orientation_yaw = msg.pose.pose.orientation.z
+        get_main_window().motor_tab_ui_handler.linear_velocity = msg.twist.twist.linear.x
+        get_main_window().motor_tab_ui_handler.angular_velocity = msg.twist.twist.angular.z
 
     @staticmethod
     def imu_sens_callback(msg: Imu) -> None:
-        ros_remote_gui.main.sensors_tab_ui_handler.imu_accels = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
-        ros_remote_gui.main.sensors_tab_ui_handler.imu_gyros = [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
-        ros_remote_gui.main.sensors_tab_ui_handler.imu_comps = [msg.orientation.x, msg.orientation.y, msg.orientation.z]
+        get_main_window().sensors_tab_ui_handler.imu_accels = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
+        get_main_window().sensors_tab_ui_handler.imu_gyros = [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
+        get_main_window().sensors_tab_ui_handler.imu_comps = [msg.orientation.x, msg.orientation.y, msg.orientation.z]
 
     @staticmethod
     def env_temp_sens_callback(msg: Temperature) -> None:
-        ros_remote_gui.main.sensors_tab_ui_handler.env_dht_temp = msg.temperature
+        get_main_window().sensors_tab_ui_handler.env_dht_temp = msg.temperature
 
     @staticmethod
     def env_humidity_sens_callback(msg: RelativeHumidity) -> None:
-        ros_remote_gui.main.sensors_tab_ui_handler.env_dht_humidity = msg.relative_humidity
+        get_main_window().sensors_tab_ui_handler.env_dht_humidity = msg.relative_humidity
 
     @staticmethod
     def pico_a_cpu_temp_callback(msg: Temperature) -> None:
-        ros_remote_gui.main.sensors_tab_ui_handler.env_pico_a_temp = msg.temperature
+        get_main_window().sensors_tab_ui_handler.env_pico_a_temp = msg.temperature
 
     @staticmethod
     def pico_b_cpu_temp_callback(msg: Temperature) -> None:
-        ros_remote_gui.main.sensors_tab_ui_handler.env_pico_b_temp = msg.temperature
+        get_main_window().sensors_tab_ui_handler.env_pico_b_temp = msg.temperature
 
     @staticmethod
     def left_mtr_ctrl_callback(msg: MotorCtrlState) -> None:
-        ros_remote_gui.main.motor_tab_ui_handler.left_ctrl_enabled = msg.controller_enabled
-        ros_remote_gui.main.motor_tab_ui_handler.rpm_measured_left = deepcopy(msg.measured_rpms)
-        ros_remote_gui.main.motor_tab_ui_handler.rpm_target_left = msg.target_rpm
-        ros_remote_gui.main.motor_tab_ui_handler.left_ctrl_pid_out = msg.pid_output
-        ros_remote_gui.main.motor_tab_ui_handler.left_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
-        ros_remote_gui.main.motor_tab_ui_handler.encoder_pulse_ctrs_left = deepcopy(msg.total_enc_counts)
-        ros_remote_gui.main.motor_tab_ui_handler.last_left_data_rcv = datetime.now()
+        get_main_window().motor_tab_ui_handler.left_ctrl_enabled = msg.controller_enabled
+        get_main_window().motor_tab_ui_handler.rpm_measured_left = deepcopy(msg.measured_rpms)
+        get_main_window().motor_tab_ui_handler.rpm_target_left = msg.target_rpm
+        get_main_window().motor_tab_ui_handler.left_ctrl_pid_out = msg.pid_output
+        get_main_window().motor_tab_ui_handler.left_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
+        get_main_window().motor_tab_ui_handler.encoder_pulse_ctrs_left = deepcopy(msg.total_enc_counts)
+        get_main_window().motor_tab_ui_handler.last_left_data_rcv = datetime.now()
 
     @staticmethod
     def right_mtr_ctrl_callback(msg: MotorCtrlState) -> None:
-        ros_remote_gui.main.motor_tab_ui_handler.right_ctrl_enabled = msg.controller_enabled
-        ros_remote_gui.main.motor_tab_ui_handler.rpm_measured_right = deepcopy(msg.measured_rpms)
-        ros_remote_gui.main.motor_tab_ui_handler.rpm_target_right = msg.target_rpm
-        ros_remote_gui.main.motor_tab_ui_handler.right_ctrl_pid_out = msg.pid_output
-        ros_remote_gui.main.motor_tab_ui_handler.right_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
-        ros_remote_gui.main.motor_tab_ui_handler.encoder_pulse_ctrs_right = deepcopy(msg.total_enc_counts)
-        ros_remote_gui.main.motor_tab_ui_handler.last_right_data_rcv = datetime.now()
+        get_main_window().motor_tab_ui_handler.right_ctrl_enabled = msg.controller_enabled
+        get_main_window().motor_tab_ui_handler.rpm_measured_right = deepcopy(msg.measured_rpms)
+        get_main_window().motor_tab_ui_handler.rpm_target_right = msg.target_rpm
+        get_main_window().motor_tab_ui_handler.right_ctrl_pid_out = msg.pid_output
+        get_main_window().motor_tab_ui_handler.right_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
+        get_main_window().motor_tab_ui_handler.encoder_pulse_ctrs_right = deepcopy(msg.total_enc_counts)
+        get_main_window().motor_tab_ui_handler.last_right_data_rcv = datetime.now()
 
     @staticmethod
     def micro_switch_callback(msg: Range) -> None:
         if msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[0]):
-            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[0] = msg.range
+            get_main_window().sensors_tab_ui_handler.micro_sw_states[0] = msg.range
         elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[1]):
-            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[1] = msg.range
+            get_main_window().sensors_tab_ui_handler.micro_sw_states[1] = msg.range
         elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[2]):
-            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[2] = msg.range
+            get_main_window().sensors_tab_ui_handler.micro_sw_states[2] = msg.range
         elif msg.header.frame_id == RosFrameIds.MICRO_SW_SENS_BASE_FRAME_ID.format(RosNames.MICRO_SWITCH_TOPIC_NAMES[3]):
-            ros_remote_gui.main.sensors_tab_ui_handler.micro_sw_states[3] = msg.range
+            get_main_window().sensors_tab_ui_handler.micro_sw_states[3] = msg.range
         else:
             get_ros_node().get_logger().error("Received micro switch data for unknown sensor.")
 
     @staticmethod
     def ultrasonic_sens_callback(msg: Range) -> None:
         if msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[0]):
-            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[0] = msg.range
+            get_main_window().sensors_tab_ui_handler.ultra_dists[0] = msg.range
         elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[1]):
-            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[1] = msg.range
+            get_main_window().sensors_tab_ui_handler.ultra_dists[1] = msg.range
         elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[2]):
-            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[2] = msg.range
+            get_main_window().sensors_tab_ui_handler.ultra_dists[2] = msg.range
         elif msg.header.frame_id == RosFrameIds.ULTRASONIC_SENS_BASE_FRAME_ID.format(RosNames.ULTRASONIC_SENS_TOPIC_NAMES[3]):
-            ros_remote_gui.main.sensors_tab_ui_handler.ultra_dists[3] = msg.range
+            get_main_window().sensors_tab_ui_handler.ultra_dists[3] = msg.range
         else:
             get_ros_node().get_logger().error("Received ultrasonic sensor data for unknown sensor.")
 
     @staticmethod
     def cliff_sens_callback(msg: Range) -> None:
         if msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[0]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[0] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_front_states[0] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[1]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[1] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_front_states[1] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[2]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[2] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_front_states[2] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[3]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_front_states[3] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_front_states[3] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[4]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[0] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_back_states[0] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[5]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[1] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_back_states[1] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[6]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[2] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_back_states[2] = msg.range
         elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[7]):
-            ros_remote_gui.main.sensors_tab_ui_handler.cliff_back_states[3] = msg.range
+            get_main_window().sensors_tab_ui_handler.cliff_back_states[3] = msg.range
         else:
             get_ros_node().get_logger().error("Received cliff sensor data for unknown sensor.")
 

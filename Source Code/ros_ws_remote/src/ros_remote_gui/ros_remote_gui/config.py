@@ -16,20 +16,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.10.16"
+PROGRAM_VERSION = "2024.10.25"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/10/16 @ 12:36 UTC"
+    VERSION_DATE = "2024/10/25 @ 12:04 UTC"
 
 
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
     UI_DATA_UPDATE_INTERVAL_MS = 100
-    UI_VIEWPORT_UPDATE_INTERVAL_MS = 50
+    UI_TIMER_STATE_UPDATE_INTERVAL_MS = 200
     VIEWPORT_TARGET_FPS = 30
     MAX_DIAG_MSG_HISTORY = 100
     STALE_DATA_TIMEOUT = 4   # 4s
