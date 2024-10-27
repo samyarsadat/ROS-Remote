@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        #self.setWindowState(Qt.WindowFullScreen)
+        self.setWindowState(Qt.WindowFullScreen)
         self.restart_on_quit = False
 
         self.default_thread_pool = QtCore.QThreadPool()
