@@ -19,6 +19,10 @@ The command will return something like this:
 # 1024x600 59.85 Hz (CVT) hsync: 37.35 kHz; pclk: 49.00 MHz
 Modeline "1024x600_60.00"   49.00  1024 1072 1168 1312  600 603 613 624 -hsync +vsync
 ```
-Take the second line of the output (excluding "Modeline") and paste it in place of the one
-on line 27 of the `entrypoint.sh` inside the `.prodcontainer` directory.
-Make sure to properly save the file.
+Take the second line of the output (excluding "Modeline") and paste it into the following commands:
+```
+xrandr --newmode [PASTE OUTPUT OF COMMAND HERE]
+xrandr --addmode HDMI-1 "1024x600_60.00"
+xrandr --output HDMI-1 --mode "1024x600_60.00"
+```
+You can put these into a bash file. These commands need to be run at startup.
