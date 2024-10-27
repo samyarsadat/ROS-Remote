@@ -19,17 +19,17 @@
 import threading
 import time
 import rclpy
+from datetime import datetime
 from rclpy import Context
 from rclpy.executors import ExternalShutdownException
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from remote_pico_coms.msg import ButtonStates, SwitchStates, JoystickState, PotentiometerState
 from remote_pico_coms.srv import GetJoystickConfig, SetJoystickConfig, GetLedStates, SetLedStates
-from ros_remote_pui.config import ProgramConfig
-from ros_remote_pui.config import RosConfig, RosNames
+from ros_remote_pui.config import ProgramConfig, RosConfig, RosNames
 from diagnostic_msgs.srv import SelfTest
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
-from ros_remote_pui.btn_states import get_remote_state
+from ros_remote_pui.remote_state import get_remote_state
 
 
 # ---- Global variables ----
@@ -56,7 +56,8 @@ class RosNode(Node):
         self.set_led_states_srvcl = self.create_client(SetLedStates, RosNames.SET_LED_STATES_SRV, qos_profile=RosConfig.QOS_RELIABLE)
         self.run_selftest_srvcl = self.create_client(SelfTest, RosNames.RUN_SELFTEST_SRV, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._selftest_cb_group)
 
-        # Button de-bounce times & hold-down re-call prevention flags
+        # Button de-bounce times & hold-down re-call prevention flags.
+        # De-bouncing will be moved to Pico firmware.
         self._left_red_btn_deb_lc = 0
         self._left_red_btn_wl = True
         self._left_red_kd2_btn_deb_lc = 0
@@ -115,6 +116,7 @@ class RosNode(Node):
 
     def _joystick_state_call(self, msg: JoystickState) -> None:
         get_remote_state().joystick_vals = [msg.joystick_x_axis_reading, msg.joystick_y_axis_reading]
+        get_remote_state().last_joystick_recv = datetime.now()
 
     def _potentiometer_state_call(self, msg: PotentiometerState) -> None:
         get_remote_state().potentiometer_val = msg.potentiometer_reading

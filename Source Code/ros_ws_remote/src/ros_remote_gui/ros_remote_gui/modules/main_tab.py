@@ -99,8 +99,8 @@ class ViewportThread(QThread):
             self.update_pixmap_sig.emit(QPixmap.fromImage(q_img), self._current_fps)
 
             # Framerate limiting
-            sleep_time_ms = (1000 / ProgramConfig.VIEWPORT_TARGET_FPS) - ((time.time_ns() - self._last_frame_time) / 1000000)
-            sleep((sleep_time_ms / 1000) if sleep_time_ms > 0 else 0)
+            sleep_time_ns = (1000000000 / ProgramConfig.VIEWPORT_TARGET_FPS) - (time.time_ns() - self._last_frame_time)
+            sleep((sleep_time_ns / 1000000000) if sleep_time_ns > 0 else 0)
 
     def stop(self) -> None:
         self._is_running = False

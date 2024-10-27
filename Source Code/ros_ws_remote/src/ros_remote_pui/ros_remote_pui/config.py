@@ -29,6 +29,7 @@ class ProgramInfoConfig:
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
     BUTTON_DEBOUNCE_TIME_MS = 350
+    SW_ACT_TIMER_INTERVAL_MS = 100
 
 
 # ---- ROS Config ----

@@ -21,13 +21,12 @@ import threading
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QProcess, QTimer
 from ros_remote_gui.config import ProgramConfig, RosConfig
-from ros_remote_pui.ros_main import RemotePuiThread
+
 
 # ---- QT application ----
 qt_app = QApplication(sys.argv)
-
-# Must import main_window after qt_app init!
-from ros_remote_gui.main_window import get_main_window
+from ros_remote_gui.main_window import get_main_window   # Must import main_window after qt_app init!
+from ros_remote_pui.ros_main import RemotePuiThread      # PUI uses QTimers so it also needs to be imported after qt_app init.
 
 
 def main():
