@@ -5,6 +5,11 @@ running Ubuntu 22.04 LTS. Raspberry Pi OS will not work.<br>
 You should first run the setup script, then you can add the `run_gui.bash` script to start up
 the list of startup programs using the GNOME "Startup Applications" app. Be sure to specify
 the `-r` flag for the `run_gui.bash` script. This makes sure that the screen resolution is set properly.
+You can enter this into the "Command" field:
+```
+/bin/bash "/home/[YOUR USERNAME]/ros_remote/Source Code/ros_ws_remote/deployment/run_gui.bash" -r
+```
+Replace "[YOUR USERNAME]" with your username.
 <br>
 
 ## Note on Wayland
