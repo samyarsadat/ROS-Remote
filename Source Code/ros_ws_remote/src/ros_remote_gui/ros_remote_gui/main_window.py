@@ -79,29 +79,33 @@ class MainWindow(QMainWindow):
 
         if self.ui.pages.currentWidget().objectName() == self.ui.mainTab.objectName():
             if self._previous_tab_sel != self.ui.mainTab.objectName() or not self.main_tab_ui_handler._update_ui_tmr.isActive():
-                self.main_tab_ui_handler._update_ui_tmr.start()
+                self.main_tab_ui_handler._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
                 self.main_tab_ui_handler.viewport_thread.start()
         else:
-            self.main_tab_ui_handler._update_ui_tmr.stop()
-            self.main_tab_ui_handler.viewport_thread.stop()
+            if self.main_tab_ui_handler._update_ui_tmr.isActive():
+                self.main_tab_ui_handler._update_ui_tmr.stop()
+                self.main_tab_ui_handler.viewport_thread.stop()
 
         if self.ui.pages.currentWidget().objectName() == self.ui.sensorsTab.objectName():
             if self._previous_tab_sel != self.ui.sensorsTab.objectName() or not self.sensors_tab_ui_handler._update_ui_tmr.isActive():
-                self.sensors_tab_ui_handler._update_ui_tmr.start()
+                self.sensors_tab_ui_handler._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
         else:
-            self.sensors_tab_ui_handler._update_ui_tmr.stop()
+            if self.sensors_tab_ui_handler._update_ui_tmr.isActive():
+                self.sensors_tab_ui_handler._update_ui_tmr.stop()
 
         if self.ui.pages.currentWidget().objectName() == self.ui.powerTab.objectName():
             if self._previous_tab_sel != self.ui.powerTab.objectName() or not self.power_tab_ui_handler._update_ui_tmr.isActive():
-                self.power_tab_ui_handler._update_ui_tmr.start()
+                self.power_tab_ui_handler._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
         else:
-            self.power_tab_ui_handler._update_ui_tmr.stop()
+            if self.power_tab_ui_handler._update_ui_tmr.isActive():
+                self.power_tab_ui_handler._update_ui_tmr.stop()
 
         if self.ui.pages.currentWidget().objectName() == self.ui.motorCtrlTab.objectName():
             if self._previous_tab_sel != self.ui.motorCtrlTab.objectName() or not self.motor_tab_ui_handler._update_ui_tmr.isActive():
-                self.motor_tab_ui_handler._update_ui_tmr.start()
+                self.motor_tab_ui_handler._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
         else:
-            self.motor_tab_ui_handler._update_ui_tmr.stop()
+            if self.motor_tab_ui_handler._update_ui_tmr.isActive():
+                self.motor_tab_ui_handler._update_ui_tmr.stop()
 
         self._previous_tab_sel = self.ui.pages.currentWidget().objectName()
 

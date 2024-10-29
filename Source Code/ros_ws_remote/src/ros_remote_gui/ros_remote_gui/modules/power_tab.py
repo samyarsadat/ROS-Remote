@@ -32,7 +32,6 @@ class PowerTab:
         # UI data update timer
         self._update_ui_tmr = QTimer()
         self._update_ui_tmr.timeout.connect(self._update_ui_tmr_call)
-        self._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
 
     def _update_ui_tmr_call(self) -> None:
         if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.powerTab.objectName():

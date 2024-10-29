@@ -126,13 +126,11 @@ class MainTab:
         # Viewport
         self.viewport_thread = ViewportThread(get_main_window())
         self.viewport_thread.update_pixmap_sig.connect(self._set_viewport_pixmap)
-        self.viewport_thread.start()
         qt_app.aboutToQuit.connect(self.viewport_thread.stop)
 
         # UI data update timer
         self._update_ui_tmr = QTimer()
         self._update_ui_tmr.timeout.connect(self._update_ui_tmr_call)
-        self._update_ui_tmr.start(ProgramConfig.UI_DATA_UPDATE_INTERVAL_MS)
 
     def _update_ui_tmr_call(self) -> None:
         if get_main_window().ui.pages.currentWidget().objectName() == get_main_window().ui.mainTab.objectName():
