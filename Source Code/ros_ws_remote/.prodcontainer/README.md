@@ -26,3 +26,5 @@ xrandr --addmode HDMI-1 "1024x600_60.00"
 xrandr --output HDMI-1 --mode "1024x600_60.00"
 ```
 You can put these into a bash file. These commands need to be run at startup.
+
+Test update.
