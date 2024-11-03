@@ -14,6 +14,8 @@ git fetch origin
 IS_UPTODATE=$(git diff origin/main)
 
 if [ "$IS_UPTODATE" != "" ]; then
+    git clean -df
+    git reset --hard
     git pull origin main
     git submodule update --recursive
 fi
