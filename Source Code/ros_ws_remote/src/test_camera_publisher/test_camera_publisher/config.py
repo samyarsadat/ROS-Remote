@@ -30,7 +30,7 @@ class ProgramInfoConfig:
 class ProgramConfig:
     BASE_TEST_PATTERN = "test_images/pm5644.png"   # Options: pm5544.png, pm5644.png (widescreen)
     OVERLAY_PM5644_MODE = True
-    TARGET_PUBLISH_FPS = 15
+    TARGET_PUBLISH_FPS = 25
     CV_TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 

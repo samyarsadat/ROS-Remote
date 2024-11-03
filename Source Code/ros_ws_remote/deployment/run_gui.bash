@@ -30,4 +30,4 @@ source /opt/ros/humble/setup.bash
 source install/local_setup.sh
 source "../pico_ws/libmicroros/install/local_setup.sh"
 source "../ros_robot_project/Source Code/ros_ws_robot/install/local_setup.sh"
-DISPLAY=:0 ros2 run ros_remote_gui remote_gui_node & sudo chrt -r -p 99 $!
+DISPLAY=:0 ros2 run ros_remote_gui remote_gui_node & echo "$SUDO_PASWD" | sudo -S chrt -r -p 99 $!

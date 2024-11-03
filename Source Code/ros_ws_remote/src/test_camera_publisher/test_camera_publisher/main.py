@@ -53,8 +53,8 @@ def main():
                 get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_imgmsg(get_camera_overlay(width, height), "rgba8"))
 
             # Framerate limiting
-            sleep_time_ms = (1000 / ProgramConfig.TARGET_PUBLISH_FPS) - ((time_ns() - frame_start_time) / 1000000)
-            sleep((sleep_time_ms / 1000) if sleep_time_ms > 0 else 0)
+            sleep_time_ns = (1000000000 / ProgramConfig.TARGET_PUBLISH_FPS) - (time_ns() - frame_start_time)
+            sleep((sleep_time_ns / 1000000000) if sleep_time_ns > 0 else 0)
     except KeyboardInterrupt:
         if is_ros_node_initialized():
             get_ros_node().get_logger().info("Keyboard interrupt!")

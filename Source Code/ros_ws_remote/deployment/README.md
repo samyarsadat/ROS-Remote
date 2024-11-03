@@ -9,8 +9,14 @@ You can enter this into the "Command" field:
 ```
 /bin/bash "/home/[YOUR USERNAME]/ros_remote/Source Code/ros_ws_remote/deployment/run_gui.bash" -r
 ```
-Replace "[YOUR USERNAME]" with your username.
+Replace "[YOUR USERNAME]" with your username.<br>
 <br>
+If you would like the priority of the GUI process to be set to -100 (maximum real-time priority) automatically,
+then you have to supply the root passowrd. To do this, you can enter this into the "Command" field instead:
+```
+SUDO_PASWD="[YOUR SUDO PASSWORD]" /bin/bash "/home/[YOUR USERNAME]/ros_remote/Source Code/ros_ws_remote/deployment/run_gui.bash" -r
+```
+Note that this method is not fully secure.<br>
 
 ## Note on Wayland
 These scripts are written with the assumption that the X Window System is being used. If you
