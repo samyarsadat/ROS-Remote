@@ -48,9 +48,9 @@ def get_camera_overlay(width: int, height: int) -> ndarray:
     txt_y = 622 if not ProgramConfig.OVERLAY_PM5644_MODE else 582
     cv2.putText(pattern, time_txt, (txt_x, txt_y), ProgramConfig.CV_TEXT_FONT, txt_font_size[0], (255, 255, 255), txt_font_size[1])
 
-    alpha_mask = cv2.inRange(pattern, (0, 0, 0), (0, 0 ,0))
+    """alpha_mask = cv2.inRange(pattern, (0, 0, 0), (0, 0 ,0))
     alpha_mask = cv2.bitwise_not(alpha_mask)
     pattern = cv2.cvtColor(pattern, cv2.COLOR_RGB2RGBA)
-    pattern[:, :, 3] = alpha_mask
+    pattern[:, :, 3] = alpha_mask"""
 
     return pattern

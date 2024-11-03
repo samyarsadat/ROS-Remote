@@ -35,7 +35,7 @@ class RosNode(Node):
 
         # Viewport camera & camera overlay
         self.front_camera_comp_pub = self.create_publisher(CompressedImage, RosNames.CAMERA_FEED_TOPIC, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._reent_cb_group)
-        self.front_overlay_comp_pub = self.create_publisher(Image, RosNames.CAMERA_OVERLAY_TOPIC, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._reent_cb_group)
+        self.front_overlay_comp_pub = self.create_publisher(CompressedImage, RosNames.CAMERA_OVERLAY_TOPIC, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._reent_cb_group)
 
 
 # ---- Node object ----

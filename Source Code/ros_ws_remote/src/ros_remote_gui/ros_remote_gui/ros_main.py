@@ -49,7 +49,7 @@ class RosNode(Node):
 
         # Viewport camera & camera overlay
         self.front_camera_comp_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_FEED_TOPIC, self.front_camera_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
-        self.front_overlay_sub = self.create_subscription(Image, RosNames.CAMERA_OVERLAY_TOPIC, self.front_overlay_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
+        self.front_overlay_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_OVERLAY_TOPIC, self.front_overlay_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
 
         self.diagnostics_sub = self.create_subscription(DiagnosticStatus, RosNames.DIAGNOSTICS_TOPIC, self.diagnostics_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
         self.ping_driver_srvcl = self.create_client(GetBool, RosNames.PING_DRIVER_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
@@ -98,7 +98,7 @@ class RosNode(Node):
         get_main_window().main_tab_ui_handler.viewport_thread.ros_image_cam = msg
 
     @staticmethod
-    def front_overlay_callback(msg: Image):
+    def front_overlay_callback(msg: CompressedImage):
         get_main_window().main_tab_ui_handler.viewport_thread.ros_image_overlay = msg
 
     @staticmethod

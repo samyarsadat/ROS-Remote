@@ -50,7 +50,7 @@ def main():
             if is_ros_node_initialized():
                 cam_img, width, height = get_camera_image("FRONT CAMERA")
                 get_ros_node().front_camera_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(cam_img, "jpg"))
-                get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_imgmsg(get_camera_overlay(width, height), "rgba8"))
+                get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(get_camera_overlay(width, height), "png"))
 
             # Framerate limiting
             sleep_time_ns = (1000000000 / ProgramConfig.TARGET_PUBLISH_FPS) - (time_ns() - frame_start_time)

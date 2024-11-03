@@ -3,7 +3,7 @@
 
 <package format="3">
     <name>test_camera_publisher</name>
-    <version>2024.9.27</version>
+    <version>2024.11.4</version>
     <description>Test CompressedImage publisher for the ROS Remote Project.</description>
     <maintainer email="samyarsadat@gigawhat.net">Samyar Sadat Akhavi</maintainer>
     <license>GPL-3.0-only</license>

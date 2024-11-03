@@ -38,7 +38,7 @@ class ViewportThread(QThread):
     update_pixmap_sig = Signal(QPixmap, float)
     test_sig = Signal(int)
     ros_image_cam: CompressedImage
-    ros_image_overlay: Image
+    ros_image_overlay: CompressedImage
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -49,10 +49,10 @@ class ViewportThread(QThread):
 
         # Initialize image messages
         blank_rgb = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
+        self.ros_image_overlay = self._img_bridge.cv2_to_compressed_imgmsg(blank_rgb, "png")
         self.gen_info_txt_img(blank_rgb, "NO IMAGE RECEIVED!")
         blank_rgb = cv2.cvtColor(blank_rgb, cv2.COLOR_RGB2BGR)
         self.ros_image_cam = self._img_bridge.cv2_to_compressed_imgmsg(blank_rgb, "jpg")
-        self.ros_image_overlay = self._img_bridge.cv2_to_imgmsg(np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 4), dtype=np.uint8), "rgba8")
 
     @staticmethod
     def gen_info_txt_img(rgb_img: np.ndarray, text: str):
@@ -65,31 +65,30 @@ class ViewportThread(QThread):
         while self._is_running:
             self._current_fps = 1000000000 / (time.time_ns() - self._last_frame_time)
             self._last_frame_time = time.time_ns()
-
-            rgb_img = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
+            rgb_img = None
 
             if get_main_window().ui.viewportSelector.currentIndex() == 0:
                 try:
                     rgb_img = self._img_bridge.compressed_imgmsg_to_cv2(self.ros_image_cam, "rgb8")
                 except Exception:
                     if is_ros_node_initialized():
+                        rgb_img = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
                         get_ros_node().get_logger().error("ROS -> OpenCV image conversion failure!")
             elif get_main_window().ui.viewportSelector.currentIndex() == 1:
                 try:
                     camera_img = self._img_bridge.compressed_imgmsg_to_cv2(self.ros_image_cam, "rgb8")
-                    overlay_img = self._img_bridge.imgmsg_to_cv2(self.ros_image_overlay, "rgba8")
-                    rgb, alpha = overlay_img[:, :, :3], overlay_img[:, :, 3]
-                    alpha = alpha.astype(float) / 255.0
-                    rgb_img = np.zeros_like(rgb, dtype=np.uint8)
-
-                    for c in range(3):
-                        rgb_img[:, :, c] = (alpha * rgb[:, :, c] + (1 - alpha) * camera_img[:, :, c]).astype(np.uint8)
+                    overlay_img = self._img_bridge.compressed_imgmsg_to_cv2(self.ros_image_overlay, "rgb8")
+                    mask = (overlay_img == 0).all(axis=2)
+                    rgb_img = np.where(mask[:, :, None], camera_img, overlay_img).astype(np.uint8)
                 except Exception:
                     if is_ros_node_initialized():
+                        rgb_img = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
                         get_ros_node().get_logger().error("ROS -> OpenCV image conversion failure!")
             elif get_main_window().ui.viewportSelector.currentIndex() == 2:
+                rgb_img = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
                 self.gen_info_txt_img(rgb_img, "VIEW NOT IMPLEMENTED")
             else:
+                rgb_img = np.zeros((get_main_window().ui.viewport.height(), get_main_window().ui.viewport.width(), 3), dtype=np.uint8)
                 self.gen_info_txt_img(rgb_img, "UNKNOWN VIEW")
 
             height, width, num_ch = rgb_img.shape
