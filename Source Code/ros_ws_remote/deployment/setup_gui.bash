@@ -15,6 +15,7 @@ source /opt/ros/humble/setup.bash
 cd "$HOME" || exit 1
 git clone https://github.com/samyarsadat/ROS-Remote ./ros_remote --recurse-submodules
 cd ./ros_remote || exit 1
+sudo chmod +s "./Source Code/ros_ws_remote/deployment/run_gui.bash"
 cd "./Source Code/ros_ws_remote" || exit 1
 colcon build --packages-skip test_camera_publisher
 cd "../pico_ws/libmicroros" || exit 1
