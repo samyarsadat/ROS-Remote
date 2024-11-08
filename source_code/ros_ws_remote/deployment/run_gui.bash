@@ -25,9 +25,9 @@ if [ "$SET_SCRN_RES" == "true" ]; then
     DISPLAY=:0 xrandr --output $DISPLAY_HDMI_PORT --mode $DISPLAY_RES_WIDTH"x"$DISPLAY_RES_HEIGHT"_"$DISPLAY_FPS".00"
 fi
 
-cd "$HOME/ros_remote/Source Code/ros_ws_remote" || exit 1
+cd "$HOME/ros_remote/source_code/ros_ws_remote" || exit 1
 source /opt/ros/humble/setup.bash
 source install/local_setup.sh
 source "../pico_ws/libmicroros/install/local_setup.sh"
-source "../ros_robot_project/Source Code/ros_ws_robot/install/local_setup.sh"
+source "../ros_robot_project/source_code/ros_ws_robot/install/local_setup.sh"
 DISPLAY=:0 ros2 run ros_remote_gui remote_gui_node

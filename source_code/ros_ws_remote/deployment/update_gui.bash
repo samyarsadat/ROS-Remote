@@ -22,11 +22,11 @@ fi
 
 if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_REBUILD" == "true" ]; then
     source /opt/ros/humble/setup.bash
-    cd "./Source Code/ros_ws_remote" || exit 1
+    cd "./source_code/ros_ws_remote" || exit 1
     colcon build --packages-skip test_camera_publisher
     cd "../pico_ws/libmicroros" || exit 1
     colcon build --packages-select remote_pico_coms
-    cd "../../ros_robot_project/Source Code/ros_ws_robot" || exit 1
+    cd "../../ros_robot_project/source_code/ros_ws_robot" || exit 1
     colcon build --packages-select ros_robot_msgs
 fi
 

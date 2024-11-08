@@ -7,7 +7,7 @@ the list of startup programs using the GNOME "Startup Applications" app. Be sure
 the `-r` flag for the `run_gui.bash` script. This makes sure that the screen resolution is set properly.
 You can enter this into the "Command" field:
 ```
-/bin/bash "/home/[YOUR USERNAME]/ros_remote/Source Code/ros_ws_remote/deployment/run_gui.bash" -r
+/bin/bash "/home/[YOUR USERNAME]/ros_remote/source_code/ros_ws_remote/deployment/run_gui.bash" -r
 ```
 Replace "[YOUR USERNAME]" with your username.<br>
 <br>
