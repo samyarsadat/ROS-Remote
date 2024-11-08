@@ -2,7 +2,7 @@
 
 <p align="center">
 	<br>
-	<a href="https://www.ros.org"><img src="Assets/Logos/ROS_logo.png"></a><br>
+	<a href="https://www.ros.org"><img src="assets/logos/ROS_logo.png"></a><br>
 	<br><br>
 	<a href="LICENSE"><img src="https://img.shields.io/github/license/samyarsadat/ROS-Remote?color=blue"></a>
 	|
@@ -16,7 +16,7 @@
 
 <br><br>
 
-<img src="Assets/Renders/Render_Edited.png">
+<img src="assets/renders/Render_Edited.png">
 This is a 3D render of the CAD designs.
 <br><br>
 

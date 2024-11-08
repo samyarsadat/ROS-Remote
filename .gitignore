@@ -1,24 +1,26 @@
-Source Code/pico_ws/build
-Source Code/pico_ws/libmicroros/firmware
-Source Code/pico_ws/libmicroros/src/build
-Source Code/pico_ws/libmicroros/src/install
-Source Code/pico_ws/libmicroros/src/log
-Source Code/pico_ws/libmicroros/src/rrp_pico_coms/build
-Source Code/pico_ws/libmicroros/src/rrp_pico_coms/install
-Source Code/pico_ws/libmicroros/src/rrp_pico_coms/log
-Source Code/ros_ws_remote/src/ros_remote_gui/*.pyproject.*
-Source Code/ros_ws_remote/**/*.egg-info
-Source Code/ros_ws_remote/build
-Source Code/ros_ws_remote/install
-Source Code/ros_ws_remote/log
+source_code/pico_ws/build
+source_code/pico_ws/libmicroros/firmware
+source_code/pico_ws/libmicroros/src/build
+source_code/pico_ws/libmicroros/src/install
+source_code/pico_ws/libmicroros/src/log
+source_code/pico_ws/libmicroros/src/rrp_pico_coms/build
+source_code/pico_ws/libmicroros/src/rrp_pico_coms/install
+source_code/pico_ws/libmicroros/src/rrp_pico_coms/log
+source_code/ros_ws_remote/src/ros_remote_gui/*.pyproject.*
+source_code/ros_ws_remote/**/*.egg-info
+source_code/ros_ws_remote/build
+source_code/ros_ws_remote/install
+source_code/ros_ws_remote/log
 **/.idea
 **/.venv
 **/.venv-linux
 **/__pycache__
-CAD Files/swxJRNL.swj
-CAD Files/Sliced
-CAD Files/~$*.sldprt
-CAD Files/~$*.sldasm
-CAD Files/**/~$*.sldprt
-CAD Files/**/~$*.sldasm
+cad_files/swxJRNL.swj
+cad_files/Sliced
+**/~$*.sldprt
+**/~$*.sldasm
+**/~$*.sldblk
+**/~$*.SLDPRT
+**/~$*.SLDASM
+**/~$*.SLDBLK
 **/desktop.ini
