@@ -33,10 +33,6 @@ RUN apt-get update \
 # Install PySide6
 RUN pip install --no-cache-dir PySide6
 
-# Copy configuration files
-USER ${USERNAME}
-COPY vscode_config/* /home/$USERNAME/ros_ws/.vscode/
-
 # Raspberry Pi Pico TTY permission fix
 USER root
 RUN usermod -aG dialout ${USERNAME}
