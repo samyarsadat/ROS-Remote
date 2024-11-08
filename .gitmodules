@@ -1,21 +1,13 @@
 [submodule "FreeRTOS Kernel"]
-	path = Source Code/pico_ws/libfreertos/FreeRTOS-Kernel
+	path = source_code/pico_ws/libfreertos/FreeRTOS-Kernel
 	url = https://github.com/FreeRTOS/FreeRTOS-Kernel
-	ignore = all
-
 [submodule "Common Helper Libraries"]
-	path = Source Code/pico_ws/src/lib/Common_libs
+	path = source_code/pico_ws/src/lib/Common_libs
 	url = https://github.com/samyarsadat/Pico-Libraries
-
 [submodule "MicroROS Tools"]
-	path = Source Code/pico_ws/libmicroros/src/micro_ros_setup
+	path = source_code/pico_ws/libmicroros/src/micro_ros_setup
 	url = https://github.com/micro-ROS/micro_ros_setup
 	branch = humble
-	ignore = all
-
-# THIS IS TEMPORARY! IT WILL BE REMOVED!
 [submodule "The ROS Robot Project"]
-	path = Source Code/ros_robot_project
+	path = source_code/ros_robot_project
 	url = https://github.com/samyarsadat/ROS-Robot
-	branch = stage-1
-	ignore = all
