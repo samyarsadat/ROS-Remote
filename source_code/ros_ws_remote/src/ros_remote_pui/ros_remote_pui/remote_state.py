@@ -74,8 +74,8 @@ class RemoteState:
     def left_rot_enc_btn_press(self) -> None:
         print("left_rot_enc_btn_press")
 
-    def left_rot_enc_sig(self) -> None:
-        print("left_rot_enc_sig")
+    def left_rot_enc_sig(self, dir: bool) -> None:
+        print("left_rot_enc_sig", dir)
 
 
 # RemoteState instance
@@ -84,3 +84,7 @@ _remote_state = RemoteState()
 def get_remote_state() -> RemoteState:
     global _remote_state
     return _remote_state
+
+# Raspberry Pi IO handler
+from ros_remote_pui.rpi_io_handler import RpiIoHandler
+_rpi_io_handler = RpiIoHandler()

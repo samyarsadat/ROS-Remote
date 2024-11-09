@@ -29,7 +29,7 @@ from remote_pico_coms.srv import GetJoystickConfig, SetJoystickConfig, GetLedSta
 from ros_remote_pui.config import ProgramConfig, RosConfig, RosNames
 from diagnostic_msgs.srv import SelfTest
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
-from ros_remote_pui.remote_state import get_remote_state
+from ros_remote_pui.remote_state import get_remote_state, _rpi_io_handler
 
 
 # ---- Global variables ----

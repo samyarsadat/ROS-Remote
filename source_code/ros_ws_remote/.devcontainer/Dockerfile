@@ -27,7 +27,7 @@ ENV USERNAME=nonroot
 
 # Install pip & libxcb-cursor0
 RUN apt-get update \
-    && apt-get install -y python3-pip libxcb-cursor0 \
+    && apt-get install -y python3-pip libxcb-cursor0 python3-lgpio python3-gpiozero \
     && rm -rf /var/lib/apt/lists/* && apt-get autoremove && apt-get autoclean
 
 # Install PySide6
