@@ -59,8 +59,11 @@
       <property name="cursor">
        <cursorShape>ArrowCursor</cursorShape>
       </property>
+      <property name="focusPolicy">
+       <enum>Qt::FocusPolicy::StrongFocus</enum>
+      </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -4043,6 +4046,9 @@
              <bold>false</bold>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::FocusPolicy::NoFocus</enum>
+           </property>
            <property name="html">
             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -4262,12 +4268,18 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <height>23</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::FocusPolicy::NoFocus</enum>
+   </property>
    <property name="nativeMenuBar">
     <bool>true</bool>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="menuPower">
     <property name="cursor">
      <cursorShape>CrossCursor</cursorShape>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::StrongFocus</enum>
     </property>
     <property name="title">
      <string>Power</string>
@@ -4281,6 +4293,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="cursor">
      <cursorShape>CrossCursor</cursorShape>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::StrongFocus</enum>
+    </property>
     <property name="title">
      <string>Connection</string>
     </property>
@@ -4291,6 +4306,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="cursor">
      <cursorShape>CrossCursor</cursorShape>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::FocusPolicy::StrongFocus</enum>
+    </property>
     <property name="title">
      <string>Configuration</string>
     </property>
@@ -4299,7 +4317,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="menuPower"/>
    <addaction name="menuConnection"/>
    <addaction name="menuConfiguration"/>
   </widget>

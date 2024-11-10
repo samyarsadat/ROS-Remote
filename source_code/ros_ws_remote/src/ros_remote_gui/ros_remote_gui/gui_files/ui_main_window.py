@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.3
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -67,6 +67,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.pages.sizePolicy().hasHeightForWidth())
         self.pages.setSizePolicy(sizePolicy1)
         self.pages.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.pages.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.pages.setTabsClosable(False)
         self.pages.setMovable(False)
         self.pages.setTabBarAutoHide(False)
@@ -1889,6 +1890,7 @@ class Ui_MainWindow(object):
         font2.setBold(False)
         font2.setItalic(False)
         self.diagMsgsText.setFont(font2)
+        self.diagMsgsText.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout_2.addWidget(self.diagMsgsText)
 
@@ -1990,25 +1992,29 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName(u"menubar")
         self.menubar.setEnabled(True)
         self.menubar.setGeometry(QRect(0, 0, 1024, 23))
+        self.menubar.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.menubar.setNativeMenuBar(True)
-        self.menuFile = QMenu(self.menubar)
-        self.menuFile.setObjectName(u"menuFile")
-        self.menuFile.setCursor(QCursor(Qt.CursorShape.CrossCursor))
+        self.menuPower = QMenu(self.menubar)
+        self.menuPower.setObjectName(u"menuPower")
+        self.menuPower.setCursor(QCursor(Qt.CursorShape.CrossCursor))
+        self.menuPower.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.menuConnection = QMenu(self.menubar)
         self.menuConnection.setObjectName(u"menuConnection")
         self.menuConnection.setCursor(QCursor(Qt.CursorShape.CrossCursor))
+        self.menuConnection.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.menuConfiguration = QMenu(self.menubar)
         self.menuConfiguration.setObjectName(u"menuConfiguration")
         self.menuConfiguration.setCursor(QCursor(Qt.CursorShape.CrossCursor))
+        self.menuConfiguration.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         MainWindow.setMenuBar(self.menubar)
 
-        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuPower.menuAction())
         self.menubar.addAction(self.menuConnection.menuAction())
         self.menubar.addAction(self.menuConfiguration.menuAction())
-        self.menuFile.addAction(self.actionRestart_Application)
-        self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionRestart_RPi)
-        self.menuFile.addAction(self.actionShutdown_System)
+        self.menuPower.addAction(self.actionRestart_Application)
+        self.menuPower.addSeparator()
+        self.menuPower.addAction(self.actionRestart_RPi)
+        self.menuPower.addAction(self.actionShutdown_System)
         self.menuConnection.addAction(self.actionCheck_Robot_Connection)
         self.menuConnection.addAction(self.actionCheck_WAN_Connection)
         self.menuConfiguration.addAction(self.actionJoystick)
@@ -2018,7 +2024,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.pages.setCurrentIndex(0)
+        self.pages.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -2238,7 +2244,7 @@ class Ui_MainWindow(object):
         self.selftestPicoAButton.setText(QCoreApplication.translate("MainWindow", u"Pico A Routine", None))
         self.selftestPicoBButton.setText(QCoreApplication.translate("MainWindow", u"Pico B Routine", None))
         self.pages.setTabText(self.pages.indexOf(self.diagTab), QCoreApplication.translate("MainWindow", u"Diagnostics", None))
-        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"Power", None))
+        self.menuPower.setTitle(QCoreApplication.translate("MainWindow", u"Power", None))
         self.menuConnection.setTitle(QCoreApplication.translate("MainWindow", u"Connection", None))
         self.menuConfiguration.setTitle(QCoreApplication.translate("MainWindow", u"Configuration", None))
     # retranslateUi

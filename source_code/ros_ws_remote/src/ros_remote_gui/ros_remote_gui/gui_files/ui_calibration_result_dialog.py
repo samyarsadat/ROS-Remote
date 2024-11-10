@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'calibration_result_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.3
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -70,6 +70,7 @@ class Ui_Dialog(object):
         font.setFamilies([u"Liberation Mono"])
         font.setPointSize(11)
         self.resultMessage.setFont(font)
+        self.resultMessage.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout_1.addWidget(self.resultMessage)
 
@@ -79,6 +80,7 @@ class Ui_Dialog(object):
 
         self.buttonBox = QDialogButtonBox(Dialog)
         self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Ok)
 
