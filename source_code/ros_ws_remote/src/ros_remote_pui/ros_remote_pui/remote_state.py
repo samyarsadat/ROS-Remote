@@ -74,8 +74,8 @@ class RemoteState:
     def left_rot_enc_btn_press(self) -> None:
         print("left_rot_enc_btn_press")
 
-    def left_rot_enc_sig(self, dir: bool) -> None:
-        print("left_rot_enc_sig", dir)
+    def left_rot_enc_sig(self, direction: bool) -> None:
+        print("left_rot_enc_sig", direction)
 
 
 # RemoteState instance
