@@ -75,6 +75,7 @@ class RemoteState:
 
     def left_rot_enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
+        print(focused_widget)
 
         if isinstance(focused_widget, QPushButton):
             focused_widget.click()
