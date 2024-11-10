@@ -76,11 +76,12 @@ class RemoteState:
     def left_rot_enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
 
-        if focused_widget and isinstance(focused_widget, QPushButton):
+        if isinstance(focused_widget, QPushButton):
             focused_widget.click()
         elif isinstance(focused_widget, QTabWidget):
             current_index = focused_widget.currentIndex()
             next_index = (current_index + 1) % focused_widget.count()
+            print(current_index, next_index)
             focused_widget.setCurrentIndex(next_index)
 
     def left_rot_enc_sig(self, direction: bool) -> None:
