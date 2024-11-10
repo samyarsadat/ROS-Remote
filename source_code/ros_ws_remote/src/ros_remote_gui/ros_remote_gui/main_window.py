@@ -65,7 +65,6 @@ class MainWindow(QMainWindow):
         global_stylesheet = """
                             QWidget:focus {
                                 border: 2px solid blue;
-                                background-color: lightyellow;
                                 outline: none;
                             }
                             """

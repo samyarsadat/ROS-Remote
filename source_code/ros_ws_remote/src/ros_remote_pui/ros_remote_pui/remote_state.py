@@ -18,7 +18,7 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QPushButton
+from PySide6.QtWidgets import QApplication, QPushButton, QTabWidget
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
@@ -75,8 +75,13 @@ class RemoteState:
 
     def left_rot_enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
+
         if focused_widget and isinstance(focused_widget, QPushButton):
             focused_widget.click()
+        elif isinstance(focused_widget, QTabWidget):
+            current_index = focused_widget.currentIndex()
+            next_index = (current_index + 1) % focused_widget.count()
+            focused_widget.setCurrentIndex(next_index)
 
     def left_rot_enc_sig(self, direction: bool) -> None:
         if direction:
