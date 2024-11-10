@@ -22,10 +22,10 @@ import ros_remote_pui.remote_state
 
 class RpiIoHandler:
     def __init__(self):
-        self.rotary_enc = RotaryEncoder(17, 22)
+        self.rotary_enc = RotaryEncoder(27, 22)
         self.rotary_enc.when_rotated_clockwise = self._enc_rotate_call_cw
         self.rotary_enc.when_rotated_counter_clockwise = self._enc_rotate_call_ccw
-        self.rotary_btn = Button(27, pull_up=False, bounce_time=0.25)
+        self.rotary_btn = Button(17, pull_up=False, bounce_time=0.25)
         self.rotary_btn.when_activated = self._enc_btn_call
 
         self.toggle_sw_a = Button(2, pull_up=True, bounce_time=0.2)
@@ -36,19 +36,19 @@ class RpiIoHandler:
         self.toggle_sw_c.when_activated = self._set_toggle_c_state
 
     def _set_toggle_a_state(self):
-        ros_remote_pui.remote_state.get_remote_state().left_mid_a_sw_en = self.toggle_sw_a.is_active()
+        ros_remote_pui.remote_state.get_remote_state().left_mid_a_sw_en = self.toggle_sw_a.is_active
 
     def _set_toggle_b_state(self):
-        ros_remote_pui.remote_state.get_remote_state().left_mid_b_sw_en = self.toggle_sw_b.is_active()
+        ros_remote_pui.remote_state.get_remote_state().left_mid_b_sw_en = self.toggle_sw_b.is_active
 
     def _set_toggle_c_state(self):
-        ros_remote_pui.remote_state.get_remote_state().left_mid_c_sw_en = self.toggle_sw_c.is_active()
+        ros_remote_pui.remote_state.get_remote_state().left_mid_c_sw_en = self.toggle_sw_c.is_active
 
     def _enc_rotate_call_cw(self):
-        ros_remote_pui.remote_state.get_remote_state().left_rot_enc_sig(dir=True)
+        ros_remote_pui.remote_state.get_remote_state().left_rot_enc_sig(direction=True)
 
     def _enc_rotate_call_ccw(self):
-        ros_remote_pui.remote_state.get_remote_state().left_rot_enc_sig(dir=False)
+        ros_remote_pui.remote_state.get_remote_state().left_rot_enc_sig(direction=False)
 
     def _enc_btn_call(self):
         ros_remote_pui.remote_state.get_remote_state().left_rot_enc_btn_press()
