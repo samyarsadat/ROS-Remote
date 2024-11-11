@@ -4269,7 +4269,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </rect>
    </property>
    <property name="focusPolicy">
-    <enum>Qt::FocusPolicy::StrongFocus</enum>
+    <enum>Qt::FocusPolicy::NoFocus</enum>
    </property>
    <property name="nativeMenuBar">
     <bool>true</bool>
@@ -4279,7 +4279,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <cursorShape>CrossCursor</cursorShape>
     </property>
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::StrongFocus</enum>
+     <enum>Qt::FocusPolicy::NoFocus</enum>
     </property>
     <property name="title">
      <string>Power</string>
@@ -4294,7 +4294,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <cursorShape>CrossCursor</cursorShape>
     </property>
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::StrongFocus</enum>
+     <enum>Qt::FocusPolicy::NoFocus</enum>
     </property>
     <property name="title">
      <string>Connection</string>
@@ -4307,7 +4307,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <cursorShape>CrossCursor</cursorShape>
     </property>
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::StrongFocus</enum>
+     <enum>Qt::FocusPolicy::NoFocus</enum>
     </property>
     <property name="title">
      <string>Configuration</string>
