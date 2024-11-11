@@ -17,7 +17,6 @@
 
 from PySide6.QtCore import QTimer
 from ros_remote_gui.main_window import get_main_window
-from ros_remote_gui.config import ProgramConfig
 
 
 # ---- Tab data display update and interaction handler ----

@@ -28,7 +28,7 @@ from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.config import ProgramConfig
 from ros_remote_gui.utils.gui_utils import srvcl_failed_show_err
 from ros_robot_msgs.srv import SetCameraLeds
-from sensor_msgs.msg import CompressedImage, Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 from time import sleep
 

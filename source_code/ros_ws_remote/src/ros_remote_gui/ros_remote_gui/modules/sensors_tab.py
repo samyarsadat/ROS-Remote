@@ -19,7 +19,6 @@ from asyncio import Future
 from PySide6.QtCore import QTimer, Slot
 from ros_remote_gui.ros_main import get_ros_node
 from ros_remote_gui.main_window import get_main_window
-from ros_remote_gui.config import ProgramConfig
 from ros_remote_gui.utils.gui_utils import generate_indicator_stylesheet, srvcl_failed_show_err
 from std_srvs.srv import SetBool
 

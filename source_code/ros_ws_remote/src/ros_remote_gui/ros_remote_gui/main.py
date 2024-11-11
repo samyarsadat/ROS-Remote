@@ -46,14 +46,14 @@ def main():
                 get_ros_node().get_logger().fatal("The ROS thread has died! Terminating program.")
             else:
                 print("The ROS thread has died! Terminating program.")
-            qt_app.exit(1)
+            QApplication.exit(1)
 
         if not RemotePuiThread.is_alive():
             if is_ros_node_initialized():
                 get_ros_node().get_logger().fatal("The remote PUI ROS thread has died! Terminating program.")
             else:
                 print("The remote PUI ROS thread has died! Terminating program.")
-            qt_app.exit(1)
+            QApplication.exit(1)
 
     ros_liveliness_timer = QTimer()
     ros_liveliness_timer.timeout.connect(ros_liveliness_check)
@@ -61,7 +61,7 @@ def main():
 
     # Start the application
     get_main_window().show()
-    qt_ret_code = qt_app.exec()
+    qt_ret_code = QApplication.exec()
 
     # Shutdown
     stop_ros_thread = True
@@ -72,7 +72,7 @@ def main():
         get_ros_node().get_logger().info(f"Program exiting with code {qt_ret_code}")
 
     if get_main_window().restart_on_quit:
-        qt_app_args = qt_app.arguments(); qt_app_args.pop(0)
-        QProcess.startDetached(qt_app.arguments()[0], qt_app_args)
+        qt_app_args = QApplication.arguments(); qt_app_args.pop(0)
+        QProcess.startDetached(QApplication.arguments()[0], qt_app_args)
 
     sys.exit(qt_ret_code)
