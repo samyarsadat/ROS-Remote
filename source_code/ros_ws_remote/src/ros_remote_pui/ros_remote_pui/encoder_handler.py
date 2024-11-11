@@ -55,16 +55,15 @@ class EncoderNavHandler:
         self._input_handler.enc_rotated.connect(self._enc_rotate)
         self._input_handler.btn_pressed.connect(self._enc_btn_press)
 
-        self.highlight_timer = QTimer()
-        self.highlight_timer.setInterval(ProgramConfig.ENCODER_HIGHLIGHT_TIMEOUT_MS)
-        self.highlight_timer.setSingleShot(True)
-        self.highlight_timer.timeout.connect(self._clear_highlight)
+        self._highlight_timer = QTimer()
+        self._highlight_timer.setInterval(ProgramConfig.ENCODER_HIGHLIGHT_TIMEOUT_MS)
+        self._highlight_timer.setSingleShot(True)
+        self._highlight_timer.timeout.connect(self._clear_highlight)
 
-        self.highlight_stylesheet = "QWidget:focus { border: 2px solid blue; }"
-        self.clear_stylesheet = "QWidget { border: none; }"
+        self._highlight_stylesheet = "QWidget:focus { border: 2px solid blue; }"
+        self._clear_stylesheet = "QWidget:focus { border: none; }"
 
     def _enc_btn_press(self) -> None:
-        self._apply_highlight()
         focused_widget = QApplication.focusWidget()
 
         if isinstance(focused_widget, QPushButton):
@@ -73,18 +72,22 @@ class EncoderNavHandler:
             current_index = focused_widget.currentIndex()
             next_index = (current_index + 1) % focused_widget.count()
             focused_widget.setCurrentIndex(next_index)
-
-    def _enc_rotate(self, direction: bool) -> None:
         self._apply_highlight()
 
+    def _enc_rotate(self, direction: bool) -> None:
         if direction:
             get_main_window().focusNextChild()
         else:
             get_main_window().focusPreviousChild()
+        self._apply_highlight()
 
     def _apply_highlight(self) -> None:
-        get_main_window().setStyleSheet(self.highlight_stylesheet)
-        self.highlight_timer.start()
+        if get_main_window().styleSheet().find(self._highlight_stylesheet) == -1:
+            get_main_window().setStyleSheet(get_main_window().styleSheet() + self._highlight_stylesheet)
+
+        if self._highlight_timer.isActive():
+            self._highlight_timer.stop()
+        self._highlight_timer.start()
 
     def _clear_highlight(self) -> None:
-        get_main_window().setStyleSheet(self.clear_stylesheet)
+        get_main_window().setStyleSheet(get_main_window().styleSheet().replace(self._highlight_stylesheet, self._clear_stylesheet))
