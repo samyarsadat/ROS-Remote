@@ -60,8 +60,8 @@ class EncoderNavHandler:
         self._highlight_timer.setSingleShot(True)
         self._highlight_timer.timeout.connect(self._clear_highlight)
 
-        self._highlight_stylesheet = "QWidget:focus { border: 2px solid blue; }"
-        self._clear_stylesheet = "QWidget:focus { border: none; }"
+        self._highlight_stylesheet = "border: 2px solid blue;"
+        self._clear_stylesheet = "border: none;"
 
     def _enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
@@ -82,12 +82,17 @@ class EncoderNavHandler:
         self._apply_highlight()
 
     def _apply_highlight(self) -> None:
-        if get_main_window().styleSheet().find(self._highlight_stylesheet) == -1:
-            get_main_window().setStyleSheet(get_main_window().styleSheet() + self._highlight_stylesheet)
+        if get_main_window().styleSheet().find("QWidget:focus {" + self._highlight_stylesheet) == -1:
+            if get_main_window().styleSheet().find("QWidget:focus {" + self._clear_stylesheet) == -1:
+                get_main_window().setStyleSheet(get_main_window().styleSheet().replace("QWidget:focus {",
+                                                                                       "QWidget:focus {" + self._highlight_stylesheet))
+            else:
+                get_main_window().setStyleSheet(get_main_window().styleSheet().replace("QWidget:focus {" + self._clear_stylesheet,
+                                                                                       "QWidget:focus {" + self._highlight_stylesheet))
 
         if self._highlight_timer.isActive():
             self._highlight_timer.stop()
         self._highlight_timer.start()
 
     def _clear_highlight(self) -> None:
-        get_main_window().setStyleSheet(get_main_window().styleSheet().replace(self._highlight_stylesheet, self._clear_stylesheet))
+        get_main_window().setStyleSheet(get_main_window().styleSheet().replace("QWidget:focus {" + self._highlight_stylesheet, self._clear_stylesheet))
