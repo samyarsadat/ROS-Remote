@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.pages.sizePolicy().hasHeightForWidth())
         self.pages.setSizePolicy(sizePolicy1)
         self.pages.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.pages.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.pages.setFocusPolicy(Qt.FocusPolicy.TabFocus)
         self.pages.setTabsClosable(False)
         self.pages.setMovable(False)
         self.pages.setTabBarAutoHide(False)
@@ -1992,7 +1992,7 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName(u"menubar")
         self.menubar.setEnabled(True)
         self.menubar.setGeometry(QRect(0, 0, 1024, 23))
-        self.menubar.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.menubar.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.menubar.setNativeMenuBar(True)
         self.menuPower = QMenu(self.menubar)
         self.menuPower.setObjectName(u"menuPower")
@@ -2024,7 +2024,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.pages.setCurrentIndex(1)
+        self.pages.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

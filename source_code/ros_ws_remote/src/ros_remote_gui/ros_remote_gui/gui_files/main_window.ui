@@ -60,10 +60,10 @@
        <cursorShape>ArrowCursor</cursorShape>
       </property>
       <property name="focusPolicy">
-       <enum>Qt::FocusPolicy::StrongFocus</enum>
+       <enum>Qt::FocusPolicy::TabFocus</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -4269,7 +4269,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </rect>
    </property>
    <property name="focusPolicy">
-    <enum>Qt::FocusPolicy::NoFocus</enum>
+    <enum>Qt::FocusPolicy::StrongFocus</enum>
    </property>
    <property name="nativeMenuBar">
     <bool>true</bool>
