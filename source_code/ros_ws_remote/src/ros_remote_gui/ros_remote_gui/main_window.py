@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
         self.ui.actionRestart_RPi.triggered.connect(self._reboot_host_rpi)
         self.ui.actionShutdown_System.triggered.connect(self._shutdown_host_rpi)
         self.ui.actionRestart_Application.triggered.connect(self._restart_qt_app)
+        self.ui.actionQuit_Application.triggered.connect(self._quit_qt_app)
 
         self.ui.actionCheck_WAN_Connection.triggered.connect(self._check_internet_connection)
         self.ui.actionCheck_Robot_Connection.triggered.connect(self._ping_robot_driver_node)
@@ -133,6 +134,13 @@ class MainWindow(QMainWindow):
         from ros_remote_gui.ros_main import get_ros_node
         get_ros_node().get_logger().warn("System reboot requested!")
         subprocess.run(["reboot"])
+
+    @QtCore.Slot()
+    def _quit_qt_app(self) -> None:
+        from ros_remote_gui.ros_main import get_ros_node
+        from ros_remote_gui.main import qt_app
+        get_ros_node().get_logger().warn("Application shutdown requested!")
+        qt_app.quit()
 
     @QtCore.Slot()
     def _restart_qt_app(self) -> None:

@@ -4285,6 +4285,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <string>Power</string>
     </property>
     <addaction name="actionRestart_Application"/>
+    <addaction name="actionQuit_Application"/>
     <addaction name="separator"/>
     <addaction name="actionRestart_RPi"/>
     <addaction name="actionShutdown_System"/>
@@ -4364,6 +4365,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionQuit_Application">
+   <property name="text">
+    <string>Quit Application</string>
    </property>
   </action>
  </widget>
