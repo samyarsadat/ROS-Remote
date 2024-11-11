@@ -24,6 +24,7 @@ from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
 
 
+# Remote state
 class RemoteState:
     key_sw_en: bool
     left_top_sw_en: bool
@@ -73,7 +74,27 @@ class RemoteState:
     def left_r_green_btn_press(self) -> None:
         print("left_r_green_btn_press")
 
-    def left_rot_enc_btn_press(self) -> None:
+# RemoteState instance
+_remote_state = RemoteState()
+
+def get_remote_state() -> RemoteState:
+    global _remote_state
+    return _remote_state
+
+
+# Encoder input handler
+class EncoderInput:
+    def __init__(self):
+        self.highlight_timer = QTimer()
+        self.highlight_timer.setInterval(ProgramConfig.ENCODER_HIGHLIGHT_TIMEOUT_MS)
+        self.highlight_timer.setSingleShot(True)
+        self.highlight_timer.timeout.connect(self.clear_highlight)
+
+        self.highlight_stylesheet = "QWidget:focus { border: 2px solid blue; }"
+        self.clear_stylesheet = "QWidget { border: none; }"
+
+    def rot_enc_btn_press(self) -> None:
+        self.apply_highlight()
         focused_widget = QApplication.focusWidget()
 
         if isinstance(focused_widget, QPushButton):
@@ -83,19 +104,28 @@ class RemoteState:
             next_index = (current_index + 1) % focused_widget.count()
             focused_widget.setCurrentIndex(next_index)
 
-    def left_rot_enc_sig(self, direction: bool) -> None:
+    def rot_enc_sig(self, direction: bool) -> None:
+        self.apply_highlight()
+
         if direction:
             get_main_window().focusNextChild()
         else:
             get_main_window().focusPreviousChild()
 
+    def apply_highlight(self):
+        get_main_window().setStyleSheet(self.highlight_stylesheet)
+        self.highlight_timer.start()
 
-# RemoteState instance
-_remote_state = RemoteState()
+    def clear_highlight(self):
+        get_main_window().setStyleSheet(self.clear_stylesheet)
 
-def get_remote_state() -> RemoteState:
-    global _remote_state
-    return _remote_state
+# EncoderInput instance
+_encoder_handler = EncoderInput()
+
+def get_encoder_handler() -> EncoderInput:
+    global _encoder_handler
+    return _encoder_handler
+
 
 # Raspberry Pi IO handler
 from ros_remote_pui.rpi_io_handler import RpiIoHandler

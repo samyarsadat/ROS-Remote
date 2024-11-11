@@ -62,15 +62,6 @@ class MainWindow(QMainWindow):
         self.ui.camLedsBrightnessSlider.valueChanged.connect(self._slider_changed)
         self._about_dialog = AboutDialog(self)
 
-        # Highlight widgets that have focus.
-        global_stylesheet = """
-                            QWidget:focus {
-                                border: 2px solid blue;
-                                outline: none;
-                            }
-                            """
-        self.setStyleSheet(global_stylesheet)
-
     def init_ui_handlers(self) -> None:
         from ros_remote_gui.modules.main_tab import MainTab
         from ros_remote_gui.modules.sensors_tab import SensorTab
