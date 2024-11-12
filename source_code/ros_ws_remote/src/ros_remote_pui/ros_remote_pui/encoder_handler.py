@@ -79,10 +79,14 @@ class EncoderNavHandler:
             next_index = (current_index + 1) % focused_widget.count()
             focused_widget.setCurrentIndex(next_index)
         elif isinstance(focused_widget, QComboBox):
-            if not focused_widget.view().isVisible():
-                focused_widget.showPopup()
+            if not self._widget_selected:
+                self._widget_selected = True
+                self._selected_widget_name = focused_widget.objectName()
+                if not focused_widget.view().isVisible(): focused_widget.showPopup()
             else:
-                focused_widget.hidePopup()
+                self._widget_selected = False
+                self._selected_widget_name = ""
+                if focused_widget.view().isVisible(): focused_widget.hidePopup()
         elif isinstance(focused_widget, QSlider):
             if not self._widget_selected:
                 self._widget_selected = True
@@ -96,7 +100,7 @@ class EncoderNavHandler:
         focused_widget = QApplication.focusWidget()
         self._check_selection_state(focused_widget)
 
-        if isinstance(focused_widget, QComboBox) and focused_widget.view().isVisible():
+        if isinstance(focused_widget, QComboBox) and self._widget_selected:
             current_index = focused_widget.currentIndex()
 
             if direction:
@@ -105,7 +109,7 @@ class EncoderNavHandler:
                 next_index = (current_index - 1) % focused_widget.count()
             focused_widget.setCurrentIndex(next_index)
         elif isinstance(focused_widget, QSlider) and self._widget_selected:
-            new_value = focused_widget.value() + (1 if direction else -1)
+            new_value = focused_widget.value() + (10 if direction else -10)
             focused_widget.setValue(new_value)
         else:
             if direction:
