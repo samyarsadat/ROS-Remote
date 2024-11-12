@@ -15,9 +15,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
-
+from PyQt5.QtWidgets import QWidget
 from PySide6.QtCore import QObject, Signal, QTimer
-from PySide6.QtWidgets import QApplication, QPushButton, QTabBar, QCheckBox
+from PySide6.QtWidgets import QApplication, QPushButton, QTabBar, QCheckBox, QComboBox, QSlider
 from gpiozero import RotaryEncoder, Button
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_pui.config import RpiIoConfig, ProgramConfig
@@ -60,10 +60,15 @@ class EncoderNavHandler:
         self._highlight_timer.setSingleShot(True)
         self._highlight_timer.timeout.connect(self._clear_highlight)
 
-        self._highlight_stylesheet = "QWidget:focus { border: 2px solid blue; }"
+        self._highlight_stylesheet = "QWidget:focus { border: 1px solid blue; }"
+        self._select_stylesheet = "QWidget:focus { border: 1px solid red; }"
+
+        self._widget_selected = False
+        self._selected_widget_name = ""
 
     def _enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
+        self._check_selection_state(focused_widget)
 
         if isinstance(focused_widget, QPushButton):
             focused_widget.click()
@@ -73,17 +78,48 @@ class EncoderNavHandler:
             current_index = focused_widget.currentIndex()
             next_index = (current_index + 1) % focused_widget.count()
             focused_widget.setCurrentIndex(next_index)
+        elif isinstance(focused_widget, QComboBox):
+            pass
+            """if not focused_widget.view().isVisible():
+                focused_widget.showPopup()
+            else:
+                focused_widget.hidePopup()"""
+        elif isinstance(focused_widget, QSlider):
+            if not self._widget_selected:
+                self._widget_selected = True
+                self._selected_widget_name = focused_widget.objectName()
+            else:
+                self._widget_selected = False
+                self._selected_widget_name = ""
         self._apply_highlight()
 
     def _enc_rotate(self, direction: bool) -> None:
-        if direction:
-            get_main_window().focusNextChild()
+        focused_widget = QApplication.focusWidget()
+        self._check_selection_state(focused_widget)
+
+        if isinstance(focused_widget, QComboBox):
+            pass
+            """current_index = focused_widget.currentIndex()
+
+            if direction:
+                next_index = (current_index + 1) % focused_widget.count()
+            else:
+                next_index = (current_index - 1) % focused_widget.count()
+            focused_widget.setCurrentIndex(next_index)"""
+        elif isinstance(focused_widget, QSlider) and self._widget_selected:
+            new_value = focused_widget.value() + (1 if direction else -1)
+            focused_widget.setValue(new_value)
         else:
-            get_main_window().focusPreviousChild()
+            if direction:
+                get_main_window().focusNextChild()
+            else:
+                get_main_window().focusPreviousChild()
         self._apply_highlight()
 
     def _apply_highlight(self) -> None:
-        if get_main_window().styleSheet() != self._highlight_stylesheet:
+        if self._widget_selected and get_main_window().styleSheet() != self._select_stylesheet:
+            get_main_window().setStyleSheet(self._select_stylesheet)
+        elif (not self._widget_selected) and get_main_window().styleSheet() != self._highlight_stylesheet:
             get_main_window().setStyleSheet(self._highlight_stylesheet)
 
         if self._highlight_timer.isActive():
@@ -93,3 +129,8 @@ class EncoderNavHandler:
     @staticmethod
     def _clear_highlight() -> None:
         get_main_window().setStyleSheet("")
+
+    def _check_selection_state(self, focused_widget: QWidget) -> None:
+        if self._selected_widget_name != "" and self._widget_selected and self._selected_widget_name != focused_widget.objectName():
+            self._selected_widget_name = ""
+            self._widget_selected = False
