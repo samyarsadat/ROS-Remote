@@ -82,11 +82,11 @@ class EncoderNavHandler:
             if not self._widget_selected:
                 self._widget_selected = True
                 self._selected_widget_name = focused_widget.objectName()
-                if not focused_widget.view().isVisible(): focused_widget.showPopup()
+                if not focused_widget.view().isVisible(): focused_widget.showPopup(); focused_widget.setFocus()
             else:
                 self._widget_selected = False
                 self._selected_widget_name = ""
-                if focused_widget.view().isVisible(): focused_widget.hidePopup()
+                if focused_widget.view().isVisible(): focused_widget.hidePopup(); focused_widget.setFocus()
         elif isinstance(focused_widget, QSlider):
             if not self._widget_selected:
                 self._widget_selected = True
