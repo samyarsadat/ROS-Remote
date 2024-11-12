@@ -84,9 +84,9 @@ class DiagnosticsTab(QObject):
         self._show_calib_res_sig.connect(self._show_calib_res_dialog)
         self._show_selftest_res_sig.connect(self._show_selftest_res_dialog)
 
-        get_main_window().ui.diagMsgOptsAutoScrollCheck.clicked.connect(self._auto_scroll_check_clicked)
-        get_main_window().ui.diagMsgOptsShowTimeCheck.clicked.connect(self._show_time_check_clicked)
-        get_main_window().ui.diagMsgOptsShowKeyValCheck.clicked.connect(self._show_keyvals_check_clicked)
+        get_main_window().ui.diagMsgOptsAutoScrollCheck.stateChanged.connect(self._auto_scroll_check_clicked)
+        get_main_window().ui.diagMsgOptsShowTimeCheck.stateChanged.connect(self._show_time_check_clicked)
+        get_main_window().ui.diagMsgOptsShowKeyValCheck.stateChanged.connect(self._show_keyvals_check_clicked)
         get_main_window().ui.diagMsgOptsClearBtn.clicked.connect(self._clear_msg_display)
 
         get_main_window().ui.calibImuCompassButton.clicked.connect(self._calib_imu_clicked)
