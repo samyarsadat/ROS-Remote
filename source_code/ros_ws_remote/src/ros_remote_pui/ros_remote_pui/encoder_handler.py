@@ -17,7 +17,7 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 from PySide6.QtCore import QObject, Signal, QTimer
-from PySide6.QtWidgets import QApplication, QPushButton, QTabBar
+from PySide6.QtWidgets import QApplication, QPushButton, QTabBar, QCheckBox
 from gpiozero import RotaryEncoder, Button
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_pui.config import RpiIoConfig, ProgramConfig
@@ -60,14 +60,15 @@ class EncoderNavHandler:
         self._highlight_timer.setSingleShot(True)
         self._highlight_timer.timeout.connect(self._clear_highlight)
 
-        self._highlight_stylesheet = "border: 2px solid blue;"
-        self._clear_stylesheet = "border: none;"
+        self._highlight_stylesheet = "QWidget:focus { border: 2px solid blue; }"
 
     def _enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
 
         if isinstance(focused_widget, QPushButton):
             focused_widget.click()
+        elif isinstance(focused_widget, QCheckBox):
+            focused_widget.toggle()
         elif isinstance(focused_widget, QTabBar):
             current_index = focused_widget.currentIndex()
             next_index = (current_index + 1) % focused_widget.count()
@@ -82,17 +83,13 @@ class EncoderNavHandler:
         self._apply_highlight()
 
     def _apply_highlight(self) -> None:
-        if get_main_window().styleSheet().find("QWidget:focus {" + self._highlight_stylesheet) == -1:
-            if get_main_window().styleSheet().find("QWidget:focus {" + self._clear_stylesheet) == -1:
-                get_main_window().setStyleSheet(get_main_window().styleSheet().replace("QWidget:focus {",
-                                                                                       "QWidget:focus {" + self._highlight_stylesheet))
-            else:
-                get_main_window().setStyleSheet(get_main_window().styleSheet().replace("QWidget:focus {" + self._clear_stylesheet,
-                                                                                       "QWidget:focus {" + self._highlight_stylesheet))
+        if get_main_window().styleSheet() != self._highlight_stylesheet:
+            get_main_window().setStyleSheet(self._highlight_stylesheet)
 
         if self._highlight_timer.isActive():
             self._highlight_timer.stop()
         self._highlight_timer.start()
 
-    def _clear_highlight(self) -> None:
-        get_main_window().setStyleSheet(get_main_window().styleSheet().replace("QWidget:focus {" + self._highlight_stylesheet, self._clear_stylesheet))
+    @staticmethod
+    def _clear_highlight() -> None:
+        get_main_window().setStyleSheet("")

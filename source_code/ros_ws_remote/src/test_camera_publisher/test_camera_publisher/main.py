@@ -42,13 +42,13 @@ def main():
 
     try:
         img_bridge = CvBridge()
+        cam_img, width, height = get_camera_image("FRONT CAMERA")
 
         while True:
             frame_start_time = time_ns()
             ros_liveliness_check()
 
             if is_ros_node_initialized():
-                cam_img, width, height = get_camera_image("FRONT CAMERA")
                 get_ros_node().front_camera_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(cam_img, "jpg"))
                 get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(get_camera_overlay(width, height), "png"))
 

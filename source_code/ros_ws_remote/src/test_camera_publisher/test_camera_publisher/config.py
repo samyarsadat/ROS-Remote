@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.11.4"
+PROGRAM_VERSION = "2024.11.12"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 import cv2
 
@@ -24,13 +24,13 @@ import cv2
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/11/4 @ 22:44 UTC"
+    VERSION_DATE = "2024/11/12 @ 1:56 UTC"
 
 
 class ProgramConfig:
     BASE_TEST_PATTERN = "test_images/pm5644.png"   # Options: pm5544.png, pm5644.png (widescreen)
     OVERLAY_PM5644_MODE = True
-    TARGET_PUBLISH_FPS = 25
+    TARGET_PUBLISH_FPS = 24
     CV_TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 
