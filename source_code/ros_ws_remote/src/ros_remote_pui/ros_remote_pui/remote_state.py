@@ -18,8 +18,10 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 from PySide6.QtCore import QTimer, QObject, Signal, Slot
+from remote_pico_coms.srv import SetLedStates, GetLedStates
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
+import ros_remote_pui.ros_main
 
 
 # Button signals
@@ -75,11 +77,17 @@ class RemoteState:
 
     @Slot()
     def left_l_kd2_btn_press(self) -> None:
-        print("left_l_kd2_btn_press")
+        if self._get_led_state(10)[1] == 0:
+            self._set_led_state(10, 0, 65535)
+        else:
+            self._set_led_state(10, 0, 0)
 
     @Slot()
     def left_r_kd2_btn_press(self) -> None:
-        print("left_r_kd2_btn_press")
+        if self._get_led_state(11)[1] == 0:
+            self._set_led_state(11, 0, 65535)
+        else:
+            self._set_led_state(11, 0, 0)
 
     @Slot()
     def left_red_btn_press(self) -> None:
@@ -92,6 +100,35 @@ class RemoteState:
     @Slot()
     def left_r_green_btn_press(self) -> None:
         print("left_r_green_btn_press")
+
+    @staticmethod
+    def _set_led_state(led_num: int, mode: int, pwm_out: int, timeout_s = 2) -> bool:
+        if ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.service_is_ready():
+            req = SetLedStates.Request()
+            req.set_state_mask[led_num] = True
+            req.led_modes[led_num] = mode
+            req.pwm_outputs[led_num] = pwm_out
+            res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl, req, timeout_s)
+
+            if res and res.success:
+                return True
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service timed-out!")
+        else:
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service unavailable!")
+        return False
+
+    @staticmethod
+    def _get_led_state(led_num: int, timeout_s = 2) -> tuple[int, int]:
+        if ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl.service_is_ready():
+            req = GetLedStates.Request()
+            res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl, req, timeout_s)
+
+            if res:
+                return res.led_modes[led_num], res.pwm_outputs[led_num]
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Get LED states service timed-out!")
+        else:
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Get LED states service unavailable!")
+        return 0, 0
 
 
 # RemoteState instance

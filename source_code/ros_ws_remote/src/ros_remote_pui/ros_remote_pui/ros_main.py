@@ -19,8 +19,10 @@
 import threading
 import time
 import rclpy
+from typing import Union
 from datetime import datetime
 from rclpy import Context
+from rclpy.client import SrvTypeRequest, Client, SrvTypeResponse
 from rclpy.executors import ExternalShutdownException
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -39,6 +41,27 @@ _ros_thread = None
 
 # ---- ROS Node ----
 class RosNode(Node):
+    # Client.call() implementation with timeout.
+    def srv_call_with_timeout(self, client: Client, request: SrvTypeRequest, timeout_s: int) -> Union[SrvTypeResponse, None]:
+        event = threading.Event()
+
+        def unblock(ftr):
+            event.set()
+
+        future = client.call_async(request)
+        future.add_done_callback(unblock)
+
+        if not future.done():
+            if not event.wait(float(timeout_s)):
+                self.get_logger().error(f"Service call failure [{client.srv_name}]: timed out! Cancelling.")
+                future.cancel()
+                return None
+
+        if future.exception() is not None:
+            raise future.exception()
+
+        return future.result()
+
     def __init__(self, context: Context):
         super().__init__(node_name=RosConfig.NODE_NAME, namespace=RosConfig.NODE_NAMESPACE, context=context)
         self.get_logger().info("Creating subscribers, and services clients...")
