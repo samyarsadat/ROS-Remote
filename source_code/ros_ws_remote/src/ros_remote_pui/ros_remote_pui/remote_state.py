@@ -77,17 +77,17 @@ class RemoteState:
 
     @Slot()
     def left_l_kd2_btn_press(self) -> None:
+        if self._get_led_state(9)[1] == 0:
+            self._set_led_state(9, 0, 65535)
+        else:
+            self._set_led_state(9, 0, 0)
+
+    @Slot()
+    def left_r_kd2_btn_press(self) -> None:
         if self._get_led_state(10)[1] == 0:
             self._set_led_state(10, 0, 65535)
         else:
             self._set_led_state(10, 0, 0)
-
-    @Slot()
-    def left_r_kd2_btn_press(self) -> None:
-        if self._get_led_state(11)[1] == 0:
-            self._set_led_state(11, 0, 65535)
-        else:
-            self._set_led_state(11, 0, 0)
 
     @Slot()
     def left_red_btn_press(self) -> None:
@@ -102,7 +102,7 @@ class RemoteState:
         print("left_r_green_btn_press")
 
     @staticmethod
-    def _set_led_state(led_num: int, mode: int, pwm_out: int, timeout_s = 2) -> bool:
+    def _set_led_state(led_num: int, mode: int, pwm_out: int, timeout_s = 5) -> bool:
         if ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.service_is_ready():
             req = SetLedStates.Request()
             req.set_state_mask[led_num] = True
@@ -118,7 +118,7 @@ class RemoteState:
         return False
 
     @staticmethod
-    def _get_led_state(led_num: int, timeout_s = 2) -> tuple[int, int]:
+    def _get_led_state(led_num: int, timeout_s = 5) -> tuple[int, int]:
         if ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl.service_is_ready():
             req = GetLedStates.Request()
             res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl, req, timeout_s)
