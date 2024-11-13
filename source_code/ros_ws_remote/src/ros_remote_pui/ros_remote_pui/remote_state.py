@@ -91,7 +91,7 @@ class RemoteState:
 
     @Slot()
     def left_red_btn_press(self) -> None:
-        print("left_red_btn_press")
+        self._set_all_leds_off()
 
     @Slot()
     def left_l_green_btn_press(self) -> None:
@@ -102,12 +102,12 @@ class RemoteState:
         print("left_r_green_btn_press")
 
     @staticmethod
-    def _set_led_state(led_num: int, mode: int, pwm_out: int, timeout_s = 5) -> bool:
+    def _make_set_led_request(mask: list[int], modes: list[int], pwm_vals: list[int], timeout_s: int) -> bool:
         if ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.service_is_ready():
             req = SetLedStates.Request()
-            req.set_state_mask[led_num] = True
-            req.led_modes[led_num] = mode
-            req.pwm_outputs[led_num] = pwm_out
+            req.set_state_mask = mask
+            req.led_modes = modes
+            req.pwm_outputs = pwm_vals
             res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl, req, timeout_s)
 
             if res and res.success:
@@ -117,8 +117,26 @@ class RemoteState:
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service unavailable!")
         return False
 
+    def _set_led_state(self, led_num: int, mode: int, pwm_out: int, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+        mask = [False] * ProgramConfig.PICO_NUM_LEDS
+        modes = [0] * ProgramConfig.PICO_NUM_LEDS
+        pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
+
+        mask[led_num] = True
+        modes[led_num] = mode
+        pwm_vals[led_num] = pwm_out
+
+        return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
+
+    def _set_all_leds_off(self, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+        mask = [True] * ProgramConfig.PICO_NUM_LEDS
+        modes = [0] * ProgramConfig.PICO_NUM_LEDS
+        pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
+
+        return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
+
     @staticmethod
-    def _get_led_state(led_num: int, timeout_s = 5) -> tuple[int, int]:
+    def _get_led_state(led_num: int, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> tuple[int, int]:
         if ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl.service_is_ready():
             req = GetLedStates.Request()
             res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl, req, timeout_s)
