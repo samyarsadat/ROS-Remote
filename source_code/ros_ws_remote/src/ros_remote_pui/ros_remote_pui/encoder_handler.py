@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-from PySide6.QtCore import QObject, Signal, QTimer
+from PySide6.QtCore import QObject, Signal, QTimer, Slot
 from PySide6.QtWidgets import QApplication, QPushButton, QTabBar, QCheckBox, QComboBox, QSlider, QWidget
 from gpiozero import RotaryEncoder, Button
 from ros_remote_gui.main_window import get_main_window
@@ -66,6 +66,7 @@ class EncoderNavHandler:
         self._widget_selected = False
         self._selected_widget_name = ""
 
+    @Slot()
     def _enc_btn_press(self) -> None:
         focused_widget = QApplication.focusWidget()
         self._check_selection_state(focused_widget)
@@ -82,12 +83,14 @@ class EncoderNavHandler:
             if not self._widget_selected:
                 self._widget_selected = True
                 self._selected_widget_name = focused_widget.objectName()
+
                 if not focused_widget.view().isVisible():
                     focused_widget.showPopup()
                     focused_widget.setFocus()
             else:
                 self._widget_selected = False
                 self._selected_widget_name = ""
+
                 if focused_widget.view().isVisible():
                     focused_widget.hidePopup()
                     focused_widget.setFocus()
@@ -100,6 +103,7 @@ class EncoderNavHandler:
                 self._selected_widget_name = ""
         self._apply_highlight()
 
+    @Slot()
     def _enc_rotate(self, direction: bool) -> None:
         focused_widget = QApplication.focusWidget()
         self._check_selection_state(focused_widget)

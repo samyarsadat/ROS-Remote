@@ -75,35 +75,35 @@ class RosNode(Node):
         if msg.left_red_btn and (time.time_ns() - self._left_red_btn_deb_lc) > debounce_time_ns and self._left_red_btn_wl:
             self._left_red_btn_deb_lc = time.time_ns()
             self._left_red_btn_wl = False
-            get_remote_state().left_red_btn_press()
+            get_remote_state()._btn_signals.left_red_btn_press_sig.emit()
         elif not msg.left_red_btn:
             self._left_red_btn_wl = True
 
         if msg.left_red_kd2_btn and (time.time_ns() - self._left_red_kd2_btn_deb_lc) > debounce_time_ns and self._left_red_kd2_btn_wl:
             self._left_red_kd2_btn_deb_lc = time.time_ns()
             self._left_red_kd2_btn_wl = False
-            get_remote_state().left_l_kd2_btn_press()
+            get_remote_state()._btn_signals.left_l_kd2_btn_press_sig.emit()
         elif not msg.left_red_kd2_btn:
             self._left_red_kd2_btn_wl = True
 
         if msg.left_green_kd2_btn and (time.time_ns() - self._left_green_kd2_btn_deb_lc) > debounce_time_ns and self._left_green_kd2_btn_wl:
             self._left_green_kd2_btn_deb_lc = time.time_ns()
             self._left_green_kd2_btn_wl = False
-            get_remote_state().left_r_kd2_btn_press()
+            get_remote_state()._btn_signals.left_r_kd2_btn_press_sig.emit()
         elif not msg.left_green_kd2_btn:
             self._left_green_kd2_btn_wl = True
 
         if msg.left_green_left_btn and (time.time_ns() - self._left_green_left_btn_deb_lc) > debounce_time_ns and self._left_green_left_btn_wl:
             self._left_green_left_btn_deb_lc = time.time_ns()
             self._left_green_left_btn_wl = False
-            get_remote_state().left_l_green_btn_press()
+            get_remote_state()._btn_signals.left_l_green_btn_press_sig.emit()
         elif not msg.left_green_left_btn:
             self._left_green_left_btn_wl = True
 
         if msg.left_green_right_btn and (time.time_ns() - self._left_green_right_btn_deb_lc) > debounce_time_ns and self._left_green_right_btn_wl:
             self._left_green_right_btn_deb_lc = time.time_ns()
             self._left_green_right_btn_wl = False
-            get_remote_state().left_r_green_btn_press()
+            get_remote_state()._btn_signals.left_r_green_btn_press_sig.emit()
         elif not msg.left_green_right_btn:
             self._left_green_right_btn_wl = True
 

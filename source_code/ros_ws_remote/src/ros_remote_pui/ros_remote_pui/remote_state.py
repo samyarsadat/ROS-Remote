@@ -17,9 +17,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
+
+
+# Button signals
+class ButtonSignals(QObject):
+    left_l_kd2_btn_press_sig = Signal()
+    left_r_kd2_btn_press_sig = Signal()
+    left_red_btn_press_sig = Signal()
+    left_l_green_btn_press_sig = Signal()
+    left_r_green_btn_press_sig = Signal()
 
 
 # Remote state
@@ -37,6 +46,13 @@ class RemoteState:
     last_joystick_recv: datetime
 
     def __init__(self):
+        self._btn_signals = ButtonSignals()
+        self._btn_signals.left_l_kd2_btn_press_sig.connect(self.left_l_kd2_btn_press)
+        self._btn_signals.left_r_kd2_btn_press_sig.connect(self.left_r_kd2_btn_press)
+        self._btn_signals.left_red_btn_press_sig.connect(self.left_red_btn_press)
+        self._btn_signals.left_l_green_btn_press_sig.connect(self.left_l_green_btn_press)
+        self._btn_signals.left_r_green_btn_press_sig.connect(self.left_r_green_btn_press)
+
         self.key_sw_en = False          # Lock/unlock remote
         self.left_top_sw_en = False     # Not assigned
         self.left_mid_a_sw_en = False   # Enable/disable camera LEDs (all full-on/full-off)
@@ -57,18 +73,23 @@ class RemoteState:
     def _sw_state_act_tmr_call(self) -> None:
         pass
 
+    @Slot()
     def left_l_kd2_btn_press(self) -> None:
         print("left_l_kd2_btn_press")
 
+    @Slot()
     def left_r_kd2_btn_press(self) -> None:
         print("left_r_kd2_btn_press")
 
+    @Slot()
     def left_red_btn_press(self) -> None:
         print("left_red_btn_press")
 
+    @Slot()
     def left_l_green_btn_press(self) -> None:
         print("left_l_green_btn_press")
 
+    @Slot()
     def left_r_green_btn_press(self) -> None:
         print("left_r_green_btn_press")
 
@@ -79,7 +100,6 @@ _remote_state = RemoteState()
 def get_remote_state() -> RemoteState:
     global _remote_state
     return _remote_state
-
 
 # Raspberry Pi IO handler & encoder nav handler
 from ros_remote_pui.rpi_io_handler import RpiIoHandler
