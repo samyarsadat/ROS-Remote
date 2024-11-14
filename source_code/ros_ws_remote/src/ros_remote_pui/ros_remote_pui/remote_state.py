@@ -82,7 +82,7 @@ class RemoteState:
 
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
-        self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
+        # This timer is now started in ros_main.py after node init.
 
     def _sw_state_act_tmr_call(self) -> None:
         # Lock/unlock remote
