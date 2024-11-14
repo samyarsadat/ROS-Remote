@@ -104,7 +104,7 @@ class RemoteState:
 
     @staticmethod
     def _led_set_request_done_call(future: Future):
-        if (not future.exception()) or (not future.result()) or (not future.result().success):
+        if future.exception() or (not future.result()) or (not future.result().success):
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service call failure!")
 
     def _make_set_led_request(self, mask: list[int], modes: list[int], pwm_vals: list[int]) -> bool:
