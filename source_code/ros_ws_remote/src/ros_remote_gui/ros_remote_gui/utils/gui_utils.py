@@ -25,6 +25,8 @@ def generate_indicator_stylesheet(enabled: bool, active_color="red", inactive_co
 
 
 # Service call callback helpers
+# FIXME: This function is often called from threads other than Main Thread, however, creating MessageBoxes from other treads
+#        and setting their parents to main_window results in memory-related issues and potential crashes.
 def srvcl_failed_show_err(unavail: bool):
     if not unavail:
         QMessageBox.critical(ros_remote_gui.main_window.get_main_window(), "Error", "ROS service call failed!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)

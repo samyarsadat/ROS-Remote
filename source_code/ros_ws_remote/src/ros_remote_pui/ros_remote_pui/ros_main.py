@@ -171,10 +171,6 @@ def _ros_executor_thread(stop_thread):
         executor.add_node(_pui_ros_node)
         _pui_ros_node.get_logger().info("Executor initialized!")
 
-        # Start this timer here as the GUI node needs to be initialized before it starts.
-        # The GUI node should also be initialized by the time this node initializes.
-        get_remote_state()._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
-
         _pui_ros_node.get_logger().info("Starting the executor...")
 
         while not stop_thread():

@@ -39,6 +39,7 @@ class ButtonSignals(QObject):
 
 
 # Remote state
+# TODO: Handle setting LED states.
 class RemoteState:
     key_sw_en: bool
     left_top_sw_en: bool
@@ -82,7 +83,9 @@ class RemoteState:
 
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
-        # This timer is now started in ros_main.py after node init.
+
+        # FIXME: This is unreliable. This timer needs to start after the GUI node has initialized.
+        self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
 
     def _sw_state_act_tmr_call(self) -> None:
         # Lock/unlock remote
@@ -94,6 +97,7 @@ class RemoteState:
             if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
 
         # Enable/disable camera LEDs (all full-on/full-off)
+        # TODO: Improve the logic of this.
         if self.key_sw_en:
             if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
                 get_main_window().ui.camLed1Check.setChecked(True)
@@ -109,6 +113,7 @@ class RemoteState:
                 get_main_window().ui.camLedsBrightnessSlider.setValue(100)
 
         # Motor controller enable (NO REMOTE LOCK CHECK)
+        # TODO: This could result in the motor controller enable service being called over and over again.
         if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
             if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready():
                 get_main_window().motor_tab_ui_handler._disable_mtr_ctrls_call()

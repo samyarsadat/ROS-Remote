@@ -156,6 +156,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _ping_robot_driver_srv_call(future: Future) -> None:
+        # FIXME: We really shouldn't be creating MessageBoxes from threads other than Main Thread.
         if future.exception() or not future.result().data:
             QMessageBox.warning(get_main_window(), "Robot Connection", "Driver connection failed.", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
         else:
