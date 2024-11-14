@@ -16,6 +16,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
+from asyncio import Future
 
 from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from remote_pico_coms.srv import SetLedStates, GetLedStates
@@ -102,22 +103,25 @@ class RemoteState:
         print("left_r_green_btn_press")
 
     @staticmethod
-    def _make_set_led_request(mask: list[int], modes: list[int], pwm_vals: list[int], timeout_s: int) -> bool:
+    def _led_set_request_done_call(future: Future):
+        if (not future.exception()) or (not future.result()) or (not future.result().success):
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service call failure!")
+
+    def _make_set_led_request(self, mask: list[int], modes: list[int], pwm_vals: list[int]) -> bool:
         if ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.service_is_ready():
             req = SetLedStates.Request()
             req.set_state_mask = mask
             req.led_modes = modes
             req.pwm_outputs = pwm_vals
-            res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl, req, timeout_s)
 
-            if res and res.success:
-                return True
-            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service timed-out!")
+            future = ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.call_async(req)
+            future.add_done_callback(self._led_set_request_done_call)
+            return True
         else:
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service unavailable!")
         return False
 
-    def _set_led_state(self, led_num: int, mode: int, pwm_out: int, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+    def _set_led_state(self, led_num: int, mode: int, pwm_out: int) -> bool:
         mask = [False] * ProgramConfig.PICO_NUM_LEDS
         modes = [0] * ProgramConfig.PICO_NUM_LEDS
         pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
@@ -126,21 +130,21 @@ class RemoteState:
         modes[led_num] = mode
         pwm_vals[led_num] = pwm_out
 
-        return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
+        return self._make_set_led_request(mask, modes, pwm_vals)
 
-    def _set_all_leds_off(self, timeout_s=ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+    def _set_all_leds_off(self) -> bool:
         mask = [True] * ProgramConfig.PICO_NUM_LEDS
         modes = [0] * ProgramConfig.PICO_NUM_LEDS
         pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
 
-        return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
+        return self._make_set_led_request(mask, modes, pwm_vals)
 
-    def _set_all_leds_on(self, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+    def _set_all_leds_on(self) -> bool:
         mask = [True] * ProgramConfig.PICO_NUM_LEDS
         modes = [0] * ProgramConfig.PICO_NUM_LEDS
         pwm_vals = [65535] * ProgramConfig.PICO_NUM_LEDS
 
-        return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
+        return self._make_set_led_request(mask, modes, pwm_vals)
 
     @staticmethod
     def _get_led_state(led_num: int, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> tuple[int, int]:
