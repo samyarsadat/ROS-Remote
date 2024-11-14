@@ -24,12 +24,15 @@ import ros_remote_pui.remote_state
 
 class RpiIoHandler:
     def __init__(self):
-        self.toggle_sw_a = Button(RpiIoConfig.TOGGLE_SW_A_PIN, pull_up=True, bounce_time=RpiIoConfig.BUTTON_DEBOUNCE_TIME_S)
-        self.toggle_sw_b = Button(RpiIoConfig.TOGGLE_SW_B_PIN, pull_up=True, bounce_time=RpiIoConfig.BUTTON_DEBOUNCE_TIME_S)
-        self.toggle_sw_c = Button(RpiIoConfig.TOGGLE_SW_C_PIN, pull_up=True, bounce_time=RpiIoConfig.BUTTON_DEBOUNCE_TIME_S)
+        self.toggle_sw_a = Button(RpiIoConfig.TOGGLE_SW_A_PIN, pull_up=True)
+        self.toggle_sw_b = Button(RpiIoConfig.TOGGLE_SW_B_PIN, pull_up=True)
+        self.toggle_sw_c = Button(RpiIoConfig.TOGGLE_SW_C_PIN, pull_up=True)
         self.toggle_sw_a.when_activated = self._set_toggle_a_state
         self.toggle_sw_b.when_activated = self._set_toggle_b_state
         self.toggle_sw_c.when_activated = self._set_toggle_c_state
+        self.toggle_sw_a.when_deactivated = self._set_toggle_a_state
+        self.toggle_sw_b.when_deactivated = self._set_toggle_b_state
+        self.toggle_sw_c.when_deactivated = self._set_toggle_c_state
 
     def _set_toggle_a_state(self):
         ros_remote_pui.remote_state.get_remote_state().left_mid_a_sw_en = self.toggle_sw_a.is_active
