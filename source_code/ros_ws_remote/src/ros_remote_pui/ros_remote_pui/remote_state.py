@@ -92,6 +92,20 @@ class RemoteState:
             get_main_window().setEnabled(True)
             if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
 
+        # Enable/disable camera LEDs (all full-on/full-off)
+        if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
+            get_main_window().ui.camLedsBrightnessSlider.setValue(0)
+            get_main_window().ui.camLed1Check.setChecked(True)
+            get_main_window().ui.camLed2Check.setChecked(True)
+            get_main_window().ui.camLed3Check.setChecked(True)
+            get_main_window().ui.camLed4Check.setChecked(True)
+        elif self.left_mid_a_sw_en and get_main_window().ui.camLedsBrightnessSlider.value() == 0:
+            get_main_window().ui.camLedsBrightnessSlider.setValue(100)
+            get_main_window().ui.camLed1Check.setChecked(True)
+            get_main_window().ui.camLed2Check.setChecked(True)
+            get_main_window().ui.camLed3Check.setChecked(True)
+            get_main_window().ui.camLed4Check.setChecked(True)
+
     # BUTTON NOT ASSIGNED
     @Slot()
     def left_l_kd2_btn_press(self) -> None:
@@ -116,16 +130,18 @@ class RemoteState:
     # UI - PREVIOUS PAGE
     @Slot()
     def left_l_green_btn_press(self) -> None:
-        current_index = get_main_window().ui.pages.currentIndex()
-        next_index = (current_index - 1) % get_main_window().ui.pages.count()
-        get_main_window().ui.pages.setCurrentIndex(next_index)
+        if self.key_sw_en:
+            current_index = get_main_window().ui.pages.currentIndex()
+            next_index = (current_index - 1) % get_main_window().ui.pages.count()
+            get_main_window().ui.pages.setCurrentIndex(next_index)
 
     # UI - NEXT PAGE
     @Slot()
     def left_r_green_btn_press(self) -> None:
-        current_index = get_main_window().ui.pages.currentIndex()
-        next_index = (current_index + 1) % get_main_window().ui.pages.count()
-        get_main_window().ui.pages.setCurrentIndex(next_index)
+        if self.key_sw_en:
+            current_index = get_main_window().ui.pages.currentIndex()
+            next_index = (current_index + 1) % get_main_window().ui.pages.count()
+            get_main_window().ui.pages.setCurrentIndex(next_index)
 
     @staticmethod
     def _led_set_request_done_call(future: Future):
