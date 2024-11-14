@@ -128,10 +128,17 @@ class RemoteState:
 
         return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
 
-    def _set_all_leds_off(self, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+    def _set_all_leds_off(self, timeout_s=ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
         mask = [True] * ProgramConfig.PICO_NUM_LEDS
         modes = [0] * ProgramConfig.PICO_NUM_LEDS
         pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
+
+        return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
+
+    def _set_all_leds_on(self, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> bool:
+        mask = [True] * ProgramConfig.PICO_NUM_LEDS
+        modes = [0] * ProgramConfig.PICO_NUM_LEDS
+        pwm_vals = [65535] * ProgramConfig.PICO_NUM_LEDS
 
         return self._make_set_led_request(mask, modes, pwm_vals, timeout_s)
 

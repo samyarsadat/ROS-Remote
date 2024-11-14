@@ -202,6 +202,7 @@ void set_led_states_callback(const void *req, void *res)
         }
     }
 
+    set_led_outputs();
     res_in->success = true;
 }
 
