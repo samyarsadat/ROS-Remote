@@ -16,10 +16,11 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
-from asyncio import Future
 
+from asyncio import Future
 from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from remote_pico_coms.srv import SetLedStates, GetLedStates
+from ros_remote_gui.main_window import get_main_window
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
 import ros_remote_pui.ros_main
@@ -76,6 +77,7 @@ class RemoteState:
     def _sw_state_act_tmr_call(self) -> None:
         pass
 
+    # BUTTON NOT ASSIGNED
     @Slot()
     def left_l_kd2_btn_press(self) -> None:
         if self._get_led_state(9)[1] == 0:
@@ -83,6 +85,7 @@ class RemoteState:
         else:
             self._set_led_state(9, 0, 0)
 
+    # BUTTON NOT ASSIGNED
     @Slot()
     def left_r_kd2_btn_press(self) -> None:
         if self._get_led_state(10)[1] == 0:
@@ -90,17 +93,24 @@ class RemoteState:
         else:
             self._set_led_state(10, 0, 0)
 
+    # BUTTON NOT ASSIGNED
     @Slot()
     def left_red_btn_press(self) -> None:
-        self._set_all_leds_off()
+        pass
 
+    # UI - PREVIOUS PAGE
     @Slot()
     def left_l_green_btn_press(self) -> None:
-        print("left_l_green_btn_press")
+        current_index = get_main_window().ui.pages.currentIndex()
+        next_index = (current_index - 1) % get_main_window().ui.pages.count()
+        get_main_window().ui.pages.setCurrentIndex(next_index)
 
+    # UI - NEXT PAGE
     @Slot()
     def left_r_green_btn_press(self) -> None:
-        print("left_r_green_btn_press")
+        current_index = get_main_window().ui.pages.currentIndex()
+        next_index = (current_index + 1) % get_main_window().ui.pages.count()
+        get_main_window().ui.pages.setCurrentIndex(next_index)
 
     @staticmethod
     def _led_set_request_done_call(future: Future):
