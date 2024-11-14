@@ -94,17 +94,17 @@ class RemoteState:
 
         # Enable/disable camera LEDs (all full-on/full-off)
         if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
+            get_main_window().ui.camLed1Check.setChecked(True)
+            get_main_window().ui.camLed2Check.setChecked(True)
+            get_main_window().ui.camLed3Check.setChecked(True)
+            get_main_window().ui.camLed4Check.setChecked(True)
             get_main_window().ui.camLedsBrightnessSlider.setValue(0)
-            get_main_window().ui.camLed1Check.setChecked(True)
-            get_main_window().ui.camLed2Check.setChecked(True)
-            get_main_window().ui.camLed3Check.setChecked(True)
-            get_main_window().ui.camLed4Check.setChecked(True)
         elif self.left_mid_a_sw_en and get_main_window().ui.camLedsBrightnessSlider.value() == 0:
-            get_main_window().ui.camLedsBrightnessSlider.setValue(100)
             get_main_window().ui.camLed1Check.setChecked(True)
             get_main_window().ui.camLed2Check.setChecked(True)
             get_main_window().ui.camLed3Check.setChecked(True)
             get_main_window().ui.camLed4Check.setChecked(True)
+            get_main_window().ui.camLedsBrightnessSlider.setValue(100)
 
     # BUTTON NOT ASSIGNED
     @Slot()
