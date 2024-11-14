@@ -17,13 +17,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
+import ros_remote_pui.ros_main
+import subprocess
+import re
 from asyncio import Future
 from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from remote_pico_coms.srv import SetLedStates, GetLedStates
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
-import ros_remote_pui.ros_main
 
 
 # Button signals
@@ -70,12 +72,25 @@ class RemoteState:
         self.joystick_vals = [0, 0]
         self.last_joystick_recv = datetime.now()
 
+        # Get the ID of the touchscreen from Xinput.
+        # This will be used when locking/unlocking the remote.
+        self._touchscreen_id = None
+        xinput_resp = subprocess.run(["xinput", "list"], stdout=subprocess.PIPE, text=True)
+        id_matches = re.search(r"touchscreen.*id=(\d+)", xinput_resp.stdout, re.IGNORECASE)
+        if id_matches: self._touchscreen_id = id_matches.group(1)
+
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
         self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
 
     def _sw_state_act_tmr_call(self) -> None:
-        pass
+        # Lock/unlock remote
+        if (not self.key_sw_en) and get_main_window().isEnabled():
+            get_main_window().setEnabled(False)
+            if self._touchscreen_id: subprocess.run(["xinput", "disable", self._touchscreen_id])
+        elif self.key_sw_en and (not get_main_window().isEnabled()):
+            get_main_window().setEnabled(True)
+            if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
 
     # BUTTON NOT ASSIGNED
     @Slot()
