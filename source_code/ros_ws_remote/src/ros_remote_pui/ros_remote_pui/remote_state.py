@@ -24,6 +24,7 @@ from asyncio import Future
 from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from remote_pico_coms.srv import SetLedStates, GetLedStates
 from ros_remote_gui.main_window import get_main_window
+from ros_remote_gui.ros_main import get_ros_node as get_gui_ros_node
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
 
@@ -106,6 +107,14 @@ class RemoteState:
                 get_main_window().ui.camLed3Check.setChecked(True)
                 get_main_window().ui.camLed4Check.setChecked(True)
                 get_main_window().ui.camLedsBrightnessSlider.setValue(100)
+
+        # Motor controller enable (NO REMOTE LOCK CHECK)
+        if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+            if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready():
+                get_main_window().motor_tab_ui_handler._disable_mtr_ctrls_call()
+        elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+            if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready():
+                get_main_window().motor_tab_ui_handler._enable_mtr_ctrls_call()
 
     # BUTTON NOT ASSIGNED
     @Slot()
