@@ -22,6 +22,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import Qt
 from ros_remote_gui.config import ProgramConfig
 from ros_remote_gui.utils.ui_classes_init import AboutDialog
+from ros_remote_gui.utils.gui_utils import get_msg_box_helper
 from ros_remote_gui.gui_files.ui_main_window import Ui_MainWindow
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 from PySide6 import QtCore
@@ -156,11 +157,10 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _ping_robot_driver_srv_call(future: Future) -> None:
-        # FIXME: We really shouldn't be creating MessageBoxes from threads other than Main Thread.
         if future.exception() or not future.result().data:
-            QMessageBox.warning(get_main_window(), "Robot Connection", "Driver connection failed.", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
+            get_msg_box_helper().show_msg_box_sig.emit("warn", "Robot Connection", "Driver connection failed.")
         else:
-            QMessageBox.information(get_main_window(), "Robot Connection", "Driver connection is OK!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
+            get_msg_box_helper().show_msg_box_sig.emit("info", "Robot Connection", "Driver connection is OK!")
 
     @QtCore.Slot()
     def _ping_robot_driver_node(self) -> None:

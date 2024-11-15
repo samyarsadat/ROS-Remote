@@ -103,7 +103,7 @@ class EncoderNavHandler:
                 self._selected_widget_name = ""
         self._apply_highlight()
 
-    @Slot()
+    @Slot(bool)
     def _enc_rotate(self, direction: bool) -> None:
         focused_widget = QApplication.focusWidget()
         self._check_selection_state(focused_widget)

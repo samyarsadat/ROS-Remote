@@ -17,6 +17,7 @@
 
 import ros_remote_gui
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import QObject, Signal, Slot
 
 
 # Generate stylesheet for an indicator label
@@ -24,11 +25,38 @@ def generate_indicator_stylesheet(enabled: bool, active_color="red", inactive_co
     return f"background-color: {active_color}" if enabled else f"background-color: {inactive_color}"
 
 
+# Message box helper. Used for displaying message boxes from threads other than Main Thread.
+class MessageBoxHelper(QObject):
+    # (type {"info", "warn", "error"}, title, text)
+    show_msg_box_sig = Signal(str, str, str)
+
+    def __init__(self):
+        super().__init__()
+        self.show_msg_box_sig.connect(self._show_msg_box)
+        self._default_buttons = QMessageBox.Ok
+
+    @Slot(str, str, str)
+    def _show_msg_box(self, type: str, title: str, text: str) -> None:
+        match type:
+            case "info":
+                QMessageBox.information(ros_remote_gui.main_window.get_main_window(), title, text, buttons=self._default_buttons)
+            case "warn":
+                QMessageBox.warning(ros_remote_gui.main_window.get_main_window(), title, text, buttons=self._default_buttons)
+            case "error":
+                QMessageBox.critical(ros_remote_gui.main_window.get_main_window(), title, text, buttons=self._default_buttons)
+            case _:
+                pass
+
+# MessageBoxHelper instance
+_msg_box_helper = MessageBoxHelper()
+
+def get_msg_box_helper() -> MessageBoxHelper:
+    return _msg_box_helper
+
+
 # Service call callback helpers
-# FIXME: This function is often called from threads other than Main Thread, however, creating MessageBoxes from other treads
-#        and setting their parents to main_window results in memory-related issues and potential crashes.
 def srvcl_failed_show_err(unavail: bool):
     if not unavail:
-        QMessageBox.critical(ros_remote_gui.main_window.get_main_window(), "Error", "ROS service call failed!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
+        get_msg_box_helper().show_msg_box_sig.emit("error", "Error", "ROS service call failed!")
     else:
-        QMessageBox.warning(ros_remote_gui.main_window.get_main_window(), "Warning", "ROS service unavailable!", buttons=QMessageBox.Ok, defaultButton=QMessageBox.Ok)
+        get_msg_box_helper().show_msg_box_sig.emit("warn", "Warning", "ROS service unavailable!")

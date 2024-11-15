@@ -116,10 +116,10 @@ class MotorTab:
 
     @staticmethod
     def _btn_srvcl_done_call(future: Future) -> None:
-        if future.exception():
-            get_ros_node().get_logger().warn(f"ROS service call failed! (Motor tab button)")
+        if future.exception() or not future.result():
+            get_ros_node().get_logger().warn("ROS service call failed! (Motor tab button)")
             srvcl_failed_show_err(False)
-        elif not future.result().success:
+        elif future.result() and not future.result().success:
             get_ros_node().get_logger().warn(f"ROS service call failed! (Motor tab button): {future.result().message}")
             srvcl_failed_show_err(False)
 

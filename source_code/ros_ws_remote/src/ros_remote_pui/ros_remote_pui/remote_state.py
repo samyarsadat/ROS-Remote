@@ -25,8 +25,10 @@ from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from remote_pico_coms.srv import SetLedStates, GetLedStates
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.ros_main import get_ros_node as get_gui_ros_node
+from ros_remote_gui.ros_main import is_ros_node_initialized as is_gui_node_initialized
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
+from std_srvs.srv import SetBool
 
 
 # Button signals
@@ -81,10 +83,11 @@ class RemoteState:
         id_matches = re.search(r"touchscreen.*id=(\d+)", xinput_resp.stdout, re.IGNORECASE)
         if id_matches: self._touchscreen_id = id_matches.group(1)
 
+        # Will be True when there is an active call to the motor controller enable service in-progress.
+        self._call_to_mtr_ctrl_en_in_progress = False
+
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
-
-        # FIXME: This is unreliable. This timer needs to start after the GUI node has initialized.
         self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
 
     def _sw_state_act_tmr_call(self) -> None:
@@ -96,30 +99,29 @@ class RemoteState:
             get_main_window().setEnabled(True)
             if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
 
-        # Enable/disable camera LEDs (all full-on/full-off)
-        # TODO: Improve the logic of this.
-        if self.key_sw_en:
-            if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
-                get_main_window().ui.camLed1Check.setChecked(True)
-                get_main_window().ui.camLed2Check.setChecked(True)
-                get_main_window().ui.camLed3Check.setChecked(True)
-                get_main_window().ui.camLed4Check.setChecked(True)
-                get_main_window().ui.camLedsBrightnessSlider.setValue(0)
-            elif self.left_mid_a_sw_en and get_main_window().ui.camLedsBrightnessSlider.value() == 0:
-                get_main_window().ui.camLed1Check.setChecked(True)
-                get_main_window().ui.camLed2Check.setChecked(True)
-                get_main_window().ui.camLed3Check.setChecked(True)
-                get_main_window().ui.camLed4Check.setChecked(True)
-                get_main_window().ui.camLedsBrightnessSlider.setValue(100)
+        if is_gui_node_initialized():
+            # Enable/disable camera LEDs (all full-on/full-off)
+            # TODO: Improve the logic of this.
+            if self.key_sw_en:
+                if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
+                    get_main_window().ui.camLed1Check.setChecked(True)
+                    get_main_window().ui.camLed2Check.setChecked(True)
+                    get_main_window().ui.camLed3Check.setChecked(True)
+                    get_main_window().ui.camLed4Check.setChecked(True)
+                    get_main_window().ui.camLedsBrightnessSlider.setValue(0)
+                elif self.left_mid_a_sw_en and get_main_window().ui.camLedsBrightnessSlider.value() == 0:
+                    get_main_window().ui.camLed1Check.setChecked(True)
+                    get_main_window().ui.camLed2Check.setChecked(True)
+                    get_main_window().ui.camLed3Check.setChecked(True)
+                    get_main_window().ui.camLed4Check.setChecked(True)
+                    get_main_window().ui.camLedsBrightnessSlider.setValue(100)
 
-        # Motor controller enable (NO REMOTE LOCK CHECK)
-        # TODO: This could result in the motor controller enable service being called over and over again.
-        if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
-            if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready():
-                get_main_window().motor_tab_ui_handler._disable_mtr_ctrls_call()
-        elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
-            if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready():
-                get_main_window().motor_tab_ui_handler._enable_mtr_ctrls_call()
+            # Motor controller enable (NO REMOTE LOCK CHECK)
+            # TODO: This could result in the motor controller enable service being called over and over again.
+            if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+                self._enable_mtr_ctrl(False)
+            elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+                self._enable_mtr_ctrl(True)
 
     # BUTTON NOT ASSIGNED
     @Slot()
@@ -159,7 +161,7 @@ class RemoteState:
             get_main_window().ui.pages.setCurrentIndex(next_index)
 
     @staticmethod
-    def _led_set_request_done_call(future: Future):
+    def _led_set_request_done_call(future: Future) -> None:
         if future.exception() or (not future.result()) or (not future.result().success):
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service call failure!")
 
@@ -214,6 +216,25 @@ class RemoteState:
         else:
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Get LED states service unavailable!")
         return 0, 0
+
+    def _enable_mtr_ctrl_done_call(self, future: Future) -> None:
+        self._call_to_mtr_ctrl_en_in_progress = False
+
+        if future.exception() or not future.result():
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error("Motor controller enable/disable service call failed!")
+        elif future.result() and not future.result().success:
+            ros_remote_pui.ros_main.get_ros_node().get_logger().error(f"Motor controller enable/disable service call failed: {future.result().message}")
+
+    def _enable_mtr_ctrl(self, enable: bool) -> bool:
+        if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready() and not self._call_to_mtr_ctrl_en_in_progress:
+            req = SetBool.Request()
+            req.data = enable
+            future = get_gui_ros_node().mtr_ctrl_enable_srvcl.call_async(req)
+            future.add_done_callback(self._enable_mtr_ctrl_done_call)
+            self._call_to_mtr_ctrl_en_in_progress = True
+            return True
+        ros_remote_pui.ros_main.get_ros_node().get_logger().error("Motor controller enable/disable service unavailable!")
+        return False
 
 
 # RemoteState instance
