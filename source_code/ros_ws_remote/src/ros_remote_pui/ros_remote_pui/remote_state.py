@@ -226,14 +226,16 @@ class RemoteState:
             ros_remote_pui.ros_main.get_ros_node().get_logger().error(f"Motor controller enable/disable service call failed: {future.result().message}")
 
     def _enable_mtr_ctrl(self, enable: bool) -> bool:
-        if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready() and not self._call_to_mtr_ctrl_en_in_progress:
-            req = SetBool.Request()
-            req.data = enable
-            future = get_gui_ros_node().mtr_ctrl_enable_srvcl.call_async(req)
-            future.add_done_callback(self._enable_mtr_ctrl_done_call)
-            self._call_to_mtr_ctrl_en_in_progress = True
-            return True
-        ros_remote_pui.ros_main.get_ros_node().get_logger().error("Motor controller enable/disable service unavailable!")
+        if not self._call_to_mtr_ctrl_en_in_progress:
+            if get_gui_ros_node().mtr_ctrl_enable_srvcl.service_is_ready():
+                req = SetBool.Request()
+                req.data = enable
+                future = get_gui_ros_node().mtr_ctrl_enable_srvcl.call_async(req)
+                future.add_done_callback(self._enable_mtr_ctrl_done_call)
+                self._call_to_mtr_ctrl_en_in_progress = True
+                return True
+            else:
+                ros_remote_pui.ros_main.get_ros_node().get_logger().error("Motor controller enable/disable service unavailable!")
         return False
 
 
