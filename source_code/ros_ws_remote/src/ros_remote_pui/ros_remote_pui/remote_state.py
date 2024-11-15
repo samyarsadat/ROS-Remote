@@ -23,6 +23,7 @@ import re
 from asyncio import Future
 from PySide6.QtCore import QTimer, QObject, Signal, Slot
 from remote_pico_coms.srv import SetLedStates, GetLedStates
+from ros_remote_gui.main import qt_app
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.ros_main import get_ros_node as get_gui_ros_node
 from ros_remote_gui.ros_main import is_ros_node_initialized as is_gui_node_initialized
@@ -96,6 +97,8 @@ class RemoteState:
         self._led_state_act_tmr = QTimer()
         self._led_state_act_tmr.timeout.connect(self._led_state_act_tmr_call)
         self._led_state_act_tmr.start(ProgramConfig.LED_STATE_SET_TIMER_INTERVAL_MS)
+
+        qt_app.aboutToQuit.connect(self._set_all_leds_off)
 
     def _sw_state_act_tmr_call(self) -> None:
         if ros_remote_pui.ros_main.is_ros_node_initialized():
@@ -205,6 +208,7 @@ class RemoteState:
 
         return self._make_set_led_request(mask, modes, pwm_vals)
 
+    @Slot
     def _set_all_leds_off(self) -> bool:
         mask = [True] * ProgramConfig.PICO_NUM_LEDS
         modes = [0] * ProgramConfig.PICO_NUM_LEDS
