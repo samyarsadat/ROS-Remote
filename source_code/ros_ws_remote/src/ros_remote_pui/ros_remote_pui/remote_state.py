@@ -98,15 +98,16 @@ class RemoteState:
         self._led_state_act_tmr.start(ProgramConfig.LED_STATE_SET_TIMER_INTERVAL_MS)
 
     def _sw_state_act_tmr_call(self) -> None:
-        # Lock/unlock remote
-        if (not self.key_sw_en) and get_main_window().isEnabled():
-            get_main_window().setEnabled(False)
-            if self._touchscreen_id: subprocess.run(["xinput", "disable", self._touchscreen_id])
-            self._set_led_state(3, 3, 65535)
-        elif self.key_sw_en and (not get_main_window().isEnabled()):
-            get_main_window().setEnabled(True)
-            if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
-            self._set_led_state(3, 0, 0)
+        if ros_remote_pui.ros_main.is_ros_node_initialized():
+            # Lock/unlock remote
+            if (not self.key_sw_en) and get_main_window().isEnabled():
+                get_main_window().setEnabled(False)
+                if self._touchscreen_id: subprocess.run(["xinput", "disable", self._touchscreen_id])
+                self._set_led_state(3, 3, 65535)
+            elif self.key_sw_en and (not get_main_window().isEnabled()):
+                get_main_window().setEnabled(True)
+                if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
+                self._set_led_state(3, 0, 0)
 
         if is_gui_node_initialized():
             # Enable/disable camera LEDs (all full-on/full-off)
@@ -133,7 +134,7 @@ class RemoteState:
                 self._enable_mtr_ctrl(True)
 
     def _led_state_act_tmr_call(self) -> None:
-        if not self._power_led_set:
+        if not self._power_led_set and ros_remote_pui.ros_main.is_ros_node_initialized():
             self._set_led_state(4, 0, 65535)
             self._power_led_set = True
 
