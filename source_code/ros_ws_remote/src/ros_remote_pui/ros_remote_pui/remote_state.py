@@ -208,7 +208,7 @@ class RemoteState:
 
         return self._make_set_led_request(mask, modes, pwm_vals)
 
-    @Slot
+    @Slot()
     def _set_all_leds_off(self) -> bool:
         mask = [True] * ProgramConfig.PICO_NUM_LEDS
         modes = [0] * ProgramConfig.PICO_NUM_LEDS
