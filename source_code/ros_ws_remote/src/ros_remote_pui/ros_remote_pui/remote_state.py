@@ -138,8 +138,7 @@ class RemoteState:
 
     def _led_state_act_tmr_call(self) -> None:
         if not self._power_led_set and ros_remote_pui.ros_main.is_ros_node_initialized():
-            self._set_led_state(4, 0, 32000)
-            self._power_led_set = True
+            self._power_led_set = self._set_led_state(4, 0, 32000)
 
     # BUTTON NOT ASSIGNED
     @Slot()
