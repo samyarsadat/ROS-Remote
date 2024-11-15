@@ -41,7 +41,6 @@ class ButtonSignals(QObject):
 
 
 # Remote state
-# TODO: Handle setting LED states.
 class RemoteState:
     key_sw_en: bool
     left_top_sw_en: bool
@@ -86,18 +85,28 @@ class RemoteState:
         # Will be True when there is an active call to the motor controller enable service in-progress.
         self._call_to_mtr_ctrl_en_in_progress = False
 
+        # LED-related state
+        self._power_led_set = False
+        self._mtr_ctrl_last_state = 0   # 0: one or more not enabled, 1: all enabled, 2: data stale
+
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
         self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
+
+        self._led_state_act_tmr = QTimer()
+        self._led_state_act_tmr.timeout.connect(self._led_state_act_tmr_call)
+        self._led_state_act_tmr.start(ProgramConfig.LED_STATE_SET_TIMER_INTERVAL_MS)
 
     def _sw_state_act_tmr_call(self) -> None:
         # Lock/unlock remote
         if (not self.key_sw_en) and get_main_window().isEnabled():
             get_main_window().setEnabled(False)
             if self._touchscreen_id: subprocess.run(["xinput", "disable", self._touchscreen_id])
+            self._set_led_state(3, 3, 65535)
         elif self.key_sw_en and (not get_main_window().isEnabled()):
             get_main_window().setEnabled(True)
             if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
+            self._set_led_state(3, 0, 0)
 
         if is_gui_node_initialized():
             # Enable/disable camera LEDs (all full-on/full-off)
@@ -122,6 +131,11 @@ class RemoteState:
                 self._enable_mtr_ctrl(False)
             elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
                 self._enable_mtr_ctrl(True)
+
+    def _led_state_act_tmr_call(self) -> None:
+        if not self._power_led_set:
+            self._set_led_state(4, 0, 65535)
+            self._power_led_set = True
 
     # BUTTON NOT ASSIGNED
     @Slot()
