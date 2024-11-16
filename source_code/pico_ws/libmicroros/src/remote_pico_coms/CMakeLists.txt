@@ -25,7 +25,6 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(builtin_interfaces REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -53,7 +52,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
                             "srv/GetLedStates.srv"
                             "srv/SetJoystickConfig.srv"
                             "srv/SetLedStates.srv"
-                            DEPENDENCIES builtin_interfaces
                           )
 
 ament_export_dependencies(rosidl_default_runtime)
