@@ -34,8 +34,7 @@
 extern uRosPublishingHandler *pub_handler;
 
 // ---- Timer execution times storage (milliseconds) ----
-extern uint32_t last_sw_state_publish_time, last_btn_state_publish_time;
-extern uint32_t last_joystick_state_publish_time, last_potentiometer_state_publish_time;
+extern uint32_t last_sw_state_publish_time, last_joystick_state_publish_time, last_potentiometer_state_publish_time;
 
 
 
@@ -50,12 +49,6 @@ void publish_sw_states(void *parameters)
 
         // Check execution time
         check_exec_interval(last_sw_state_publish_time, (sw_state_pub_rt_interval + 15), "Publish interval exceeded limits!", true);
-
-        uint32_t timestamp_sec = to_ms_since_boot(get_absolute_time()) / 1000;
-        uint32_t timestamp_nanosec = (to_ms_since_boot(get_absolute_time()) - (timestamp_sec * 1000)) * 1000000;
-
-        switch_state_msg.time.sec = timestamp_sec;
-        switch_state_msg.time.nanosec = timestamp_nanosec;
 
         switch_state_msg.left_key_sw = !gpio_get(left_key_sw_pin);
         switch_state_msg.left_top_toggle_sw = !gpio_get(left_top_toggle_sw_pin);
@@ -74,24 +67,40 @@ void publish_sw_states(void *parameters)
 // ---- Momentary button states ----
 void publish_btn_states(void *parameters)
 {
+    uint32_t notification_value;
+
     while (true)
     {
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);   // Wait for notification indefinitely
+        xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);   // Wait for notification indefinitely
 
-        // Check execution time
-        check_exec_interval(last_btn_state_publish_time, (btn_state_pub_rt_interval + 10), "Publish interval exceeded limits!", true);
+        button_state_msg.left_green_kd2_btn = false;
+        button_state_msg.left_green_left_btn = false;
+        button_state_msg.left_green_right_btn = false;
+        button_state_msg.left_red_btn = false;
+        button_state_msg.left_red_kd2_btn = false;
 
-        uint32_t timestamp_sec = to_ms_since_boot(get_absolute_time()) / 1000;
-        uint32_t timestamp_nanosec = (to_ms_since_boot(get_absolute_time()) - (timestamp_sec * 1000)) * 1000000;
+        switch (notification_value)
+        {
+            case left_green_right_btn_pin:
+                button_state_msg.left_green_right_btn = true;
+                break;
+            
+            case left_red_btn_pin:
+                button_state_msg.left_red_btn = true;
+                break;
 
-        button_state_msg.time.sec = timestamp_sec;
-        button_state_msg.time.nanosec = timestamp_nanosec;
+            case left_green_kd2_btn_pin:
+                button_state_msg.left_green_kd2_btn = true;
+                break;
 
-        button_state_msg.left_green_kd2_btn = !gpio_get(left_green_kd2_btn_pin);
-        button_state_msg.left_green_left_btn = !gpio_get(left_green_left_btn_pin);
-        button_state_msg.left_green_right_btn = !gpio_get(left_green_right_btn_pin);
-        button_state_msg.left_red_btn = !gpio_get(left_red_btn_pin);
-        button_state_msg.left_red_kd2_btn = !gpio_get(left_red_kd2_btn_pin);
+            case left_red_kd2_btn_pin:
+                button_state_msg.left_red_kd2_btn = true;
+                break;
+
+            case left_green_left_btn_pin:
+                button_state_msg.left_green_left_btn = true;
+                break;
+        }
 
         uRosPublishingHandler::PublishItem_t pub_item;
         pub_item.publisher = &button_state_pub;
@@ -110,12 +119,6 @@ void publish_joystick_state(void *parameters)
 
         // Check execution time
         check_exec_interval(last_joystick_state_publish_time, (joystick_pub_rt_interval + 15), "Publish interval exceeded limits!", true);
-
-        uint32_t timestamp_sec = to_ms_since_boot(get_absolute_time()) / 1000;
-        uint32_t timestamp_nanosec = (to_ms_since_boot(get_absolute_time()) - (timestamp_sec * 1000)) * 1000000;
-
-        joystick_state_msg.time.sec = timestamp_sec;
-        joystick_state_msg.time.nanosec = timestamp_nanosec;
 
         joystick_state_msg.joystick_x_axis_reading = get_joystick_x_val();
         joystick_state_msg.joystick_y_axis_reading = get_joystick_y_val();
@@ -137,12 +140,6 @@ void publish_potentiometer_state(void *parameters)
 
         // Check execution time
         check_exec_interval(last_potentiometer_state_publish_time, (potentiometer_pub_rt_interval + 15), "Publish interval exceeded limits!", true);
-
-        uint32_t timestamp_sec = to_ms_since_boot(get_absolute_time()) / 1000;
-        uint32_t timestamp_nanosec = (to_ms_since_boot(get_absolute_time()) - (timestamp_sec * 1000)) * 1000000;
-
-        potentiometer_state_msg.time.sec = timestamp_sec;
-        potentiometer_state_msg.time.nanosec = timestamp_nanosec;
 
         potentiometer_state_msg.potentiometer_reading = get_potentiometer_val();
 

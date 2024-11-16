@@ -17,7 +17,6 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 import threading
-import time
 import rclpy
 from typing import Union
 from datetime import datetime
@@ -28,7 +27,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from remote_pico_coms.msg import ButtonStates, SwitchStates, JoystickState, PotentiometerState
 from remote_pico_coms.srv import GetJoystickConfig, SetJoystickConfig, GetLedStates, SetLedStates
-from ros_remote_pui.config import ProgramConfig, RosConfig, RosNames
+from ros_remote_pui.config import RosConfig, RosNames
 from diagnostic_msgs.srv import SelfTest
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
 from ros_remote_pui.remote_state import get_remote_state
@@ -79,56 +78,17 @@ class RosNode(Node):
         self.set_led_states_srvcl = self.create_client(SetLedStates, RosNames.SET_LED_STATES_SRV, qos_profile=RosConfig.QOS_RELIABLE)
         self.run_selftest_srvcl = self.create_client(SelfTest, RosNames.RUN_SELFTEST_SRV, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._selftest_cb_group)
 
-        # Button de-bounce times & hold-down re-call prevention flags.
-        # De-bouncing will be moved to Pico firmware.
-        self._left_red_btn_deb_lc = 0
-        self._left_red_btn_wl = True
-        self._left_red_kd2_btn_deb_lc = 0
-        self._left_red_kd2_btn_wl = True
-        self._left_green_kd2_btn_deb_lc = 0
-        self._left_green_kd2_btn_wl = True
-        self._left_green_left_btn_deb_lc = 0
-        self._left_green_left_btn_wl = True
-        self._left_green_right_btn_deb_lc = 0
-        self._left_green_right_btn_wl = True
-
     def _button_states_call(self, msg: ButtonStates) -> None:
-        debounce_time_ns = ProgramConfig.BUTTON_DEBOUNCE_TIME_MS * 1000000
-
-        if msg.left_red_btn and (time.time_ns() - self._left_red_btn_deb_lc) > debounce_time_ns and self._left_red_btn_wl:
-            self._left_red_btn_deb_lc = time.time_ns()
-            self._left_red_btn_wl = False
+        if msg.left_red_btn:
             get_remote_state()._btn_signals.left_red_btn_press_sig.emit()
-        elif not msg.left_red_btn:
-            self._left_red_btn_wl = True
-
-        if msg.left_red_kd2_btn and (time.time_ns() - self._left_red_kd2_btn_deb_lc) > debounce_time_ns and self._left_red_kd2_btn_wl:
-            self._left_red_kd2_btn_deb_lc = time.time_ns()
-            self._left_red_kd2_btn_wl = False
+        elif msg.left_red_kd2_btn:
             get_remote_state()._btn_signals.left_l_kd2_btn_press_sig.emit()
-        elif not msg.left_red_kd2_btn:
-            self._left_red_kd2_btn_wl = True
-
-        if msg.left_green_kd2_btn and (time.time_ns() - self._left_green_kd2_btn_deb_lc) > debounce_time_ns and self._left_green_kd2_btn_wl:
-            self._left_green_kd2_btn_deb_lc = time.time_ns()
-            self._left_green_kd2_btn_wl = False
+        elif msg.left_green_kd2_btn:
             get_remote_state()._btn_signals.left_r_kd2_btn_press_sig.emit()
-        elif not msg.left_green_kd2_btn:
-            self._left_green_kd2_btn_wl = True
-
-        if msg.left_green_left_btn and (time.time_ns() - self._left_green_left_btn_deb_lc) > debounce_time_ns and self._left_green_left_btn_wl:
-            self._left_green_left_btn_deb_lc = time.time_ns()
-            self._left_green_left_btn_wl = False
+        elif msg.left_green_left_btn:
             get_remote_state()._btn_signals.left_l_green_btn_press_sig.emit()
-        elif not msg.left_green_left_btn:
-            self._left_green_left_btn_wl = True
-
-        if msg.left_green_right_btn and (time.time_ns() - self._left_green_right_btn_deb_lc) > debounce_time_ns and self._left_green_right_btn_wl:
-            self._left_green_right_btn_deb_lc = time.time_ns()
-            self._left_green_right_btn_wl = False
+        elif msg.left_green_right_btn:
             get_remote_state()._btn_signals.left_r_green_btn_press_sig.emit()
-        elif not msg.left_green_right_btn:
-            self._left_green_right_btn_wl = True
 
     def _switch_states_call(self, msg: SwitchStates) -> None:
         get_remote_state().key_sw_en = msg.left_key_sw

@@ -45,7 +45,10 @@ struct led_state
 typedef struct led_state led_state_t;
 
 // ---- LEDs ----
-extern uint8_t led_pins_order[number_of_leds];
+extern const uint8_t led_pins_order[number_of_leds];
+
+// ---- Momentary buttons ----
+extern const uint8_t momen_btn_pins_order[number_of_momentary_buttons];
 
 // ---- Joystick ----
 extern float joystick_x_center_offset;
@@ -66,6 +69,11 @@ int16_t get_joystick_y_val();
 // ---- This function takes into account the potentiometer's inversion config ----
 // ---- It returns a value between 0 and 1024 ----
 uint16_t get_potentiometer_val();
+
+// ---- Button de-bouncing function ----
+// ---- Returns true if the button should be considered pressed, false if not. ----
+// ---- NOTE: Only for the 5 momentary push buttons! ----
+bool button_bounce_check(uint8_t pin);
 
 // ---- Initialize LEDs and LED state objects ----
 void init_leds();

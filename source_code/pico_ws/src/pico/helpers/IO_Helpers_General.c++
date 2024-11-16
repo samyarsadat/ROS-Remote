@@ -36,12 +36,17 @@ extern void clean_shutdown();
 // ------- Global variables -------
 
 // ---- LEDs ----
-uint8_t led_pins_order[number_of_leds] = {right_kd2_led_pin, right_green_led_pin, right_blue_led_pin, left_top_yellow_led_pin, 
-                                          left_top_green_led_pin, left_red_led_pin, left_bottom_yellow_led_pin, left_bottom_green_1_led_pin, 
-                                          left_bottom_green_2_led_pin, left_red_kd2_led_pin, left_green_kd2_led_pin};
+const uint8_t led_pins_order[number_of_leds] = {right_kd2_led_pin, right_green_led_pin, right_blue_led_pin, left_top_yellow_led_pin, 
+                                                left_top_green_led_pin, left_red_led_pin, left_bottom_yellow_led_pin, left_bottom_green_1_led_pin, 
+                                                left_bottom_green_2_led_pin, left_red_kd2_led_pin, left_green_kd2_led_pin};
 
 // ---- LED states ----
 led_state_t led_states[number_of_leds];
+
+// ---- Momentary buttons ----
+const uint8_t momen_btn_pins_order[number_of_momentary_buttons] = {left_green_right_btn_pin, left_red_btn_pin, left_green_kd2_btn_pin,
+                                                                   left_red_kd2_btn_pin, left_green_left_btn_pin};
+uint32_t momen_btn_lit[number_of_momentary_buttons];   // Last interrupt receive time (Last Interrupt Time)
 
 // ---- Joystick ----
 float joystick_x_center_offset = default_joystick_x_center_offset;
@@ -162,6 +167,32 @@ uint16_t get_potentiometer_val()
     }
 
     return 0;
+}
+
+
+// ---- Button de-bouncing function ----
+// ---- Returns true if the button should be considered pressed, false if not. ----
+// ---- NOTE: Only for the 5 momentary push buttons! ----
+bool button_bounce_check(uint8_t pin)
+{
+    for (int i = 0; i < number_of_momentary_buttons; i++)
+    {
+        if (momen_btn_pins_order[i] == pin)
+        {
+            if (time_us_32() - momen_btn_lit[i] > (button_bounce_time_ms * 1000))
+            {
+                momen_btn_lit[i] = time_us_32();
+                return true;
+            }
+
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    return false;
 }
 
 

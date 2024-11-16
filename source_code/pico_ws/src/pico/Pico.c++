@@ -33,11 +33,10 @@
 alarm_pool_t *core_1_alarm_pool;
 
 // ---- Timer execution times storage (milliseconds) ----
-uint32_t last_sw_state_publish_time, last_btn_state_publish_time;
-uint32_t last_joystick_state_publish_time, last_potentiometer_state_publish_time;
+uint32_t last_sw_state_publish_time, last_joystick_state_publish_time, last_potentiometer_state_publish_time;
 
 // ---- Timers ----
-struct repeating_timer sw_state_publish_rt, btn_state_publish_rt, joystick_publish_rt, potentiometer_publish_rt;
+struct repeating_timer sw_state_publish_rt, joystick_publish_rt, potentiometer_publish_rt;
 TaskHandle_t btn_state_publish_th, sw_state_publish_th, joystick_publish_th, potentiometer_publish_th;
 TimerHandle_t waiting_for_agent_timer, fast_led_flash_handler_timer;
 TimerHandle_t slow_led_flash_handler_timer, led_fade_handler_timer;
@@ -61,7 +60,6 @@ void clean_shutdown()
 
     // Stop all repeating timers
     cancel_repeating_timer(&sw_state_publish_rt);
-    cancel_repeating_timer(&btn_state_publish_rt);
     cancel_repeating_timer(&joystick_publish_rt);
     cancel_repeating_timer(&potentiometer_publish_rt);
     xTimerStop(fast_led_flash_handler_timer, 0);
@@ -111,14 +109,6 @@ bool publish_sw_state_notify(struct repeating_timer *rt)
     return true;
 }
 
-bool publish_btn_state_notify(struct repeating_timer *rt)
-{
-    BaseType_t higher_prio_woken;
-    vTaskNotifyGiveFromISR(btn_state_publish_th, &higher_prio_woken);
-    portYIELD_FROM_ISR(higher_prio_woken);
-    return true;
-}
-
 bool publish_joystick_notify(struct repeating_timer *rt)
 {
     BaseType_t higher_prio_woken;
@@ -134,6 +124,19 @@ bool publish_potentiometer_notify(struct repeating_timer *rt)
     portYIELD_FROM_ISR(higher_prio_woken);
     return true;
 }
+
+
+// ---- IRQ callback ----
+void irq_call(uint pin, uint32_t events)
+{
+    if (button_bounce_check(pin))
+    {
+        BaseType_t higher_prio_woken;
+        xTaskNotifyFromISR(btn_state_publish_th, (uint32_t) pin, eSetValueWithOverwrite, &higher_prio_woken);
+        portYIELD_FROM_ISR(higher_prio_woken);
+    }
+}
+
 
 
 // ------- MicroROS subscriber & service callbacks ------- 
@@ -240,7 +243,6 @@ void start_timers()
 {
     write_log("Starting hardware timers...", LOG_LVL_INFO, FUNCNAME_ONLY);
     alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, sw_state_pub_rt_interval, publish_sw_state_notify, NULL, &sw_state_publish_rt);
-    alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, btn_state_pub_rt_interval, publish_btn_state_notify, NULL, &btn_state_publish_rt);
     alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, joystick_pub_rt_interval, publish_joystick_notify, NULL, &joystick_publish_rt);
     alarm_pool_add_repeating_timer_ms(core_1_alarm_pool, potentiometer_pub_rt_interval, publish_potentiometer_notify, NULL, &potentiometer_publish_rt);
 
@@ -310,6 +312,13 @@ void setup(void *parameters)
     init_pin(joystick_y_axis_pin, INPUT_ADC);
     init_pin(joystick_x_axis_pin, INPUT_ADC);
     init_pin(potentiometer_pin, INPUT_ADC);
+
+    // Interrupts (for momentary buttons only)
+    gpio_set_irq_enabled_with_callback(left_green_right_btn_pin, GPIO_IRQ_EDGE_FALL, true, irq_call);
+    gpio_set_irq_enabled(left_red_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_green_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_red_kd2_btn_pin, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(left_green_left_btn_pin, GPIO_IRQ_EDGE_FALL, true);
 
     // Force SMPS into PWM mode
     init_pin(smps_power_save_pin, OUTPUT);

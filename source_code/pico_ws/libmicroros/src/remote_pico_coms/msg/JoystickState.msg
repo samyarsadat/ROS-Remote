@@ -16,8 +16,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-builtin_interfaces/Time time
-
 
 # Joystick readings go from -512 to +512!
 int16 joystick_x_axis_reading

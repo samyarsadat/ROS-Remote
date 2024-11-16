@@ -44,13 +44,17 @@
 #define left_top_toggle_sw_pin   19
 
 // ---- Buttons ----
-#define right_e_stop_btn_pin      4
-#define right_kd2_btn_pin         5
-#define left_green_right_btn_pin  6
-#define left_red_btn_pin          7
-#define left_green_kd2_btn_pin    20
-#define left_red_kd2_btn_pin      21
-#define left_green_left_btn_pin   22
+#define right_e_stop_btn_pin  4
+#define right_kd2_btn_pin     5
+
+// ---- Momentary Buttons ----
+#define left_green_right_btn_pin     6
+#define left_red_btn_pin             7
+#define left_green_kd2_btn_pin       20
+#define left_red_kd2_btn_pin         21
+#define left_green_left_btn_pin      22
+#define number_of_momentary_buttons  5
+#define button_bounce_time_ms        200   // In milliseconds
 
 // ---- Joystick ----
 #define joystick_y_axis_pin  26
@@ -74,9 +78,8 @@
 
 // ---- Repeating timer intervals ----
 #define sw_state_pub_rt_interval       100   // In milliseconds
-#define btn_state_pub_rt_interval      50    // In milliseconds
-#define joystick_pub_rt_interval       50    // In milliseconds
-#define potentiometer_pub_rt_interval  80    // In milliseconds
+#define joystick_pub_rt_interval       80    // In milliseconds
+#define potentiometer_pub_rt_interval  100   // In milliseconds
 #define led_slow_flash_interval        800   // In milliseconds
 #define led_fast_flash_interval        400   // In milliseconds
 #define led_fade_exec_interval         10    // In milliseconds
