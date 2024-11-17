@@ -403,7 +403,7 @@ int main()
     write_log("MicroROS pre-init...", LOG_LVL_INFO, FUNCNAME_LINE_ONLY);
     bridge = uRosBridgeAgent::get_instance();
     pub_handler = uRosPublishingHandler::get_instance();
-    bridge->pre_init(uros_init, clean_shutdown, uros_post_exec_call);
+    bridge->pre_init(uros_init, clean_shutdown, uros_post_exec_call, EXECUTOR_EXEC_INTERVAL_MS, EXECUTOR_EXEC_TIME_LIMIT_MS, EXECUTOR_TIMEOUT_MS);
     pub_handler->pre_init(bridge);
     set_diag_pub_queue(pub_handler->get_queue_handle());
 

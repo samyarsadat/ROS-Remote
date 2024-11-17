@@ -23,7 +23,6 @@
 // ------- Libraries & Modules -------
 #include <rcl/rcl.h>
 #include <std_msgs/msg/string.h>
-#include <std_msgs/msg/empty.h>
 #include <geometry_msgs/msg/twist.h>
 #include <geometry_msgs/msg/transform_stamped.h>
 #include <diagnostic_msgs/msg/diagnostic_status.h>
@@ -43,13 +42,6 @@
 
 
 // ------- Variables -------
-
-// ---- Subscribers ----
-
-// Misc.
-extern rcl_subscription_t e_stop_sub;
-extern std_msgs__msg__Empty e_stop_msg;
-
 
 // ---- Publishers ----
 

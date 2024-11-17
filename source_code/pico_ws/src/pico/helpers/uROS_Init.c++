@@ -33,13 +33,6 @@
 extern uRosBridgeAgent *bridge;   // From the main file.
 
 
-// ---- Subscribers ----
-
-// Misc.
-rcl_subscription_t e_stop_sub;
-std_msgs__msg__Empty e_stop_msg;
-
-
 // ---- Publishers ----
 
 // Button, switch, joystick, potentiometer states
@@ -79,9 +72,7 @@ extern void set_joystick_config_callback(const void *req, void *res);
 extern void get_led_states_callback(const void *req, void *res);
 extern void set_led_states_callback(const void *req, void *res);
 extern void run_self_test_callback(const void *req, void *res);
-extern void clean_shutdown();
 extern void start_timers();
-void clean_shutdown_callback(const void *msgin) { clean_shutdown(); }
 
 
 
@@ -92,7 +83,6 @@ void init_subs_pubs()
 {
     write_log("Initializing publishers, subscribers, and services...", LOG_LVL_INFO, FUNCNAME_ONLY);
 
-    const rosidl_message_type_support_t *empty_type = ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Empty);
     const rosidl_message_type_support_t *button_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, ButtonStates);
     const rosidl_message_type_support_t *switch_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, SwitchStates);
     const rosidl_message_type_support_t *joystick_state_type = ROSIDL_GET_MSG_TYPE_SUPPORT(remote_pico_coms, msg, JoystickState);
@@ -110,14 +100,6 @@ void init_subs_pubs()
     bridge->init_service(&get_led_states_srv, get_led_states_type, "outputs/leds/get_states");
     bridge->init_service(&set_led_states_srv, set_led_states_type, "outputs/leds/set_states");
     bridge->init_service(&run_self_test_srv, run_self_test_type, "self_test/pico");
-
-
-    // ---- Subscribers ----
-    write_log("Initializing subscribers...", LOG_LVL_INFO, FUNCNAME_ONLY);
-
-    // E-stop topic
-    bridge->init_subscriber(&e_stop_sub, empty_type, "/e_stop");
-    std_msgs__msg__Empty__init(&e_stop_msg);
 
 
     // ---- Publishers ----
@@ -152,7 +134,6 @@ void exec_init()
     bridge->add_service(&get_led_states_srv, &get_led_states_req, &get_led_states_res, get_led_states_callback);
     bridge->add_service(&set_led_states_srv, &set_led_states_req, &set_led_states_res, set_led_states_callback);
     bridge->add_service(&run_self_test_srv, &run_self_test_req, &run_self_test_res, run_self_test_callback);
-    bridge->add_subscriber(&e_stop_sub, &e_stop_msg, clean_shutdown_callback);
 
     write_log("Init. completed.", LOG_LVL_INFO, FUNCNAME_ONLY);
 }

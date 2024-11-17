@@ -17,11 +17,12 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 import threading
+from copy import deepcopy
 from time import sleep, time_ns
 from cv_bridge import CvBridge
 from test_camera_publisher.ros_main import ros_executor_thread, is_ros_node_initialized, get_ros_node
 from test_camera_publisher.config import RosConfig, ProgramConfig
-from test_camera_publisher.pattern_gen import get_camera_image, get_camera_overlay
+from test_camera_publisher.pattern_gen import get_camera_image, get_camera_overlay, OverlaySquare
 
 
 # ---- Run the program ----
@@ -42,15 +43,27 @@ def main():
 
     try:
         img_bridge = CvBridge()
-        cam_img, width, height = get_camera_image("FRONT CAMERA")
+        cam_img, width, height = get_camera_image(ProgramConfig.CAMERA_NAME, ProgramConfig.TARGET_WIDTH, ProgramConfig.TARGET_HEIGHT)
+        overlay_square = OverlaySquare(width, height)
+        cam_square = OverlaySquare(width, height, (0, 0, 255), velocity=[12, -10], origin=[10, 20])
+
+        # Wait for ROS node init.
+        while not is_ros_node_initialized():
+            sleep(0.5)
 
         while True:
             frame_start_time = time_ns()
             ros_liveliness_check()
+            
+            cam_img_tmp = deepcopy(cam_img)
+            overlay = get_camera_overlay(width, height)
 
-            if is_ros_node_initialized():
-                get_ros_node().front_camera_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(cam_img, "jpg"))
-                get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(get_camera_overlay(width, height), "png"))
+            if ProgramConfig.ENABLE_MOVING_SQUARES:
+                cam_square.draw_square(cam_img_tmp)
+                overlay_square.draw_square(overlay)
+
+            get_ros_node().front_camera_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(cam_img_tmp, "png"))
+            get_ros_node().front_overlay_comp_pub.publish(img_bridge.cv2_to_compressed_imgmsg(overlay, "png"))
 
             # Framerate limiting
             sleep_time_ns = (1000000000 / ProgramConfig.TARGET_PUBLISH_FPS) - (time_ns() - frame_start_time)

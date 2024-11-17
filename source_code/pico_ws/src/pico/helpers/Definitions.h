@@ -75,6 +75,9 @@
 #define UROS_DOMAIN_ID                     75
 #define AGENT_WAITING_LED_TOGGLE_DELAY_MS  500   // In milliseconds
 #define AGENT_AVAIL_LED_TOGGLE_DELAY_MS    250   // In milliseconds
+#define EXECUTOR_EXEC_INTERVAL_MS          75    // In milliseconds
+#define EXECUTOR_EXEC_TIME_LIMIT_MS        85    // In milliseconds
+#define EXECUTOR_TIMEOUT_MS                50    // In milliseconds
 
 // ---- Repeating timer intervals ----
 #define sw_state_pub_rt_interval       100   // In milliseconds

@@ -29,8 +29,12 @@ class ProgramInfoConfig:
 
 class ProgramConfig:
     BASE_TEST_PATTERN = "test_images/pm5644.png"   # Options: pm5544.png, pm5644.png (widescreen)
-    OVERLAY_PM5644_MODE = True
+    PM5644_MODE = True
+    ENABLE_MOVING_SQUARES = True
     TARGET_PUBLISH_FPS = 24
+    TARGET_WIDTH = 800
+    TARGET_HEIGHT = 450
+    CAMERA_NAME = "Front Camera"
     CV_TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 
