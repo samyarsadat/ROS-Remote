@@ -168,8 +168,8 @@ class RemoteState:
     @Slot()
     def left_red_btn_press(self) -> None:
         get_gui_ros_node().emergency_stop_pub.publish(Empty())
-        get_msg_box_helper().show_msg_box_sig.emit("info", "Emergency Stop", "Emergency stop has been requested.")
         ros_remote_pui.ros_main.get_ros_node().get_logger().warn("Emergency stop command published!")
+        get_msg_box_helper().show_msg_box_sig.emit("info", "Emergency Stop", "Emergency stop has been requested.")
 
     # UI - PREVIOUS PAGE
     @Slot()
