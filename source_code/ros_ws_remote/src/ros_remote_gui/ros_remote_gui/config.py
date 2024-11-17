@@ -53,6 +53,8 @@ class RosNames:
     CAMERA_FEED_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front/image_raw/compressed"
     CAMERA_OVERLAY_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front_overlay/image"
 
+    CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote"
+
     DIAGNOSTICS_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics"
     PING_DRIVER_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics/ping_driver"
     ENABLE_RELAY_SRV = f"{ROBOT_NAMESPACE}/enable/set_relay"

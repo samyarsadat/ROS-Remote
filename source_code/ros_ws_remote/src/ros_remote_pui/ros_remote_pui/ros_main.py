@@ -80,15 +80,15 @@ class RosNode(Node):
 
     def _button_states_call(self, msg: ButtonStates) -> None:
         if msg.left_red_btn:
-            get_remote_state()._btn_signals.left_red_btn_press_sig.emit()
+            get_remote_state()._ros_signals.left_red_btn_press_sig.emit()
         elif msg.left_red_kd2_btn:
-            get_remote_state()._btn_signals.left_l_kd2_btn_press_sig.emit()
+            get_remote_state()._ros_signals.left_l_kd2_btn_press_sig.emit()
         elif msg.left_green_kd2_btn:
-            get_remote_state()._btn_signals.left_r_kd2_btn_press_sig.emit()
+            get_remote_state()._ros_signals.left_r_kd2_btn_press_sig.emit()
         elif msg.left_green_left_btn:
-            get_remote_state()._btn_signals.left_l_green_btn_press_sig.emit()
+            get_remote_state()._ros_signals.left_l_green_btn_press_sig.emit()
         elif msg.left_green_right_btn:
-            get_remote_state()._btn_signals.left_r_green_btn_press_sig.emit()
+            get_remote_state()._ros_signals.left_r_green_btn_press_sig.emit()
 
     def _switch_states_call(self, msg: SwitchStates) -> None:
         get_remote_state().key_sw_en = msg.left_key_sw
@@ -100,6 +100,7 @@ class RosNode(Node):
     def _joystick_state_call(self, msg: JoystickState) -> None:
         get_remote_state().joystick_vals = [msg.joystick_x_axis_reading, msg.joystick_y_axis_reading]
         get_remote_state().last_joystick_recv = datetime.now()
+        get_remote_state()._ros_signals.joystick_msg_recv_sig.emit()
 
     def _potentiometer_state_call(self, msg: PotentiometerState) -> None:
         get_remote_state().potentiometer_val = msg.potentiometer_reading

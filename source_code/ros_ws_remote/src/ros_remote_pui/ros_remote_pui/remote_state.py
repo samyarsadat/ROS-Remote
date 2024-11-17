@@ -27,18 +27,21 @@ from ros_remote_gui.main import qt_app
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.ros_main import get_ros_node as get_gui_ros_node
 from ros_remote_gui.ros_main import is_ros_node_initialized as is_gui_node_initialized
+from ros_remote_gui.utils.gui_utils import get_msg_box_helper
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
+from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
 
 
 # Button signals
-class ButtonSignals(QObject):
+class RosSignals(QObject):
     left_l_kd2_btn_press_sig = Signal()
     left_r_kd2_btn_press_sig = Signal()
     left_red_btn_press_sig = Signal()
     left_l_green_btn_press_sig = Signal()
     left_r_green_btn_press_sig = Signal()
+    joystick_msg_recv_sig = Signal()
 
 
 # Remote state
@@ -56,12 +59,13 @@ class RemoteState:
     last_joystick_recv: datetime
 
     def __init__(self):
-        self._btn_signals = ButtonSignals()
-        self._btn_signals.left_l_kd2_btn_press_sig.connect(self.left_l_kd2_btn_press)
-        self._btn_signals.left_r_kd2_btn_press_sig.connect(self.left_r_kd2_btn_press)
-        self._btn_signals.left_red_btn_press_sig.connect(self.left_red_btn_press)
-        self._btn_signals.left_l_green_btn_press_sig.connect(self.left_l_green_btn_press)
-        self._btn_signals.left_r_green_btn_press_sig.connect(self.left_r_green_btn_press)
+        self._ros_signals = RosSignals()
+        self._ros_signals.left_l_kd2_btn_press_sig.connect(self.left_l_kd2_btn_press)
+        self._ros_signals.left_r_kd2_btn_press_sig.connect(self.left_r_kd2_btn_press)
+        self._ros_signals.left_red_btn_press_sig.connect(self.left_red_btn_press)
+        self._ros_signals.left_l_green_btn_press_sig.connect(self.left_l_green_btn_press)
+        self._ros_signals.left_r_green_btn_press_sig.connect(self.left_r_green_btn_press)
+        self._ros_signals.joystick_msg_recv_sig.connect(self._publish_joystick)
 
         self.key_sw_en = False          # Lock/unlock remote
         self.left_top_sw_en = False     # Not assigned
@@ -140,6 +144,10 @@ class RemoteState:
         if not self._power_led_set and ros_remote_pui.ros_main.is_ros_node_initialized():
             self._power_led_set = self._set_led_state(4, 0, 32000)
 
+    @Slot()
+    def _publish_joystick(self) -> None:
+        pass
+
     # BUTTON NOT ASSIGNED
     @Slot()
     def left_l_kd2_btn_press(self) -> None:
@@ -159,7 +167,9 @@ class RemoteState:
     # BUTTON NOT ASSIGNED
     @Slot()
     def left_red_btn_press(self) -> None:
-        pass
+        get_gui_ros_node().emergency_stop_pub.publish(Empty())
+        get_msg_box_helper().show_msg_box_sig.emit("info", "Emergency Stop", "Emergency stop has been requested.")
+        ros_remote_pui.ros_main.get_ros_node().get_logger().warn("Emergency stop command published!")
 
     # UI - PREVIOUS PAGE
     @Slot()
