@@ -21,7 +21,8 @@ import ros_remote_pui.ros_main
 import subprocess
 import re
 from asyncio import Future
-from PySide6.QtCore import QTimer, QObject, Signal, Slot
+from PySide6.QtCore import QTimer, QObject, Signal, Slot, QProcess
+from geometry_msgs.msg import Twist
 from remote_pico_coms.srv import SetLedStates, GetLedStates
 from ros_remote_gui.main import qt_app
 from ros_remote_gui.main_window import get_main_window
@@ -32,6 +33,7 @@ from ros_remote_pui.config import ProgramConfig
 from datetime import datetime
 from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
+from numpy import interp
 
 
 # Button signals
@@ -57,6 +59,8 @@ class RemoteState:
     potentiometer_val: int
     joystick_vals: list[int]
     last_joystick_recv: datetime
+    max_linear_velocity_mps: float
+    max_angular_velocity_rps: float
 
     def __init__(self):
         self._ros_signals = RosSignals()
@@ -80,6 +84,9 @@ class RemoteState:
         self.joystick_vals = [0, 0]
         self.last_joystick_recv = datetime.now()
 
+        self.max_linear_velocity_mps = 0.0
+        self.max_angular_velocity_rps = 0.0
+
         # Get the ID of the touchscreen from Xinput.
         # This will be used when locking/unlocking the remote.
         self._touchscreen_id = None
@@ -93,6 +100,7 @@ class RemoteState:
         # LED-related state
         self._power_led_set = False
         self._mtr_ctrl_last_state = 0   # 0: one or more not enabled, 1: all enabled, 2: data stale
+        self._last_joystick_en_state = False
 
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
@@ -109,11 +117,11 @@ class RemoteState:
             # Lock/unlock remote
             if (not self.key_sw_en) and get_main_window().isEnabled():
                 get_main_window().setEnabled(False)
-                if self._touchscreen_id: subprocess.run(["xinput", "disable", self._touchscreen_id])
+                if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["disable", self._touchscreen_id])
                 self._set_led_state(3, 3, 65535)
             elif self.key_sw_en and (not get_main_window().isEnabled()):
                 get_main_window().setEnabled(True)
-                if self._touchscreen_id: subprocess.run(["xinput", "enable", self._touchscreen_id])
+                if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["enable", self._touchscreen_id])
                 self._set_led_state(3, 0, 0)
 
         if is_gui_node_initialized():
@@ -140,13 +148,25 @@ class RemoteState:
             elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
                 self._enable_mtr_ctrl(True)
 
+        # Calculate max. linear & angular velocities based on potentiometer value
+        self.max_linear_velocity_mps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_LINEAR_VEL_MPS])
+        self.max_angular_velocity_rps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_ANGULAR_VEL_RPS])
+
     def _led_state_act_tmr_call(self) -> None:
-        if not self._power_led_set and ros_remote_pui.ros_main.is_ros_node_initialized():
-            self._power_led_set = self._set_led_state(4, 0, 32000)
+        if ros_remote_pui.ros_main.is_ros_node_initialized():
+            if not self._power_led_set:
+                self._power_led_set = self._set_led_state(4, 0, 32000)
+            if self.right_kd2_en != self._last_joystick_en_state:
+                self._last_joystick_en_state = self.right_kd2_en
+                self._set_led_state(0, 2, 65535 if self.right_kd2_en else 0)
 
     @Slot()
     def _publish_joystick(self) -> None:
-        pass
+        if self.right_kd2_en:
+            cmd_vel_msg = Twist()
+            cmd_vel_msg.linear = interp(self.joystick_vals[0], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
+            cmd_vel_msg.angular = interp(self.joystick_vals[1], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
+            get_gui_ros_node().cmd_vel_pub.publish(cmd_vel_msg)
 
     # BUTTON NOT ASSIGNED
     @Slot()
@@ -164,12 +184,12 @@ class RemoteState:
         else:
             self._set_led_state(10, 0, 0)
 
-    # BUTTON NOT ASSIGNED
+    # EMERGENCY STOP
     @Slot()
     def left_red_btn_press(self) -> None:
         get_gui_ros_node().emergency_stop_pub.publish(Empty())
         ros_remote_pui.ros_main.get_ros_node().get_logger().warn("Emergency stop command published!")
-        get_msg_box_helper().show_msg_box_sig.emit("info", "Emergency Stop", "Emergency stop has been requested.")
+        get_msg_box_helper().show_msg_box_sig.emit("warn", "Emergency Stop", "Emergency stop has been requested.")
 
     # UI - PREVIOUS PAGE
     @Slot()
