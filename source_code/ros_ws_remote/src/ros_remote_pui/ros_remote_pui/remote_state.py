@@ -164,8 +164,8 @@ class RemoteState:
     def _publish_joystick(self) -> None:
         if self.right_kd2_en:
             cmd_vel_msg = Twist()
-            cmd_vel_msg.linear = interp(self.joystick_vals[0], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
-            cmd_vel_msg.angular = interp(self.joystick_vals[1], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
+            cmd_vel_msg.linear.x = interp(self.joystick_vals[0], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
+            cmd_vel_msg.angular.z = interp(self.joystick_vals[1], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
             get_gui_ros_node().cmd_vel_pub.publish(cmd_vel_msg)
 
     # BUTTON NOT ASSIGNED
