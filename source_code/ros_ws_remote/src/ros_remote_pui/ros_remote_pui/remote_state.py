@@ -159,7 +159,7 @@ class RemoteState:
 
             # Command vel. safety
             if datetime.now() - self.last_joystick_pub > timedelta(milliseconds=ProgramConfig.CMD_VEL_SAFETY_TIMEOUT_MS):
-                self._publish_cmd_vel(0, 0)
+                self._publish_cmd_vel(0.0, 0.0)
                 self.last_joystick_pub = datetime.now()
 
         # Calculate max. linear & angular velocities based on potentiometer value
