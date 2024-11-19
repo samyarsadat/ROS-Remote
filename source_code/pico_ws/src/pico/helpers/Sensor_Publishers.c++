@@ -1,5 +1,5 @@
 /*
-    The ROS remote project - Sensor Data MicroROS Publishers - Pico B
+    The ROS remote project - Sensor Data MicroROS Publishers
     Copyright 2024 Samyar Sadat Akhavi
     Written by Samyar Sadat Akhavi, 2024.
  

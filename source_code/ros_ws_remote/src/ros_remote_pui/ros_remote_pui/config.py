@@ -29,12 +29,12 @@ class ProgramInfoConfig:
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
     SW_ACT_TIMER_INTERVAL_MS = 250
-    LED_STATE_SET_TIMER_INTERVAL_MS = 250
     ENCODER_HIGHLIGHT_TIMEOUT_MS = 4000
     PICO_NUM_LEDS = 11
     LED_SRVCL_TIMEOUT_S = 4
     MAX_LINEAR_VEL_MPS = 0.628   # Meters per second (theoretical max for robot)
-    MAX_ANGULAR_VEL_RPS = 1.5    # Radians per second (TODO: Adjust this later)
+    MAX_ANGULAR_VEL_RPS = 8      # Radians per second (TODO: Adjust this later)
+    CMD_VEL_SAFETY_TIMEOUT_MS = 800
 
 
 class RpiIoConfig:

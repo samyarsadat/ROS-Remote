@@ -1,5 +1,5 @@
 /*
-    The ROS remote project - MicroROS Init - Pico B
+    The ROS remote project - MicroROS Init
     Copyright 2024 Samyar Sadat Akhavi
     Written by Samyar Sadat Akhavi, 2024.
  

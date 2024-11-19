@@ -1,5 +1,5 @@
 /*
-    The ROS remote project - Self Test Module - Pico B
+    The ROS remote project - Self Test Module
     Copyright 2024 Samyar Sadat Akhavi
     Written by Samyar Sadat Akhavi, 2024.
  

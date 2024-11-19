@@ -30,13 +30,13 @@ from ros_remote_gui.ros_main import get_ros_node as get_gui_ros_node
 from ros_remote_gui.ros_main import is_ros_node_initialized as is_gui_node_initialized
 from ros_remote_gui.utils.gui_utils import get_msg_box_helper
 from ros_remote_pui.config import ProgramConfig
-from datetime import datetime
+from datetime import datetime, timedelta
 from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
 from numpy import interp
 
 
-# Button signals
+# ROS signals
 class RosSignals(QObject):
     left_l_kd2_btn_press_sig = Signal()
     left_r_kd2_btn_press_sig = Signal()
@@ -58,7 +58,7 @@ class RemoteState:
     right_kd2_en: bool
     potentiometer_val: int
     joystick_vals: list[int]
-    last_joystick_recv: datetime
+    last_joystick_pub: datetime
     max_linear_velocity_mps: float
     max_angular_velocity_rps: float
 
@@ -82,7 +82,7 @@ class RemoteState:
         self.potentiometer_val = 0      # Robot max. linear velocity
 
         self.joystick_vals = [0, 0]
-        self.last_joystick_recv = datetime.now()
+        self.last_joystick_pub = datetime.now()
 
         self.max_linear_velocity_mps = 0.0
         self.max_angular_velocity_rps = 0.0
@@ -101,14 +101,11 @@ class RemoteState:
         self._power_led_set = False
         self._mtr_ctrl_last_state = 0   # 0: one or more not enabled, 1: all enabled, 2: data stale
         self._last_joystick_en_state = False
+        self._last_joystick_lock_state = False
 
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
         self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
-
-        self._led_state_act_tmr = QTimer()
-        self._led_state_act_tmr.timeout.connect(self._led_state_act_tmr_call)
-        self._led_state_act_tmr.start(ProgramConfig.LED_STATE_SET_TIMER_INTERVAL_MS)
 
         qt_app.aboutToQuit.connect(self._set_all_leds_off)
 
@@ -123,6 +120,18 @@ class RemoteState:
                 get_main_window().setEnabled(True)
                 if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["enable", self._touchscreen_id])
                 self._set_led_state(3, 0, 0)
+
+            # LED states
+            if not self._power_led_set:
+                self._power_led_set = self._set_led_state(4, 0, 32000)
+            if self.right_kd2_en != self._last_joystick_en_state or self._last_joystick_lock_state != self.key_sw_en:
+                self._last_joystick_en_state = self.right_kd2_en
+                self._last_joystick_lock_state = self.key_sw_en
+
+                if self.key_sw_en:
+                    self._set_led_state(0, 2, 65535 if self.right_kd2_en else 0)
+                else:
+                    self._set_led_state(0, 3, 65535 if self.right_kd2_en else 0)
 
         if is_gui_node_initialized():
             # Enable/disable camera LEDs (all full-on/full-off)
@@ -148,25 +157,22 @@ class RemoteState:
             elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
                 self._enable_mtr_ctrl(True)
 
+            # Command vel. safety
+            if datetime.now() - self.last_joystick_pub > timedelta(milliseconds=ProgramConfig.CMD_VEL_SAFETY_TIMEOUT_MS):
+                self._publish_cmd_vel(0, 0)
+                self.last_joystick_pub = datetime.now()
+
         # Calculate max. linear & angular velocities based on potentiometer value
         self.max_linear_velocity_mps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_LINEAR_VEL_MPS])
         self.max_angular_velocity_rps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_ANGULAR_VEL_RPS])
 
-    def _led_state_act_tmr_call(self) -> None:
-        if ros_remote_pui.ros_main.is_ros_node_initialized():
-            if not self._power_led_set:
-                self._power_led_set = self._set_led_state(4, 0, 32000)
-            if self.right_kd2_en != self._last_joystick_en_state:
-                self._last_joystick_en_state = self.right_kd2_en
-                self._set_led_state(0, 2, 65535 if self.right_kd2_en else 0)
-
     @Slot()
     def _publish_joystick(self) -> None:
-        if self.right_kd2_en:
-            cmd_vel_msg = Twist()
-            cmd_vel_msg.linear.x = interp(self.joystick_vals[1], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
-            cmd_vel_msg.angular.z = interp(self.joystick_vals[0], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
-            get_gui_ros_node().cmd_vel_pub.publish(cmd_vel_msg)
+        if self.right_kd2_en and self.key_sw_en:
+            linear_vel = interp(self.joystick_vals[1], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
+            angular_vel = interp(self.joystick_vals[0], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
+            self._publish_cmd_vel(linear_vel, angular_vel)
+            self.last_joystick_pub = datetime.now()
 
     # BUTTON NOT ASSIGNED
     @Slot()
@@ -206,6 +212,13 @@ class RemoteState:
             current_index = get_main_window().ui.pages.currentIndex()
             next_index = (current_index + 1) % get_main_window().ui.pages.count()
             get_main_window().ui.pages.setCurrentIndex(next_index)
+
+    @staticmethod
+    def _publish_cmd_vel(lin_vel: float, ang_vel: float):
+        cmd_vel_msg = Twist()
+        cmd_vel_msg.linear.x = lin_vel
+        cmd_vel_msg.angular.z = ang_vel
+        get_gui_ros_node().cmd_vel_pub.publish(cmd_vel_msg)
 
     @staticmethod
     def _led_set_request_done_call(future: Future) -> None:

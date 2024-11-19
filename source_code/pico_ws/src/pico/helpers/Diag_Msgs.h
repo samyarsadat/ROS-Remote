@@ -1,5 +1,5 @@
 /*
-    The ROS remote project - Diagnostics Report Messages - Pico B
+    The ROS remote project - Diagnostics Report Messages
     Copyright 2024 Samyar Sadat Akhavi
     Written by Samyar Sadat Akhavi, 2024.
  

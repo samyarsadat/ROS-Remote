@@ -99,7 +99,6 @@ class RosNode(Node):
 
     def _joystick_state_call(self, msg: JoystickState) -> None:
         get_remote_state().joystick_vals = [msg.joystick_x_axis_reading, msg.joystick_y_axis_reading]
-        get_remote_state().last_joystick_recv = datetime.now()
         get_remote_state()._ros_signals.joystick_msg_recv_sig.emit()
 
     def _potentiometer_state_call(self, msg: PotentiometerState) -> None:

@@ -1,5 +1,5 @@
 /*
-    The ROS remote project - Program Definitions - Pico B
+    The ROS remote project - Program Definitions
     Copyright 2024 Samyar Sadat Akhavi
     Written by Samyar Sadat Akhavi, 2024.
  
