@@ -124,6 +124,7 @@ class RemoteState:
             # LED states
             if not self._power_led_set:
                 self._power_led_set = self._set_led_state(4, 0, 32000)
+
             if self.right_kd2_en != self._last_joystick_en_state or self._last_joystick_lock_state != self.key_sw_en:
                 self._last_joystick_en_state = self.right_kd2_en
                 self._last_joystick_lock_state = self.key_sw_en
@@ -132,6 +133,25 @@ class RemoteState:
                     self._set_led_state(0, 2, 65535 if self.right_kd2_en else 0)
                 else:
                     self._set_led_state(0, 3, 65535 if self.right_kd2_en else 0)
+
+            # Motor controller LED
+            current_mtr_ctrl_state = 1
+
+            if get_main_window().motor_tab_ui_handler.left_ctrl_enabled and get_main_window().motor_tab_ui_handler.right_ctrl_enabled:
+                current_mtr_ctrl_state = 2
+            elif (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled) and (not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+                current_mtr_ctrl_state = 0
+
+            if current_mtr_ctrl_state != self._mtr_ctrl_last_state:
+                self._mtr_ctrl_last_state = current_mtr_ctrl_state
+
+                match current_mtr_ctrl_state:
+                    case 0:
+                        self._set_led_state(1, 0, 0)
+                    case 1:
+                        self._set_led_state(1, 1, 32000)
+                    case 2:
+                        self._set_led_state(1, 0, 32000)
 
         if is_gui_node_initialized():
             # Enable/disable camera LEDs (all full-on/full-off)
