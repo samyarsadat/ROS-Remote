@@ -102,6 +102,7 @@ class RemoteState:
         self._mtr_ctrl_last_state = 0   # 0: one or more not enabled, 1: all enabled, 2: data stale
         self._last_joystick_en_state = False
         self._last_joystick_lock_state = False
+        self._last_battery_led_state = False
 
         self._sw_state_act_tmr = QTimer()
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
@@ -134,6 +135,11 @@ class RemoteState:
                 else:
                     self._set_led_state(0, 3, 65535 if self.right_kd2_en else 0)
 
+            if get_main_window().power_tab_ui_handler.batt_voltage < ProgramConfig.BATT_WARN_LED_TRIG_VOLT and not self._last_battery_led_state:
+                self._last_battery_led_state = self._set_led_state(6, 2, 65535)
+            elif get_main_window().power_tab_ui_handler.batt_voltage > ProgramConfig.BATT_WARN_LED_TRIG_VOLT and self._last_battery_led_state:
+                self._last_battery_led_state = not self._set_led_state(6, 0, 0)
+
             # Motor controller LED
             current_mtr_ctrl_state = 1
 
@@ -143,15 +149,18 @@ class RemoteState:
                 current_mtr_ctrl_state = 0
 
             if current_mtr_ctrl_state != self._mtr_ctrl_last_state:
-                self._mtr_ctrl_last_state = current_mtr_ctrl_state
+                success = False
 
                 match current_mtr_ctrl_state:
                     case 0:
-                        self._set_led_state(1, 0, 0)
+                        success = self._set_led_state(1, 0, 0)
                     case 1:
-                        self._set_led_state(1, 1, 32000)
+                        success = self._set_led_state(1, 1, 32000)
                     case 2:
-                        self._set_led_state(1, 0, 32000)
+                        success = self._set_led_state(1, 0, 32000)
+
+                if success:
+                    self._mtr_ctrl_last_state = current_mtr_ctrl_state
 
         if is_gui_node_initialized():
             # Enable/disable camera LEDs (all full-on/full-off)

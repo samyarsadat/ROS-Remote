@@ -35,6 +35,8 @@ class ProgramConfig:
     MAX_LINEAR_VEL_MPS = 0.628   # Meters per second (theoretical max for robot)
     MAX_ANGULAR_VEL_RPS = 8      # Radians per second (TODO: Adjust this later)
     CMD_VEL_SAFETY_TIMEOUT_MS = 800
+    BATT_WARN_LED_TRIG_VOLT = 10.5
+    BATT_WARN_POPUP_TRIG_VOLT = 10
 
 
 class RpiIoConfig:
