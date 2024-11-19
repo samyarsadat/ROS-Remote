@@ -168,7 +168,7 @@ class RemoteState:
 
     @Slot()
     def _publish_joystick(self) -> None:
-        if self.right_kd2_en and self.key_sw_en:
+        if self.right_kd2_en and self.key_sw_en and is_gui_node_initialized():
             linear_vel = interp(self.joystick_vals[1], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
             angular_vel = interp(self.joystick_vals[0], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
             self._publish_cmd_vel(linear_vel, angular_vel)

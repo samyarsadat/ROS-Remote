@@ -53,7 +53,8 @@ class RosNames:
     CAMERA_FEED_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front/image_raw/compressed"
     CAMERA_OVERLAY_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front_overlay/image"
 
-    CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote"
+    #CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote"
+    CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel"   # For testing only!
 
     DIAGNOSTICS_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics"
     PING_DRIVER_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics/ping_driver"
