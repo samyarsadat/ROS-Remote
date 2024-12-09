@@ -81,7 +81,7 @@
 
 // ---- Repeating timer intervals ----
 #define sw_state_pub_rt_interval       100   // In milliseconds
-#define joystick_pub_rt_interval       80    // In milliseconds
+#define joystick_pub_rt_interval       100   // In milliseconds
 #define potentiometer_pub_rt_interval  100   // In milliseconds
 #define led_slow_flash_interval        800   // In milliseconds
 #define led_fast_flash_interval        400   // In milliseconds
