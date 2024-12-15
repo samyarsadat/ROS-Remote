@@ -30,6 +30,7 @@ from diagnostic_msgs.srv import SelfTest
 from nav_msgs.msg import Odometry
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
 from ros_remote_gui.main_window import get_main_window
+from ros_remote_gui.utils.utils import quat_msg_to_euler
 from sensor_msgs.msg import BatteryState, Imu, Temperature, RelativeHumidity, Range, CompressedImage, Image
 from std_msgs.msg import Empty
 from std_srvs.srv import SetBool
@@ -116,9 +117,10 @@ class RosNode(Node):
 
     @staticmethod
     def encoder_odom_callback(msg: Odometry) -> None:
+        orientation_euler = quat_msg_to_euler(msg.pose.pose.orientation)
+        get_main_window().motor_tab_ui_handler.orientation_yaw = orientation_euler.z
         get_main_window().motor_tab_ui_handler.position_x = msg.pose.pose.position.x
         get_main_window().motor_tab_ui_handler.position_y = msg.pose.pose.position.y
-        get_main_window().motor_tab_ui_handler.orientation_yaw = msg.pose.pose.orientation.z
         get_main_window().motor_tab_ui_handler.linear_velocity = msg.twist.twist.linear.x
         get_main_window().motor_tab_ui_handler.angular_velocity = msg.twist.twist.angular.z
 
