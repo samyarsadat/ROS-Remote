@@ -68,6 +68,10 @@ class MotorTab:
         self.last_right_data_rcv = datetime(1, 1, 1)
         self.last_left_data_rcv = datetime(1, 1, 1)
 
+        # For external use by remote_pui_node
+        self.left_data_stale = False
+        self.right_data_stale = False
+
         get_main_window().ui.mtrCtrlEnableButton.clicked.connect(self._enable_mtr_ctrls_call)
         get_main_window().ui.mtrCtrlDisableButton.clicked.connect(self._disable_mtr_ctrls_call)
 
@@ -105,13 +109,17 @@ class MotorTab:
 
             # For stale information
             if not (datetime.now() - self.last_right_data_rcv) > timedelta(seconds=ProgramConfig.STALE_DATA_TIMEOUT):
+                self.right_data_stale = False
                 get_main_window().ui.mtrCtrlEnableRIndicator.setStyleSheet(generate_indicator_stylesheet(self.right_ctrl_enabled, "green"))
             elif self.right_ctrl_enabled:
+                self.right_data_stale = True
                 get_main_window().ui.mtrCtrlEnableRIndicator.setStyleSheet(generate_indicator_stylesheet(True, "yellow"))
 
             if not (datetime.now() - self.last_left_data_rcv) > timedelta(seconds=ProgramConfig.STALE_DATA_TIMEOUT):
+                self.left_data_stale = False
                 get_main_window().ui.mtrCtrlEnableLIndicator.setStyleSheet(generate_indicator_stylesheet(self.left_ctrl_enabled, "green"))
             elif self.left_ctrl_enabled:
+                self.left_data_stale = True
                 get_main_window().ui.mtrCtrlEnableLIndicator.setStyleSheet(generate_indicator_stylesheet(True, "yellow"))
 
     @staticmethod

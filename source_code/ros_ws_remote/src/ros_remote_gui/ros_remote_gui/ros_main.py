@@ -32,7 +32,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallb
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.utils.utils import quat_msg_to_euler
 from sensor_msgs.msg import BatteryState, Imu, Temperature, RelativeHumidity, Range, CompressedImage, Image
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, Bool
 from std_srvs.srv import SetBool
 from ros_robot_msgs.srv import SetCameraLeds, GetCameraLeds, SetPidTunings, RunCalibrationsA, GetBool
 from ros_robot_msgs.msg import MotorCtrlState
@@ -50,6 +50,7 @@ class RosNode(Node):
         self._viewport_cb_group = ReentrantCallbackGroup()
 
         self.cmd_vel_pub = self.create_publisher(Twist, RosNames.CMD_VEL_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
+        self.joystick_cmd_vel_mode_pub = self.create_publisher(Bool, RosNames.JOYSTICK_CMD_VEL_MODE_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
 
         # Viewport camera & camera overlay
         self.front_camera_comp_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_FEED_TOPIC, self.front_camera_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
@@ -118,7 +119,7 @@ class RosNode(Node):
     @staticmethod
     def encoder_odom_callback(msg: Odometry) -> None:
         orientation_euler = quat_msg_to_euler(msg.pose.pose.orientation)
-        get_main_window().motor_tab_ui_handler.orientation_yaw = orientation_euler.z
+        get_main_window().motor_tab_ui_handler.orientation_yaw = round(orientation_euler.z * (180 / 3.1415), 1)
         get_main_window().motor_tab_ui_handler.position_x = msg.pose.pose.position.x
         get_main_window().motor_tab_ui_handler.position_y = msg.pose.pose.position.y
         get_main_window().motor_tab_ui_handler.linear_velocity = msg.twist.twist.linear.x
@@ -149,8 +150,8 @@ class RosNode(Node):
     @staticmethod
     def left_mtr_ctrl_callback(msg: MotorCtrlState) -> None:
         get_main_window().motor_tab_ui_handler.left_ctrl_enabled = msg.controller_enabled
-        get_main_window().motor_tab_ui_handler.rpm_measured_left = deepcopy(msg.measured_rpms)
-        get_main_window().motor_tab_ui_handler.rpm_target_left = msg.target_rpm
+        get_main_window().motor_tab_ui_handler.rpm_measured_left = [rpm * (1 if direc else -1) for (rpm, direc) in zip(msg.measured_rpms, msg.measured_dirs)]
+        get_main_window().motor_tab_ui_handler.rpm_target_left = msg.target_rpm * (1 if msg.target_dir else -1)
         get_main_window().motor_tab_ui_handler.left_ctrl_pid_out = msg.pid_output
         get_main_window().motor_tab_ui_handler.left_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
         get_main_window().motor_tab_ui_handler.encoder_pulse_ctrs_left = deepcopy(msg.total_enc_counts)
@@ -159,8 +160,8 @@ class RosNode(Node):
     @staticmethod
     def right_mtr_ctrl_callback(msg: MotorCtrlState) -> None:
         get_main_window().motor_tab_ui_handler.right_ctrl_enabled = msg.controller_enabled
-        get_main_window().motor_tab_ui_handler.rpm_measured_right = deepcopy(msg.measured_rpms)
-        get_main_window().motor_tab_ui_handler.rpm_target_right = msg.target_rpm
+        get_main_window().motor_tab_ui_handler.rpm_measured_right = [rpm * (1 if direc else -1) for (rpm, direc) in zip(msg.measured_rpms, msg.measured_dirs)]
+        get_main_window().motor_tab_ui_handler.rpm_target_right = msg.target_rpm * (1 if msg.target_dir else -1)
         get_main_window().motor_tab_ui_handler.right_ctrl_pid_out = msg.pid_output
         get_main_window().motor_tab_ui_handler.right_ctrl_pid_tunings = deepcopy(msg.pid_tunings)
         get_main_window().motor_tab_ui_handler.encoder_pulse_ctrs_right = deepcopy(msg.total_enc_counts)

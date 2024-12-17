@@ -55,6 +55,7 @@ class RosNames:
 
     #CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote"
     CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel"   # For testing only!
+    JOYSTICK_CMD_VEL_MODE_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote/joystick_mode"
 
     DIAGNOSTICS_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics"
     PING_DRIVER_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics/ping_driver"

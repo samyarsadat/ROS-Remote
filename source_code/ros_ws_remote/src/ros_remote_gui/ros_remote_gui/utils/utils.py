@@ -22,7 +22,7 @@ from math import atan2, copysign, asin
 
 
 
-# ---- Quaternion to Euler ----
+# ---- Quaternion to Euler (radians) ----
 def quat_msg_to_euler(quat: Quaternion) -> Vector3:
     angles = Vector3()
 
@@ -30,12 +30,10 @@ def quat_msg_to_euler(quat: Quaternion) -> Vector3:
     cosr_cosp = 1 - 2 * (quat.x * quat.x + quat.y * quat.y)
     angles.x = atan2(sinr_cosp, cosr_cosp)
 
-    sinp = 2 * (quat.w * quat.y - quat.z * quat.x)
-
-    if abs(sinp) >= 1:
-        angles.y = copysign(3.1415 / 2, sinp)
-    else:
-        angles.y = asin(sinp)
+    sinp = 2.0 * (quat.w * quat.y - quat.z * quat.x)
+    sinp = 1.0 if sinp > 1.0 else sinp
+    sinp = -1.0 if sinp < -1.0 else sinp
+    angles.y = asin(sinp)
 
     siny_cosp = 2 * (quat.w * quat.z + quat.x * quat.y)
     cosy_cosp = 1 - 2 * (quat.y * quat.y + quat.z * quat.z)

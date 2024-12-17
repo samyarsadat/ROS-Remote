@@ -31,7 +31,7 @@ from ros_remote_gui.ros_main import is_ros_node_initialized as is_gui_node_initi
 from ros_remote_gui.utils.gui_utils import get_msg_box_helper
 from ros_remote_pui.config import ProgramConfig
 from datetime import datetime, timedelta
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, Bool
 from std_srvs.srv import SetBool
 from numpy import interp
 
@@ -143,10 +143,13 @@ class RemoteState:
             # Motor controller LED
             current_mtr_ctrl_state = 1
 
-            if get_main_window().motor_tab_ui_handler.left_ctrl_enabled and get_main_window().motor_tab_ui_handler.right_ctrl_enabled:
-                current_mtr_ctrl_state = 2
-            elif (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled) and (not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
-                current_mtr_ctrl_state = 0
+            if get_main_window().motor_tab_ui_handler.right_data_stale or get_main_window().motor_tab_ui_handler.left_data_stale:
+                current_mtr_ctrl_state = 3
+            else:
+                if get_main_window().motor_tab_ui_handler.left_ctrl_enabled and get_main_window().motor_tab_ui_handler.right_ctrl_enabled:
+                    current_mtr_ctrl_state = 2
+                elif (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled) and (not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+                    current_mtr_ctrl_state = 0
 
             if current_mtr_ctrl_state != self._mtr_ctrl_last_state:
                 success = False
@@ -158,6 +161,8 @@ class RemoteState:
                         success = self._set_led_state(1, 1, 32000)
                     case 2:
                         success = self._set_led_state(1, 0, 32000)
+                    case 3:
+                        success = self._set_led_state(1, 2, 32000)
 
                 if success:
                     self._mtr_ctrl_last_state = current_mtr_ctrl_state
@@ -190,6 +195,11 @@ class RemoteState:
             if datetime.now() - self.last_joystick_pub > timedelta(milliseconds=ProgramConfig.CMD_VEL_SAFETY_TIMEOUT_MS):
                 self._publish_cmd_vel(0.0, 0.0)
                 self.last_joystick_pub = datetime.now()
+
+            # Joystick cmd_vel and navigation cmd_vel mixing mode switch state publication
+            joystick_mode_msg = Bool()
+            joystick_mode_msg.data = self.right_sw_en
+            get_gui_ros_node().joystick_cmd_vel_mode_pub.publish(joystick_mode_msg)
 
         # Calculate max. linear & angular velocities based on potentiometer value
         self.max_linear_velocity_mps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_LINEAR_VEL_MPS])
