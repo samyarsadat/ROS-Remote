@@ -169,8 +169,8 @@ class RemoteState:
 
         if is_gui_node_initialized():
             # Enable/disable camera LEDs (all full-on/full-off)
-            # TODO: Improve the logic of this.
             if self.key_sw_en:
+                # TODO: Improve the logic of this.
                 if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
                     get_main_window().ui.camLed1Check.setChecked(True)
                     get_main_window().ui.camLed2Check.setChecked(True)
@@ -184,6 +184,11 @@ class RemoteState:
                     get_main_window().ui.camLed4Check.setChecked(True)
                     get_main_window().ui.camLedsBrightnessSlider.setValue(100)
 
+                # Joystick cmd_vel and navigation cmd_vel mixing mode switch state publication
+                joystick_mode_msg = Bool()
+                joystick_mode_msg.data = self.right_sw_en
+                get_gui_ros_node().joystick_cmd_vel_mode_pub.publish(joystick_mode_msg)
+
             # Motor controller enable (NO REMOTE LOCK CHECK)
             # TODO: This could result in the motor controller enable service being called over and over again.
             if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
@@ -192,14 +197,9 @@ class RemoteState:
                 self._enable_mtr_ctrl(True)
 
             # Command vel. safety
-            if datetime.now() - self.last_joystick_pub > timedelta(milliseconds=ProgramConfig.CMD_VEL_SAFETY_TIMEOUT_MS):
+            if datetime.now() - self.last_joystick_pub > timedelta(milliseconds=ProgramConfig.CMD_VEL_SAFETY_TIMEOUT_MS) and self.right_kd2_en:
                 self._publish_cmd_vel(0.0, 0.0)
                 self.last_joystick_pub = datetime.now()
-
-            # Joystick cmd_vel and navigation cmd_vel mixing mode switch state publication
-            joystick_mode_msg = Bool()
-            joystick_mode_msg.data = self.right_sw_en
-            get_gui_ros_node().joystick_cmd_vel_mode_pub.publish(joystick_mode_msg)
 
         # Calculate max. linear & angular velocities based on potentiometer value
         self.max_linear_velocity_mps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_LINEAR_VEL_MPS])
