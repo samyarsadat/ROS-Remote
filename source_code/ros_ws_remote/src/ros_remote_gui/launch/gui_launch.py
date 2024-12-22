@@ -18,8 +18,9 @@
 
 import launch
 import launch_ros.actions
-from launch.actions import RegisterEventHandler, LogInfo, DeclareLaunchArgument
+from launch.actions import RegisterEventHandler, LogInfo, DeclareLaunchArgument, EmitEvent
 from launch.event_handlers import OnProcessStart, OnProcessExit
+from launch.events import Shutdown
 from launch.substitutions import LaunchConfiguration
 
 
@@ -27,9 +28,7 @@ def generate_launch_description():
     serial_dev_arg = DeclareLaunchArgument("serial_device", default_value="/dev/ttyAMA0")
     launch_gui = launch_ros.actions.Node(package="ros_remote_gui", executable="remote_gui_node", name="remote_gui")
     launch_agent = launch_ros.actions.Node(package="micro_ros_agent", executable="micro_ros_agent", name="micro_ros_agent",
-                                           arguments=["serial", "--dev", LaunchConfiguration("serial_device")],
-                                           condition=OnProcessExit(target_action=launch_gui,
-                                                                   on_exit=[LogInfo(msg="GUI process has exited.")]))
+                                           arguments=["serial", "--dev", LaunchConfiguration("serial_device")])
 
     return launch.LaunchDescription([
         serial_dev_arg,
@@ -40,6 +39,15 @@ def generate_launch_description():
                 on_start=[
                     LogInfo(msg="MicroROS agent started, starting remote GUI."),
                     launch_gui
+                ]
+            )
+        ),
+        RegisterEventHandler(
+            OnProcessExit(
+                target_action=launch_gui,
+                on_exit=[
+                    LogInfo(msg="GUI exited, shutting down."),
+                    EmitEvent(event=Shutdown(reason="GUI node exited."))
                 ]
             )
         ),
