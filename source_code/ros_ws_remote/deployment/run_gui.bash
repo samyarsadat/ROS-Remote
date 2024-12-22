@@ -26,8 +26,10 @@ if [ "$SET_SCRN_RES" == "true" ]; then
 fi
 
 cd "$HOME/ros_remote/source_code/ros_ws_remote" || exit 1
-source /opt/ros/humble/setup.bash
+#source /opt/ros/humble/setup.bash
+source /opt/vulcanexus/humble/setup.bash
 source install/local_setup.sh
 source "../pico_ws/libmicroros/install/local_setup.sh"
 source "../ros_robot_project/source_code/ros_ws_robot/install/local_setup.sh"
-DISPLAY=:0 ros2 run ros_remote_gui remote_gui_node
+DISPLAY=:0 ros2 launch ros_remote_gui gui_launch.py
+#DISPLAY=:0 ros2 run ros_remote_gui remote_gui_node

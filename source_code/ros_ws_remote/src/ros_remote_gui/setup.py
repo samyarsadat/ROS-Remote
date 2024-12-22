@@ -1,3 +1,4 @@
+from glob import glob
 from setuptools import find_packages, setup
 from ros_remote_gui.config import PROGRAM_VERSION
 package_name = "ros_remote_gui"
@@ -9,6 +10,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
+        ("share/" + package_name + "/launch", glob("launch/" + "*launch.[pxy][yma]*"))
     ],
     install_requires=["setuptools"],
     zip_safe=True,
