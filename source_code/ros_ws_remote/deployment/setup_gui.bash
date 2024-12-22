@@ -17,6 +17,8 @@ sudo apt-get install ros-humble-desktop ros-dev-tools libxcb-cursor0 python3-pip
 pip install PySide6
 source /opt/ros/humble/setup.bash
 
+sudo usermod -aG dialout $USER
+
 cd "$HOME" || exit 1
 git clone https://github.com/samyarsadat/ROS-Remote ./ros_remote --recurse-submodules
 cd ./ros_remote || exit 1
