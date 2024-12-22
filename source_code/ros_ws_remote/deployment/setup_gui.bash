@@ -19,6 +19,13 @@ source /opt/ros/humble/setup.bash
 
 sudo usermod -aG dialout $USER
 
+CONFIG_FILE="/boot/firmware/config.txt"
+if grep -q "\[all\]" "$CONFIG_FILE"; then
+    sudo sed -i '/\[all\]/a dtoverlay=disable-bt\nenable_uart=1' "$CONFIG_FILE"
+else
+    echo -e "\n[all]\ndtoverlay=disable-bt\nenable_uart=1" | sudo tee -a "$CONFIG_FILE" > /dev/null
+fi
+
 cd "$HOME" || exit 1
 git clone https://github.com/samyarsadat/ROS-Remote ./ros_remote --recurse-submodules
 cd ./ros_remote || exit 1
