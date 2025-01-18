@@ -1,7 +1,7 @@
 #  The ROS remote project (Test Camera Publisher)
 #  Empty package init file
-#  Copyright 2024 Samyar Sadat Akhavi
-#  Written by Samyar Sadat Akhavi, 2024.
+#  Copyright 2024-2025 Samyar Sadat Akhavi
+#  Written by Samyar Sadat Akhavi, 2024-2025.
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2024.11.12"
+PROGRAM_VERSION = "2025.1.18"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 import cv2
 
@@ -24,7 +24,7 @@ import cv2
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2024/11/12 @ 1:56 UTC"
+    VERSION_DATE = "2025-01-18 @ 16:17 UTC"
 
 
 class ProgramConfig:

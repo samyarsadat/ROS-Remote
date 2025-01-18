@@ -1,6 +1,6 @@
 #  The ROS remote project - ROS 2 Workspace Dockerfile
-#  Copyright 2024 Samyar Sadat Akhavi
-#  Prepared by Samyar Sadat Akhavi, 2024.
+#  Copyright 2024-2025 Samyar Sadat Akhavi
+#  Prepared by Samyar Sadat Akhavi, 2024-2025.
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,17 +21,16 @@
 #  https://circuitdigest.com/microcontroller-projects/how-to-program-raspberry-pi-pico-using-c
 #  https://github.com/BrunoB81HK/ros2-workspace-devcontainer-template
 
-FROM samyarsadat/custom_base_images:desktop-full-ros-humble
-ENV USERNAME=nonroot
+FROM samyarsadat/custom_base_images:desktop-full-ros-jazzy
 
 
-# Install pip & libxcb-cursor0
+# Install pip, libxcb-cursor0, lgpio, and gpiozero
 RUN apt-get update \
     && apt-get install -y python3-pip libxcb-cursor0 python3-lgpio python3-gpiozero \
     && rm -rf /var/lib/apt/lists/* && apt-get autoremove && apt-get autoclean
 
 # Install PySide6
-RUN pip install --no-cache-dir PySide6
+RUN pip install --no-cache-dir --break-system-packages PySide6
 
 # Raspberry Pi Pico TTY permission fix
 USER root

@@ -23,7 +23,7 @@ if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_RESET" == "true" ]; then
 fi
 
 if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_REBUILD" == "true" ]; then
-    source /opt/ros/humble/setup.bash
+    source /opt/ros/$ROS_DISTRO/setup.bash
     cd "./source_code/ros_ws_remote" || exit 1
     colcon build --packages-skip test_camera_publisher
 

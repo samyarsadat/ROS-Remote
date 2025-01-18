@@ -72,4 +72,4 @@ Please take a look at <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for contribu
 <br>
 <br>
 
-Copyright © 2024 Samyar Sadat Akhavi.
+Copyright © 2024-2025 Samyar Sadat Akhavi.

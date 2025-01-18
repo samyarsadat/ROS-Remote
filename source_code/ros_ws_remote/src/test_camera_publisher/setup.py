@@ -6,8 +6,8 @@ setup(
     name=package_name,
     version=PROGRAM_VERSION,
     packages=find_packages(exclude=["test"]),
-    include_package_data=True,
-    package_data={"": ["test_images/*.png"]},
+    include_package_data=False,
+    package_data={package_name: ["test_images/*.png"]},
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"])

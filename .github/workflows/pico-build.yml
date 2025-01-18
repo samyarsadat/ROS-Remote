@@ -45,7 +45,7 @@ jobs:
 
             - name: Build MicroROS Library
               id: build
-              uses: samyarsadat/MicroROS-Build-Action@v1
+              uses: samyarsadat/MicroROS-Build-Action@v1-jazzy
               with:
                   microros_dir: "source_code/pico_ws/libmicroros"
                   clone_microros_setup: "false"

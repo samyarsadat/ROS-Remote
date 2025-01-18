@@ -1,4 +1,5 @@
 #!/bin/bash
+ROS_DISTRO="jazzy"
 set -e
 
 sudo apt install software-properties-common
@@ -11,9 +12,9 @@ sudo curl -sSL https://raw.githubusercontent.com/eProsima/vulcanexus/main/vulcan
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/vulcanexus-archive-keyring.gpg] http://repo.vulcanexus.org/debian $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/vulcanexus.list > /dev/null
 
 sudo apt update && sudo apt upgrade -y
-sudo apt-get install vulcanexus-humble-base ros-dev-tools libxcb-cursor0 python3-pip python3-lgpio python3-gpiozero -y
+sudo apt-get install vulcanexus-$ROS_DISTRO-base ros-dev-tools libxcb-cursor0 python3-pip python3-lgpio python3-gpiozero -y
 pip install PySide6
-source /opt/ros/humble/setup.bash
+source /opt/ros/$ROS_DISTRO/setup.bash
 
 sudo usermod -aG dialout $USER
 

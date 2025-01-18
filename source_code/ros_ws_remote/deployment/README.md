@@ -1,6 +1,6 @@
 These scripts are for setting up, running, and updating the ROS Remote GUI. The GUI should
 be run on a Raspberry Pi (4B 8GB in my case, but a model with less RAM will also work) 
-running Ubuntu 22.04 LTS. Raspberry Pi OS will not work.<br>
+running Ubuntu 24.04 LTS. Raspberry Pi OS will not work.<br>
 <br>
 You should first run the setup script, then you can add the `run_gui.bash` script to start up
 the list of startup programs using the GNOME "Startup Applications" app. Be sure to specify

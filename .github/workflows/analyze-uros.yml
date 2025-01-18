@@ -22,7 +22,7 @@ jobs:
     analyze_uros:
         name: Analyze MicroROS library
         runs-on: ubuntu-latest
-        container: samyarsadat/service_images:microros-build-action-latest
+        container: samyarsadat/service_images:microros-build-action-jazzy
 
         permissions:
             security-events: write

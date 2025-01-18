@@ -20,7 +20,6 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 set -e
-export ROS_DISTRO="humble"
 
 # Get arguments
 MICROROS_DIR_PATH=$1
