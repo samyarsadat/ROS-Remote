@@ -8,6 +8,6 @@ configuration files for a devcpntainer can be found in this directory.
 <br><br>
 
 ### Remote GUI (`ros_ws_remote`)
-The source cod for all ROS 2 packages related to the remote's Graphical User Interface and configuration
+The source code for all ROS 2 packages related to the remote's Graphical User Interface and configuration
 files for a devcontainer can be found in this directory. The `deployment` subdirectory also contains BASH
 scripts meant to assist with setup and deployment on a Raspberry Pi Single-Board Computer.
