@@ -7,14 +7,11 @@
 	path = source_code/pico_ws/src/lib/Common_libs
 	url = https://github.com/samyarsadat/Pico-Libraries
 
-[submodule "MicroROS Tools"]
-	path = source_code/pico_ws/libmicroros/src/micro_ros_setup
-	url = https://github.com/micro-ROS/micro_ros_setup
-	branch = humble
-    ignore = all
-
-# THIS IS TEMPORARY! IT WILL BE REMOVED!
 [submodule "The ROS Robot Project"]
 	path = source_code/ros_robot_project
 	url = https://github.com/samyarsadat/ROS-Robot
     ignore = all
+[submodule "MicroROS Tools"]
+	path = source_code/pico_ws/libmicroros/src/micro_ros_setup
+	url = https://github.com/micro-ROS/micro_ros_setup
+	branch = jazzy
