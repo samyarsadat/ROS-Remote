@@ -34,16 +34,16 @@ Their names and purposes are as follows:
 **.github**<br>
 GitHub issue templates, pull request templates, etc.<br>
 
-**Assets**<br>
+**assets**<br>
 Assets used on GitHub (such as images used in this README file).<br>
 
-**CAD Files**<br>
+**cad_files**<br>
 3D CAD design files and 3D printing files.<br>
 
-**Circuit Diagrams**<br>
+**electronics** (TO BE ADDED)<br>
 Overall circuit diagrams.<br>
 
-**Source Code**<br>
+**source_code**<br>
 Source code for the remote touch UI and Raspberry Pi Pico firmware.<br>
 
 
