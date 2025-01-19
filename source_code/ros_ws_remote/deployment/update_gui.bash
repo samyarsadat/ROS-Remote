@@ -1,4 +1,5 @@
 #!/bin/bash
+ROS_DISTRO="jazzy"
 set -e
 
 while getopts rgb flag
