@@ -30,7 +30,7 @@ if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_REBUILD" == "true" ]; then
     if [ "$REBUILD_GUI_ONLY" == "" ]; then
         cd "../pico_ws/libmicroros" || exit 1
         colcon build --packages-select remote_pico_coms
-        cd "../../ros_robot_project/source_code/ros_ws_robot" || exit 1
+        cd "../../ros_robot_project/source_code/ros_ws_robot_infra" || exit 1
         colcon build --packages-select ros_robot_msgs
     fi
 fi

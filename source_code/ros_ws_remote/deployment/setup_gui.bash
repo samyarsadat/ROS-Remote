@@ -12,8 +12,8 @@ sudo curl -sSL https://raw.githubusercontent.com/eProsima/vulcanexus/main/vulcan
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/vulcanexus-archive-keyring.gpg] http://repo.vulcanexus.org/debian $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/vulcanexus.list > /dev/null
 
 sudo apt update && sudo apt upgrade -y
-sudo apt-get install vulcanexus-$ROS_DISTRO-base ros-dev-tools libxcb-cursor0 python3-pip python3-lgpio python3-gpiozero -y
-pip install PySide6
+sudo apt-get install vulcanexus-$ROS_DISTRO-base ros-dev-tools ros-$ROS_DISTRO-cv-bridge libxcb-cursor0 python3-pip python3-lgpio python3-gpiozero -y
+pip install --break-system-packages PySide6
 source /opt/ros/$ROS_DISTRO/setup.bash
 
 sudo usermod -aG dialout $USER
@@ -33,5 +33,5 @@ cd "./source_code/ros_ws_remote" || exit 1
 colcon build --packages-skip test_camera_publisher
 cd "../pico_ws/libmicroros" || exit 1
 colcon build --packages-select remote_pico_coms
-cd "../../ros_robot_project/source_code/ros_ws_robot" || exit 1
+cd "../../ros_robot_project/source_code/ros_ws_robot_infra" || exit 1
 colcon build --packages-select ros_robot_msgs
