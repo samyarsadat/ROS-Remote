@@ -58,5 +58,5 @@ rosdep install --from-paths src -y --ignore-src
 sudo apt-get install $NON_ROSDEP_DEPS -y
 colcon build --packages-skip test_camera_publisher
 
-sudo apt-get autoremove
-sudo apt-get autoclean
+sudo apt-get autoremove -y
+sudo apt-get autoclean -y
