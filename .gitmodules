@@ -3,10 +3,6 @@
 	url = https://github.com/FreeRTOS/FreeRTOS-Kernel
 	ignore = all
 
-[submodule "Common Helper Libraries"]
-	path = source_code/pico_ws/src/lib/Common_libs
-	url = https://github.com/samyarsadat/Pico-Libraries
-
 [submodule "The ROS Robot Project"]
 	path = source_code/ros_robot_project
 	url = https://github.com/samyarsadat/ROS-Robot
@@ -17,3 +13,8 @@
 	url = https://github.com/micro-ROS/micro_ros_setup
 	branch = jazzy
 	ignore = all
+	
+[submodule "Common Helper Libraries"]
+	path = source_code/pico_ws/src/lib/Common_libs
+	url = https://github.com/samyarsadat/Pico-Libraries
+	branch = new-firmware
