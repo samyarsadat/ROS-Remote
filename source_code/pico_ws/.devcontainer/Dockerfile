@@ -14,32 +14,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
-#  
-#  Bits of code taken from:
-#  https://github.com/joshnewans/dockerfile_example/blob/main/Dockerfile
-#  https://micro.ros.org/docs/tutorials/core/first_application_linux/
-#  https://circuitdigest.com/microcontroller-projects/how-to-program-raspberry-pi-pico-using-c
-#  https://github.com/BrunoB81HK/ros2-workspace-devcontainer-template
 
 FROM samyarsadat/custom_base_images:base-ros-jazzy
-
 
 
 # Install pip
 RUN apt-get update \
     && apt-get install -y python3-pip \
     && rm -rf /var/lib/apt/lists/* && apt-get autoremove && apt-get autoclean
-
-# Install OpenSSH Server
-#RUN apt-get update \
-#    && apt-get install -y python3-pip openssh-server \
-#    && rm -rf /var/lib/apt/lists/* && apt-get autoremove && apt-get autoclean
-
-# Set the SSH server port to 44
-#RUN sed -i "s/#Port 22/Port 44/" /etc/ssh/sshd_config
-
-# Set a password for the nonroot user
-#RUN echo "${USERNAME}:nonroot" | chpasswd
 
 # Pico setup
 COPY install_pico.sh /pico_setup.sh

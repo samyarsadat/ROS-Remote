@@ -22,4 +22,3 @@ float32 joystick_x_center_offset
 uint16 joystick_y_deadzone
 uint16 joystick_x_deadzone
 ---
-bool success

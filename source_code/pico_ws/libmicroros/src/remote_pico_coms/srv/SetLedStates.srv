@@ -28,4 +28,3 @@ uint16[11] pwm_outputs
 # left_bottom_green_2_led, left_red_kd2_led, left_green_kd2_led]
 bool[11] set_state_mask
 ---
-bool success

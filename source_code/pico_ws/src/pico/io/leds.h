@@ -1,8 +1,7 @@
 /*
-    The ROS remote project - IO Helper Module - General
-    (LEDs, button states, joystick, etc.)
-    Copyright 2024 Samyar Sadat Akhavi
-    Written by Samyar Sadat Akhavi, 2024.
+    The ROS remote project - LED IO helper module
+    Copyright 2025 Samyar Sadat Akhavi.
+    Written by Samyar Sadat Akhavi, 2025.
  
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,22 +14,16 @@
     GNU General Public License for more details.
  
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https: www.gnu.org/licenses/>.
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
-
-
-// ------- Libraries & Modules -------
 #include "pico/stdlib.h"
-#include "Definitions.h"
+#include "config/hw_defs.h"
 #include "FreeRTOS.h"
 #include "timers.h"
 
 
-// ------- Global variables -------
-
-// ---- LED states ----
 struct led_state
 {
     uint8_t pin;
@@ -43,37 +36,12 @@ struct led_state
 };
 
 typedef struct led_state led_state_t;
+const uint8_t led_pins_order[NUMBER_OF_LEDS] = {RIGHT_KD2_LED_PIN, RIGHT_GREEN_LED_PIN, RIGHT_BLUE_LED_PIN, LEFT_TOP_YELLOW_LED_PIN, 
+                                                LEFT_TOP_GREEN_LED_PIN, LEFT_RED_LED_PIN, LEFT_BOTTOM_YELLOW_LED_PIN, LEFT_BOTTOM_GREEN_1_LED_PIN, 
+                                                LEFT_BOTTOM_GREEN_2_LED_PIN, LEFT_RED_KD2_LED_PIN, LEFT_GREEN_KD2_LED_PIN};
 
-// ---- LEDs ----
-extern const uint8_t led_pins_order[number_of_leds];
+TimerHandle_t fast_led_flash_handler_timer, slow_led_flash_handler_timer, led_fade_handler_timer;
 
-// ---- Momentary buttons ----
-extern const uint8_t momen_btn_pins_order[number_of_momentary_buttons];
-
-// ---- Joystick ----
-extern float joystick_x_center_offset;
-extern float joystick_y_center_offset;
-extern uint16_t joystick_x_deadzone;
-extern uint16_t joystick_y_deadzone;
-
-
-// ------- Functions ------- 
-
-// ---- Get joystick axis positions (readings) ----
-// ---- These functions take into account the deadzone, offset, and inversion configs of the axis ----
-// ---- They return values between -512 and +512, with 0 being center ----
-int16_t get_joystick_x_val();
-int16_t get_joystick_y_val();
-
-// ---- Get potentiometer reading ----
-// ---- This function takes into account the potentiometer's inversion config ----
-// ---- It returns a value between 0 and 1024 ----
-uint16_t get_potentiometer_val();
-
-// ---- Button de-bouncing function ----
-// ---- Returns true if the button should be considered pressed, false if not. ----
-// ---- NOTE: Only for the 5 momentary push buttons! ----
-bool button_bounce_check(uint8_t pin);
 
 // ---- Initialize LEDs and LED state objects ----
 void init_leds();
@@ -88,8 +56,8 @@ void set_led_state(uint8_t pin, uint8_t mode, uint16_t pwm_output);
 // ---- Get a single LED's state ----
 led_state_t get_led_state(uint8_t pin);
 
-// ---- Set self-test state ----
-void set_in_self_test(bool self_test_active);
+// ---- Self-test ----
+void leds_test();
 
 // ---- Set all LED outputs ----
 // ---- This function only handles LEDs that are set to mode 0 (solid PWM) ----
@@ -104,6 +72,10 @@ void all_leds_on();
 
 // ---- FreeRTOS timer callbacks ----
 // ---- These are for the flashing and fading modes ----
+void led_timers_init();
+void led_timers_destroy();
+bool led_timers_start();
+void led_timers_stop();
 void led_slow_flashing_timer_call(TimerHandle_t timer);
 void led_fast_flashing_timer_call(TimerHandle_t timer);
 void led_fading_timer_call(TimerHandle_t timer);

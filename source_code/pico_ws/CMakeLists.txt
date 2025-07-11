@@ -1,6 +1,6 @@
 #  The ROS remote project - Top Level CMake config
-#  Copyright 2024 Samyar Sadat Akhavi
-#  Written by Samyar Sadat Akhavi, 2024.
+#  Copyright 2024-2025 Samyar Sadat Akhavi
+#  Written by Samyar Sadat Akhavi, 2024-2025.
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,15 +19,16 @@
 # Set minimum required version of CMake
 cmake_minimum_required(VERSION 3.12)
 
-# Set project name and Pico name suffixes.
-set(PROJ_NAME ROS_Remote)
-set(PICO_NAME ${PROJ_NAME}_Pico)
+# Set Pico Board and Pico Platform
+set(PICO_PLATFORM rp2040)
+set(PICO_BOARD pico)
 
 # Include build functions from the Pico SDK
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 # Set project name and C/C++ standards
-project(${PROJ_NAME} VERSION 0.1.0 LANGUAGES C CXX ASM)
+string(TIMESTAMP DATEVER "%Y.%m.%d" UTC)
+project(ROS_Remote VERSION ${DATEVER} LANGUAGES C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -49,4 +50,14 @@ include(micro_ros.cmake)
 # Add our source directory
 add_subdirectory(src)
 
-message("Configuration completed! (${PROJ_NAME} - v${PROJECT_VERSION})")
+# C/C++ flags
+set(FLAGS "-mthumb -ffunction-sections -fdata-sections")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
+
+# Global compile definitions
+add_compile_definitions(PICO_UART_ENABLE_CRLF_SUPPORT=0)
+add_compile_definitions(PICO_STDIO_ENABLE_CRLF_SUPPORT=0)
+add_compile_definitions(PICO_STDIO_DEFAULT_CRLF=0)
+
+message("Configuration completed! (${PROJECT_NAME} - v${PROJECT_VERSION})")
