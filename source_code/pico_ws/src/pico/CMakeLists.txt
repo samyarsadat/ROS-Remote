@@ -23,6 +23,7 @@ message("Configuring Pico firmware build... (${TARGET_NAME})")
 
 # Add source files
 add_executable(${TARGET_NAME} main.cpp
+                              posix.c
                               io/buttons.cpp
                               io/joystick.cpp
                               io/leds.cpp
@@ -35,19 +36,18 @@ add_executable(${TARGET_NAME} main.cpp
 pico_add_extra_outputs(${TARGET_NAME})
 
 # Link to libraries
-target_link_libraries(${TARGET_NAME} micro_ros
-                                     pico_stdlib
+target_link_libraries(${TARGET_NAME} pico_stdlib
                                      hardware_pwm
                                      hardware_adc
+                                     FreeRTOS-Kernel
+                                     FreeRTOS-Kernel-Heap4
                                      utils_lib
                                      uros_utils_lib
                                      freertos_agent_lib
                                      uros_freertos_abstract_lib
                                      pico_log_lib
                                      cpp_freertos_alloc_lib
-                                     FreeRTOS-Kernel
-                                     FreeRTOS-Kernel-Heap4
-                                     uros_posix_lib
+                                     micro_ros
 )
 
 # Link to include directories

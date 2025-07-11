@@ -40,38 +40,38 @@
 
 
 // ---- Executors ----
-uRosExecAgent::exectr_timing_conf_t exec_timing_conf = {
+inline uRosExecAgent::exectr_timing_conf_t exec_timing_conf = {
     .exec_interval_ms = EXECUTOR_EXEC_INTERVAL_MS,
     .exec_interval_limit_ms = EXECUTOR_EXEC_TIME_LIMIT_MS,
     .exectr_timeout_ms = EXECUTOR_TIMEOUT_MS
 };
 
-uRosExecAgent core0_executor("core0_executor", &exec_timing_conf);
-uRosExecAgent core1_executor("core1_executor", &exec_timing_conf);
+inline uRosExecAgent core0_executor("core0_executor", &exec_timing_conf);
+inline uRosExecAgent core1_executor("core1_executor", &exec_timing_conf);
 
 // ---- Publishers ----
 // Button, switch, joystick, potentiometer states
-rcl_publisher_t button_state_pub, switch_state_pub, joystick_state_pub, potentiometer_state_pub, diagnostics_pub;
+inline rcl_publisher_t button_state_pub, switch_state_pub, joystick_state_pub, potentiometer_state_pub, diagnostics_pub;
 
 // ---- Services ----
 // Get/set joystick config
-rcl_service_t get_joystick_config_srv, set_joystick_config_srv;
-remote_pico_coms__srv__GetJoystickConfig_Request get_joystick_config_req;
-remote_pico_coms__srv__GetJoystickConfig_Response get_joystick_config_res;
-remote_pico_coms__srv__SetJoystickConfig_Request set_joystick_config_req;
-remote_pico_coms__srv__SetJoystickConfig_Response set_joystick_config_res;
+inline rcl_service_t get_joystick_config_srv, set_joystick_config_srv;
+inline remote_pico_coms__srv__GetJoystickConfig_Request get_joystick_config_req;
+inline remote_pico_coms__srv__GetJoystickConfig_Response get_joystick_config_res;
+inline remote_pico_coms__srv__SetJoystickConfig_Request set_joystick_config_req;
+inline remote_pico_coms__srv__SetJoystickConfig_Response set_joystick_config_res;
 
 // Get/set LED states
-rcl_service_t get_led_states_srv, set_led_states_srv;
-remote_pico_coms__srv__GetLedStates_Request get_led_states_req;
-remote_pico_coms__srv__GetLedStates_Response get_led_states_res;
-remote_pico_coms__srv__SetLedStates_Request set_led_states_req;
-remote_pico_coms__srv__SetLedStates_Response set_led_states_res;
+inline rcl_service_t get_led_states_srv, set_led_states_srv;
+inline remote_pico_coms__srv__GetLedStates_Request get_led_states_req;
+inline remote_pico_coms__srv__GetLedStates_Response get_led_states_res;
+inline remote_pico_coms__srv__SetLedStates_Request set_led_states_req;
+inline remote_pico_coms__srv__SetLedStates_Response set_led_states_res;
 
 // Initiate the self-test function
-rcl_service_t led_selftest_srv;
-diagnostic_msgs__srv__SelfTest_Request led_selftest_req;
-diagnostic_msgs__srv__SelfTest_Response led_selftest_res;
+inline rcl_service_t led_selftest_srv;
+inline diagnostic_msgs__srv__SelfTest_Request led_selftest_req;
+inline diagnostic_msgs__srv__SelfTest_Response led_selftest_res;
 
 
 // ---- Setup subscribers and publishers ----

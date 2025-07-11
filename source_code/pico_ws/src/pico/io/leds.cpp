@@ -24,6 +24,7 @@
 
 
 // ------- Global variables -------
+TimerHandle_t fast_led_flash_handler_timer, slow_led_flash_handler_timer, led_fade_handler_timer;
 led_state_t led_states[NUMBER_OF_LEDS];
 bool in_self_test = false;
 
@@ -183,6 +184,8 @@ void led_timers_stop() {
 }
 
 void led_slow_flashing_timer_call(TimerHandle_t timer) {
+    (void) timer;
+    
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         if (led_states[i].mode == 1) {
             if (led_states[i].pwm_current_out == 0) {
@@ -197,6 +200,8 @@ void led_slow_flashing_timer_call(TimerHandle_t timer) {
 }
 
 void led_fast_flashing_timer_call(TimerHandle_t timer) {
+    (void) timer;
+
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         if (led_states[i].mode == 3) {
             if (led_states[i].pwm_current_out == 0) {
@@ -211,6 +216,8 @@ void led_fast_flashing_timer_call(TimerHandle_t timer) {
 }
 
 void led_fading_timer_call(TimerHandle_t timer) {
+    (void) timer;
+
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         if (led_states[i].mode == 2 || led_states[i].mode == 4) {
             if (led_states[i].pwm_fade_steps_per_cycle == 0) {

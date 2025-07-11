@@ -24,10 +24,10 @@
 #include "timers.h"
 
 
-float joystick_x_center_offset = DEFAULT_JOYSTICK_X_CENTER_OFFSET;
-float joystick_y_center_offset = DEFAULT_JOYSTICK_Y_CENTER_OFFSET;
-uint16_t joystick_x_deadzone = DEFAULT_JOYSTICK_X_DEADZONE;
-uint16_t joystick_y_deadzone = DEFAULT_JOYSTICK_Y_DEADZONE;
+inline float joystick_x_center_offset = DEFAULT_JOYSTICK_X_CENTER_OFFSET;
+inline float joystick_y_center_offset = DEFAULT_JOYSTICK_Y_CENTER_OFFSET;
+inline uint16_t joystick_x_deadzone = DEFAULT_JOYSTICK_X_DEADZONE;
+inline uint16_t joystick_y_deadzone = DEFAULT_JOYSTICK_Y_DEADZONE;
 
 
 // ---- Get joystick axis positions (readings) ----

@@ -17,12 +17,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
 #include "pico/stdlib.h"
 #include "FreeRTOS.h"
+#include "task.h"
 
 
 // ---- Timers ----
-TaskHandle_t btn_state_publish_th, sw_state_publish_th, joystick_publish_th, potentiometer_publish_th;
+inline TaskHandle_t btn_state_publish_th, sw_state_publish_th, joystick_publish_th, potentiometer_publish_th;
 
 
 // ---- Permanent switch states ----

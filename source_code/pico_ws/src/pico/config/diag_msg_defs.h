@@ -21,7 +21,7 @@
 
 
 // STATUS: OK
-const char* DIAG_OK_LED_TEST_PASS = "LED self-test passed!";
+inline const char* DIAG_OK_LED_TEST_PASS = "LED self-test passed!";
 
 // STATUS: WARN
 
@@ -31,4 +31,4 @@ const char* DIAG_OK_LED_TEST_PASS = "LED self-test passed!";
 
 
 // OTHER MESSAGES
-const char* PUB_TIMER_INTERVAL_EXCEEDED = "Publish interval exceeded limits!";
+inline const char* PUB_TIMER_INTERVAL_EXCEEDED = "Publish interval exceeded limits!";

@@ -35,6 +35,7 @@ struct repeating_timer sw_state_publish_rt, joystick_publish_rt, potentiometer_p
 
 // ---- Permanent switch states ----
 void publish_sw_states(void *parameters) {
+    (void) parameters;
     remote_pico_coms__msg__SwitchStates msg;
     uint32_t last_pub_time = 0;
 
@@ -54,6 +55,7 @@ void publish_sw_states(void *parameters) {
 
 // ---- Momentary button states ----
 void publish_btn_states(void *parameters) {
+    (void) parameters;
     remote_pico_coms__msg__ButtonStates msg;
     uint32_t notification_value;
 
@@ -90,6 +92,7 @@ void publish_btn_states(void *parameters) {
 
 // ---- Joystick state ----
 void publish_joystick_state(void *parameters) {
+    (void) parameters;
     remote_pico_coms__msg__JoystickState msg;
     uint32_t last_pub_time = 0;
 
@@ -106,6 +109,7 @@ void publish_joystick_state(void *parameters) {
 
 // ---- Potentiometer state ----
 void publish_potentiometer_state(void *parameters) {
+    (void) parameters;
     remote_pico_coms__msg__PotentiometerState msg;
     uint32_t last_pub_time = 0;
 
@@ -122,6 +126,7 @@ void publish_potentiometer_state(void *parameters) {
 
 // ---- Timer callbacks for task notification ----
 bool publish_sw_state_notify(struct repeating_timer *rt) {
+    (void) rt;
     BaseType_t higher_prio_woken;
     vTaskNotifyGiveFromISR(sw_state_publish_th, &higher_prio_woken);
     portYIELD_FROM_ISR(higher_prio_woken);
@@ -129,6 +134,7 @@ bool publish_sw_state_notify(struct repeating_timer *rt) {
 }
 
 bool publish_joystick_notify(struct repeating_timer *rt) {
+    (void) rt;
     BaseType_t higher_prio_woken;
     vTaskNotifyGiveFromISR(joystick_publish_th, &higher_prio_woken);
     portYIELD_FROM_ISR(higher_prio_woken);
@@ -136,6 +142,7 @@ bool publish_joystick_notify(struct repeating_timer *rt) {
 }
 
 bool publish_potentiometer_notify(struct repeating_timer *rt) {
+    (void) rt;
     BaseType_t higher_prio_woken;
     vTaskNotifyGiveFromISR(potentiometer_publish_th, &higher_prio_woken);
     portYIELD_FROM_ISR(higher_prio_woken);

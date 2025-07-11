@@ -17,6 +17,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 
 // ---- Get/set joystick configuration services ----
 void get_joystick_config_callback(const void *req, void *res);

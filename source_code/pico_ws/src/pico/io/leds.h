@@ -34,13 +34,11 @@ struct led_state
     uint16_t pwm_fade_steps_per_cycle;
     bool led_fade_rising;   // true: rising, false: falling
 };
-
 typedef struct led_state led_state_t;
-const uint8_t led_pins_order[NUMBER_OF_LEDS] = {RIGHT_KD2_LED_PIN, RIGHT_GREEN_LED_PIN, RIGHT_BLUE_LED_PIN, LEFT_TOP_YELLOW_LED_PIN, 
-                                                LEFT_TOP_GREEN_LED_PIN, LEFT_RED_LED_PIN, LEFT_BOTTOM_YELLOW_LED_PIN, LEFT_BOTTOM_GREEN_1_LED_PIN, 
-                                                LEFT_BOTTOM_GREEN_2_LED_PIN, LEFT_RED_KD2_LED_PIN, LEFT_GREEN_KD2_LED_PIN};
 
-TimerHandle_t fast_led_flash_handler_timer, slow_led_flash_handler_timer, led_fade_handler_timer;
+inline const uint8_t led_pins_order[NUMBER_OF_LEDS] = {RIGHT_KD2_LED_PIN, RIGHT_GREEN_LED_PIN, RIGHT_BLUE_LED_PIN, LEFT_TOP_YELLOW_LED_PIN, 
+                                                       LEFT_TOP_GREEN_LED_PIN, LEFT_RED_LED_PIN, LEFT_BOTTOM_YELLOW_LED_PIN, LEFT_BOTTOM_GREEN_1_LED_PIN, 
+                                                       LEFT_BOTTOM_GREEN_2_LED_PIN, LEFT_RED_KD2_LED_PIN, LEFT_GREEN_KD2_LED_PIN};
 
 
 // ---- Initialize LEDs and LED state objects ----

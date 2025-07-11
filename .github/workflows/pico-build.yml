@@ -1,6 +1,6 @@
-#  The ROS remote project - Raspberry Pi Pico source code build workflow.
-#  Copyright 2024-2025 Samyar Sadat Akhavi
-#  Written by Samyar Sadat Akhavi, 2024-2025.
+#  Raspberry Pi RP2350 MicroROS tests (RP2040 backport) - The ROS Robot Project Research.
+#  Copyright 2025 Samyar Sadat Akhavi
+#  Written by Samyar Sadat Akhavi, 2025.
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
 name: Build Pico Source Code
 on: push
 
+env:
+    FIRMWARE_PATH: "source_code/pico_ws"
+    FREERTOS_KERNEL_IMPORT: "libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake"
+
 jobs:
     build_uros:
         name: Build the micro-ROS library
@@ -32,24 +36,26 @@ jobs:
                   submodules: recursive
 
             - name: Copy FreeRTOS Kernel Import File
+              shell: bash
               run: |
-                  cp "source_code/pico_ws/libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake" \
-                  "source_code/pico_ws/FreeRTOS_Kernel_import.cmake"
+                  cp "${FIRMWARE_PATH}/${FREERTOS_KERNEL_IMPORT}" \
+                  "${FIRMWARE_PATH}/FreeRTOS_Kernel_import.cmake"
 
             - name: Generate Pico SDK Headers
               uses: samyarsadat/Pico-Build-Action@v1
               with:
-                  source_dir: "source_code/pico_ws"
+                  source_dir: ${{env.FIRMWARE_PATH}}
                   output_dir: "build"
                   cmake_config_only: "true"
+                  cmake_args: "-DCMAKE_BUILD_TYPE=Release"
 
             - name: Build MicroROS Library
               id: build
               uses: samyarsadat/MicroROS-Build-Action@v1-jazzy
               with:
-                  microros_dir: "source_code/pico_ws/libmicroros"
+                  microros_dir: ${{env.FIRMWARE_PATH}}/libmicroros
                   clone_microros_setup: "false"
-                  extra_build_packages: "remote_pico_coms"
+                  environment_setup_script: ".github/workflows/rp2_env_setup.sh"
 
             - name: Upload MicroROS Library Artifacts
               uses: actions/upload-artifact@v4
@@ -75,18 +81,19 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   name: uros_library_artifacts
-                  path: "source_code/pico_ws/libmicroros/firmware/build"
+                  path: ${{env.FIRMWARE_PATH}}/libmicroros/firmware/build
 
             - name: Copy FreeRTOS Kernel Import File
+              shell: bash
               run: |
-                  cp "source_code/pico_ws/libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake" \
-                  "source_code/pico_ws/FreeRTOS_Kernel_import.cmake"
+                  cp "${FIRMWARE_PATH}/${FREERTOS_KERNEL_IMPORT}" \
+                  "${FIRMWARE_PATH}/FreeRTOS_Kernel_import.cmake"
 
             - name: Build Pico Source Code
               id: build
               uses: samyarsadat/Pico-Build-Action@v1
               with:
-                  source_dir: "source_code/pico_ws"
+                  source_dir: ${{env.FIRMWARE_PATH}}
                   output_dir: "build"
                   output_ext: "*.uf2 *.elf *.elf.map *.hex *.bin *.dis"
                   output_ignored_dirs: "src/lib _deps"
@@ -95,6 +102,6 @@ jobs:
             - name: Upload Pico Source Code Artifacts
               uses: actions/upload-artifact@v4
               with:
-                  name: pico_binary_artifacts
+                  name: pico_binary_artifacts_RP2040
                   path: ${{steps.build.outputs.output_dir}}
                   if-no-files-found: error

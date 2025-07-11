@@ -22,9 +22,8 @@
 #include "config/hw_defs.h"
 
 
-const uint8_t momen_btn_pins_order[NUMBER_OF_MOMENTARY_BUTTONS] = {LEFT_GREEN_RIGHT_BTN_PIN, LEFT_RED_BTN_PIN, LEFT_GREEN_KD2_BTN_PIN,
-                                                                   LEFT_RED_KD2_BTN_PIN, LEFT_GREEN_LEFT_BTN_PIN};
-uint32_t momen_btn_lit[NUMBER_OF_MOMENTARY_BUTTONS] = {0};   // Last interrupt receive time (Last Interrupt Time)
+inline const uint8_t momen_btn_pins_order[NUMBER_OF_MOMENTARY_BUTTONS] = {LEFT_GREEN_RIGHT_BTN_PIN, LEFT_RED_BTN_PIN, LEFT_GREEN_KD2_BTN_PIN,
+                                                                          LEFT_RED_KD2_BTN_PIN, LEFT_GREEN_LEFT_BTN_PIN};
 
 
 // ---- Button de-bouncing function ----

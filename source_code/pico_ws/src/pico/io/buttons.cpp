@@ -21,6 +21,10 @@
 #include "utils_lib/hardware.h"
 
 
+// Last interrupt receive time (Last Interrupt Time)
+uint32_t momen_btn_lit[NUMBER_OF_MOMENTARY_BUTTONS] = {0};
+
+
 // ---- Button de-bouncing function ----
 // ---- Returns true if the button should be considered pressed, false if not. ----
 // ---- NOTE: Only for the 5 momentary push buttons! ----

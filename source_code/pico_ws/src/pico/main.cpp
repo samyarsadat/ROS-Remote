@@ -43,6 +43,7 @@ uRosBridgeAgent *bridge;
 
 // ---- Graceful reset ----
 void reset_task(void* parameters) {
+    (void) parameters;
     uint32_t notification_value;
     xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
     
@@ -86,6 +87,7 @@ void reset_task(void* parameters) {
 
 // ---- FreeRTOS task stack overflow hook ----
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName) {
+    (void) xTask;
     LOG(LOG_LVL_FATAL, "Stack overflow! Task: %s", pcTaskName);
     REQ_SYSTEM_RESET(0);
 }
@@ -98,6 +100,8 @@ void vApplicationMallocFailedHook() {
 
 // ---- GPIO IRQ callback ----
 void gpio_irq_call(uint pin, uint32_t events) {
+    (void) events;
+
     // Momentary button IRQs
     if (button_bounce_check(pin)) {
         BaseType_t higher_prio_woken;
@@ -133,6 +137,7 @@ void waiting_for_agent_timer_call(TimerHandle_t timer) {
 
 // ---- Setup function (core 0) ----
 void setup(void *parameters) {
+    (void) parameters;
     LOG(LOG_LVL_INFO, "Core 0 setup task started!");
 
     // Create timer tasks
@@ -192,6 +197,7 @@ void setup(void *parameters) {
 
 // ---- Setup function (core 1) ----
 void setup1(void *parameters) {
+    (void) parameters;
     LOG(LOG_LVL_INFO, "Core 1 setup task started!");
 
     // Create alarm pool for core 1 timers
@@ -241,8 +247,7 @@ void uros_fini() {
 
 // ****** END OF MAIN PROGRAM *******
 // *********** ENTRYPOINT ***********
-int main()
-{
+int main() {
     // UART & USB STDIO outputs
     stdio_init_all();
     stdio_filter_driver(&stdio_uart);   // Filter the output of STDIO to UART.

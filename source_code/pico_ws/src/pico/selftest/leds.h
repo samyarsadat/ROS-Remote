@@ -17,6 +17,8 @@
     along with this program.  If not, see <https: www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 
 // ---- LEDs self-test service callback ----
 void leds_selftest_callback(const void *req, void *res);

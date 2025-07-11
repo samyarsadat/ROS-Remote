@@ -26,25 +26,25 @@
 
 
 // Logger configuration
-logger_options_t logger_options = {
+inline logger_options_t logger_options = {
     .logging_level = LOOGER_LOG_LEVEL,
     .log_format = LOGGER_LOG_FORMAT,
     .ansi_styling = true,
     .process_style_tags = false  
 };
 
-Logger logger(&stdio_usb, &logger_options);
+inline Logger logger(&stdio_usb, &logger_options);
 #define LOG(lvl, msg, ...) logger.log(__func__, "", __LINE__, lvl, msg, ##__VA_ARGS__);
 
 // Micro-ROS diagnostics
-DiagPublisher diag_util(&diagnostics_pub);
+inline DiagPublisher diag_util(&diagnostics_pub);
 
 // Reset task handle
-TaskHandle_t reset_task_handle;
+inline TaskHandle_t reset_task_handle;
 
 // Utility macros
-const char* RETCODE_LOG_MSG = "Micro-ROS operation failed! Code: %d";
-const char* RETCODE_CHECK_MSG = "%s failed! Error code: %d";
+inline const char* RETCODE_LOG_MSG = "Micro-ROS operation failed! Code: %d";
+inline const char* RETCODE_CHECK_MSG = "%s failed! Error code: %d";
 
 #define UROS_RETCODE_LOG(ret_code)                     \
     if (ret_code != RCL_RET_OK) {                      \
