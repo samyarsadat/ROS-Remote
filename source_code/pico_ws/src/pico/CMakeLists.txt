@@ -51,11 +51,6 @@ target_link_libraries(${TARGET_NAME} pico_stdlib
                                      micro_ros
 )
 
-# Fix veneer generation isssue
-target_link_options(${TARGET_NAME} PRIVATE 
-    -Wl,--pic-veneer
-)
-
 # Link to include directories
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
