@@ -41,6 +41,7 @@ target_link_libraries(${TARGET_NAME} pico_stdlib
                                      hardware_adc
                                      FreeRTOS-Kernel
                                      FreeRTOS-Kernel-Heap4
+                                     cmsis_core
                                      utils_lib
                                      uros_utils_lib
                                      freertos_agent_lib
@@ -48,6 +49,11 @@ target_link_libraries(${TARGET_NAME} pico_stdlib
                                      pico_log_lib
                                      cpp_freertos_alloc_lib
                                      micro_ros
+)
+
+# Fix veneer generation isssue
+target_link_options(${TARGET_NAME} PRIVATE 
+    -Wl,--pic-veneer
 )
 
 # Link to include directories

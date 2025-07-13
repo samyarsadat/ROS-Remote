@@ -20,7 +20,7 @@
 #include "uros_init.h"
 #include "diagnostics.h"
 #include "uros_freertos_abstract_lib/uros_bridge.h"
-#include "uros_utils_lib/general.h"
+#include "uros_utils_lib/misc.h"
 #include "uros/service_handlers.h"
 #include "selftest/leds.h"
 #include "common/opassert.h"

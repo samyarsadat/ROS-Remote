@@ -33,6 +33,8 @@
 #include "diagnostics.h"
 #include "uros/sensor_publishers.h"
 #include "common/opassert.h"
+#include "RP2040.h"
+#include "core_cm0plus.h"
 
 
 // ---- Global variables ----
@@ -76,13 +78,11 @@ void reset_task(void* parameters) {
         LOG(LOG_LVL_INFO, "Skipping micro-ROS cleanup due to memory allocation concerns.");
     }
 
-    // Suspend the FreeRTOS scheduler
     // No FreeRTOS API calls beyond this point!
     taskENTER_CRITICAL();
     portDISABLE_INTERRUPTS();
-    
-    watchdog_reset();
-    while (1);  // It should take around 1ms for reset.
+    NVIC_SystemReset();
+    while (1);  // It might take a few cycles for reset.
 }
 
 // ---- FreeRTOS task stack overflow hook ----

@@ -80,7 +80,7 @@
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configKERNEL_PROVIDED_STATIC_MEMORY     1
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE                   (128 * 1024)   // 128 KiB / 256 kB
+#define configTOTAL_HEAP_SIZE                   (64 * 1024)   // 64 KiB / 256 kB
 #define configAPPLICATION_ALLOCATED_HEAP        0
 
 

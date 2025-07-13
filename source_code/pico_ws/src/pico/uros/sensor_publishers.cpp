@@ -20,7 +20,7 @@
 #include "sensor_publishers.h"
 #include "config/hw_defs.h"
 #include "uros_init.h"
-#include "uros_utils_lib/general.h"
+#include "uros_utils_lib/misc.h"
 #include "io/joystick.h"
 #include "config/diag_msg_defs.h"
 #include "common/opassert.h"
