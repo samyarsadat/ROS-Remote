@@ -56,6 +56,7 @@ jobs:
                   microros_dir: ${{env.FIRMWARE_PATH}}/libmicroros
                   clone_microros_setup: "false"
                   environment_setup_script: ".github/workflows/rp2_env_setup.sh"
+                  extra_build_packages: "remote_pico_coms"
 
             - name: Upload MicroROS Library Artifacts
               uses: actions/upload-artifact@v4
