@@ -71,4 +71,4 @@ class RosNames:
     SET_JOYSTICK_CONFIG_SRV = "inputs/joystick/set_config"
     GET_LED_STATES_SRV = "outputs/leds/get_states"
     SET_LED_STATES_SRV = "outputs/leds/set_states"
-    RUN_SELFTEST_SRV = "self_test/pico"
+    RUN_SELFTEST_SRV = "self_test/leds"
