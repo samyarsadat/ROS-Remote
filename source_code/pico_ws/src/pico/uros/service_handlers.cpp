@@ -57,7 +57,7 @@ void get_led_states_callback(const void *req, void *res) {
     remote_pico_coms__srv__GetLedStates_Response *res_in = (remote_pico_coms__srv__GetLedStates_Response *) res;
 
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        led_state_t state = get_led_state(led_pins_order[i]);
+        led_state_t state = get_led_state(i);
         res_in->led_modes[i] = state.mode;
         res_in->pwm_outputs[i] = state.pwm_set_out;
     }
@@ -69,7 +69,7 @@ void set_led_states_callback(const void *req, void *res) {
 
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         if (req_in->set_state_mask[i]) {
-            set_led_state(led_pins_order[i], req_in->led_modes[i], req_in->pwm_outputs[i]);
+            set_led_state(i, req_in->led_modes[i], req_in->pwm_outputs[i]);
         }
     }
 

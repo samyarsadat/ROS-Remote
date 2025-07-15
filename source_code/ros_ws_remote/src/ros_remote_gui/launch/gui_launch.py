@@ -26,12 +26,15 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     serial_dev_arg = DeclareLaunchArgument("serial_device", default_value="/dev/ttyAMA0")
+    serial_baud_arg = DeclareLaunchArgument("serial_baudrate", default_value="921600")
     launch_gui = launch_ros.actions.Node(package="ros_remote_gui", executable="remote_gui_node", name="remote_gui")
     launch_agent = launch_ros.actions.Node(package="micro_ros_agent", executable="micro_ros_agent", name="micro_ros_agent",
-                                           arguments=["serial", "--dev", LaunchConfiguration("serial_device")])
+                                           arguments=["serial", "--dev", LaunchConfiguration("serial_device"), "-b", 
+                                                      LaunchConfiguration("serial_baudrate")])
 
     return launch.LaunchDescription([
         serial_dev_arg,
+        serial_baud_arg,
         launch_agent,
         RegisterEventHandler(
             OnProcessStart(

@@ -58,10 +58,13 @@
 // Potentiometer
 #define POTENTIOMETER_INVERTED  true
 
+// FreeRTOS task stack sizes (all in FreeRTOS words)
+#define SETUP_TASK_STACK_DEPTH   1024
+#define RESET_TASK_STACK_DEPTH   1024
+#define TIMER_TASK_STACK_DEPTH   512
+#define LED_ST_TASK_STACK_DEPTH  128
+
 // Misc.
-#define SETUP_TASK_STACK_DEPTH     1024   // In FreeRTOS words
-#define RESET_TASK_STACK_DEPTH     1024   // In FreeRTOS words
-#define TIMER_TASK_STACK_DEPTH     512    // In FreeRTOS words
 #define TIMER_COMMAND_TIMEOUT_T    500    // In FreeRTOS ticks
 #define WATCHDOG_RESET_TIMEOUT_MS  1000   // In milliseconds
 #define PRE_RESET_WAIT_MS          5      // In milliseconds

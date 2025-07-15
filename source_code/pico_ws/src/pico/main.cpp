@@ -49,21 +49,19 @@ uRosBridgeAgent *bridge;
 // ---- Graceful reset ----
 void reset_task(void* parameters) {
     (void) parameters;
-    uint32_t notification_value;
-    xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
+    xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
     
     watchdog_disable();
     watchdog_enable(WATCHDOG_RESET_TIMEOUT_MS, true);
     LOG(LOG_LVL_FATAL, "A clean reset has been triggered.");
 
-    // Stop all repeating timers
+    // Stop all repeating timers & disable interrupts
     stop_sensor_publishers(); watchdog_update();
     led_timers_stop(); watchdog_update();
+    portDISABLE_INTERRUPTS();
     
-    if (!notification_value) {
-        // We don't really need to destroy the timers as we're resetting anyway, but it's a good practice.
-        led_timers_destroy(); watchdog_update();
-    }
+    // We don't really need to destroy the timers as we're resetting anyway, but it's a good practice.
+    led_timers_destroy(); watchdog_update();
     
     // IO cleanup
     all_leds_off();
@@ -71,15 +69,9 @@ void reset_task(void* parameters) {
     gpio_put(PICO_DEFAULT_LED_PIN, false);
     watchdog_update();
 
-    // MicroROS cleanup
-    if (!notification_value) {
-        // This will stop the bridge agent as well as the executor agents.
-        // It will also cancel their repeating timers, and finalize all micro-ROS resources.
-        bridge->uros_fini(); watchdog_update();
-        LOG(LOG_LVL_INFO, "Micro-ROS finalized. Suspending the scheduler...");
-    } else {
-        LOG(LOG_LVL_INFO, "Skipping micro-ROS cleanup due to memory allocation concerns.");
-    }
+    // This will stop the bridge agent as well as the executor agents.
+    // It will also cancel their repeating timers, and finalize all micro-ROS resources.
+    bridge->uros_fini(); watchdog_update();
 
     sleep_ms(PRE_RESET_WAIT_MS);
     watchdog_reset();
@@ -144,11 +136,11 @@ void setup(void *parameters) {
 
     // Create timer tasks
     LOG(LOG_LVL_INFO, "Creating timer tasks.");
-    (void) xTaskCreate(reset_task, "sys_reset", RESET_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 1, &reset_task_handle);
-    (void) xTaskCreate(publish_joystick_state, "joystick_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 3, &joystick_publish_th);
-    (void) xTaskCreate(publish_potentiometer_state, "potentiometer_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &potentiometer_publish_th);
-    (void) xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &btn_state_publish_th);
-    (void) xTaskCreate(publish_sw_states, "sw_states_publish", TIMER_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 4, &sw_state_publish_th);
+    (void) xTaskCreate(reset_task, "sys_reset", RESET_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, &reset_task_handle);
+    (void) xTaskCreate(publish_joystick_state, "joystick_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &joystick_publish_th);
+    (void) xTaskCreate(publish_potentiometer_state, "potentiometer_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &potentiometer_publish_th);
+    (void) xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &btn_state_publish_th);
+    (void) xTaskCreate(publish_sw_states, "sw_states_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &sw_state_publish_th);
 
     LOG(LOG_LVL_INFO, "Hardware initialization.");
     
@@ -182,19 +174,19 @@ void setup(void *parameters) {
 
     // Create FreeRTOS timers
     LOG(LOG_LVL_INFO, "Creating FreeRTOS software timers.");
-    waiting_for_agent_timer = xTimerCreate("agent_wait_led", pdMS_TO_TICKS(AGENT_WAITING_LED_TOGGLE_DELAY_MS), pdTRUE, NULL, waiting_for_agent_timer_call);
-    assert(waiting_for_agent_timer != NULL);
+    waiting_for_agent_timer = xTimerCreate("agent_wait_led", pdMS_TO_TICKS(AGENT_WAITING_LED_TOGGLE_DELAY_MS), pdTRUE, nullptr, waiting_for_agent_timer_call);
+    assert(waiting_for_agent_timer != nullptr);
     led_timers_init();
 
     // Start MicroROS bridge agent
     LOG(LOG_LVL_INFO, "Starting micro-ROS bridge...");
-    (void) bridge->start(configMAX_PRIORITIES - 1);
+    (void) bridge->start(configMAX_PRIORITIES - 2);
 
     // Start the waiting for MicroROS agent LED blink timer
     (void) xTimerStart(waiting_for_agent_timer, TIMER_COMMAND_TIMEOUT_T);
 
     // Delete setup task
-    vTaskDelete(NULL);
+    vTaskDelete(nullptr);
 }
 
 // ---- Setup function (core 1) ----
@@ -207,7 +199,7 @@ void setup1(void *parameters) {
     core_1_alarm_pool = alarm_pool_create(2, 8);
 
     // Delete setup task
-    vTaskDelete(NULL);
+    vTaskDelete(nullptr);
 }
 
 // ---- Micro-ROS init & fini functions ----
@@ -280,8 +272,8 @@ int main() {
 
     // Setup function tasks
     LOG(LOG_LVL_INFO, "Creating setup tasks.");
-    xTaskCreateAffinitySet(setup, "setup_core0", SETUP_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 1, (1 << 0), NULL);
-    xTaskCreateAffinitySet(setup1, "setup_core1", SETUP_TASK_STACK_DEPTH, NULL, configMAX_PRIORITIES - 1, (1 << 1), NULL);
+    xTaskCreateAffinitySet(setup, "setup_core0", SETUP_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, (1 << 0), nullptr);
+    xTaskCreateAffinitySet(setup1, "setup_core1", SETUP_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, (1 << 1), nullptr);
 
     // Start FreeRTOS scheduler
     LOG(LOG_LVL_INFO, "Starting FreeRTOS scheduler...");

@@ -49,10 +49,10 @@ void init_leds();
 // MODES:
 // 0: Solid PWM output, 1: Flashing PWM output (slow), 2: Fading to and from PWM output (slow), 
 // 3: Flashing PWM output (fast), 4: Fading to and from PWM output (fast)
-void set_led_state(uint8_t pin, uint8_t mode, uint16_t pwm_output);
+void set_led_state(uint8_t index, uint8_t mode, uint16_t pwm_output);
 
 // ---- Get a single LED's state ----
-led_state_t get_led_state(uint8_t pin);
+led_state_t get_led_state(uint8_t index);
 
 // ---- Self-test ----
 void leds_test();

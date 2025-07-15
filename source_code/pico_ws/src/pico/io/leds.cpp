@@ -49,28 +49,19 @@ void init_leds() {
 // MODES:
 // 0: Solid PWM output, 1: Flashing PWM output (slow), 2: Fading to and from PWM output (slow), 
 // 3: Flashing PWM output (fast), 4: Fading to and from PWM output (fast)
-void set_led_state(uint8_t pin, uint8_t mode, uint16_t pwm_output) {
-    for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        if (led_states[i].pin == pin) {
-            led_states[i].mode = mode;
-            led_states[i].pwm_set_out = pwm_output;
-            led_states[i].pwm_current_out = 0;
-            led_states[i].pwm_fade_steps_per_cycle = 0;
-            led_states[i].led_fade_rising = true;
-            return;
-        }
-    }
+void set_led_state(uint8_t index, uint8_t mode, uint16_t pwm_output) {
+    assert(index >= 0 && index < NUMBER_OF_LEDS);
+    led_states[index].mode = mode;
+    led_states[index].pwm_set_out = pwm_output;
+    led_states[index].pwm_current_out = 0;
+    led_states[index].pwm_fade_steps_per_cycle = 0;
+    led_states[index].led_fade_rising = true;
 }
 
 // ---- Get a single LED's state ----
-led_state_t get_led_state(uint8_t pin) {
-    for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        if (led_states[i].pin == pin) {
-            return led_states[i];
-        }
-    }
-
-    return led_state_t{0, 0, 0, 0, 0, false};
+led_state_t get_led_state(uint8_t index) {
+    assert(index >= 0 && index < NUMBER_OF_LEDS);
+    return led_states[index];
 }
 
 // ---- Self-test ----
@@ -95,7 +86,7 @@ void leds_test() {
 }
 
 // ---- INTERNAL: put_pwm function that takes into account the self-test state ----
-void gpio_put_pwm_wst(uint pin, uint16_t level) {
+inline void gpio_put_pwm_wst(uint pin, uint16_t level) {
     if (!in_self_test) {
         gpio_put_pwm(pin, level);
     }
@@ -116,7 +107,7 @@ void set_led_outputs() {
 // ---- Turn all LEDs off ----
 void all_leds_off() {
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        set_led_state(led_pins_order[i], 0, 0);
+        set_led_state(i, 0, 0);
     }
 
     set_led_outputs();
@@ -125,7 +116,7 @@ void all_leds_off() {
 // ---- Turn all LEDs on ----
 void all_leds_on() {
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        set_led_state(led_pins_order[i], 0, 65535);
+        set_led_state(i, 0, 65535);
     }
 
     set_led_outputs();

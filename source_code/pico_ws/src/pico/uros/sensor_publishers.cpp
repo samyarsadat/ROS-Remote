@@ -40,7 +40,7 @@ void publish_sw_states(void *parameters) {
     uint32_t last_pub_time = 0;
 
     while (true) {
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+        xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
         check_exec_interval(last_pub_time, SW_STATE_PUB_RT_INTERVAL + 10,
                             PUB_TIMER_INTERVAL_EXCEEDED, "switches/publisher", true);
 
@@ -49,7 +49,7 @@ void publish_sw_states(void *parameters) {
         msg.right_e_stop_btn = !gpio_get(RIGHT_E_STOP_BTN_PIN);
         msg.right_kd2_btn = !gpio_get(RIGHT_KD2_BTN_PIN);
         msg.right_top_toggle_sw = !gpio_get(RIGHT_TOP_TOGGLE_SW_PIN);
-        UROS_RETCODE_LOG(rcl_publish(&switch_state_pub, &msg, NULL));
+        UROS_RETCODE_LOG(rcl_publish(&switch_state_pub, &msg, nullptr));
     }
 }
 
@@ -86,7 +86,7 @@ void publish_btn_states(void *parameters) {
                 break;
         }
 
-        UROS_RETCODE_LOG(rcl_publish(&button_state_pub, &msg, NULL));
+        UROS_RETCODE_LOG(rcl_publish(&button_state_pub, &msg, nullptr));
     }
 }
 
@@ -97,13 +97,13 @@ void publish_joystick_state(void *parameters) {
     uint32_t last_pub_time = 0;
 
     while (true) {
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+        xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
         check_exec_interval(last_pub_time, JOYSTICK_PUB_RT_INTERVAL + 10, 
                             PUB_TIMER_INTERVAL_EXCEEDED, "joystick/publisher", true);
 
         msg.joystick_x_axis_reading = get_joystick_x_val();
         msg.joystick_y_axis_reading = get_joystick_y_val();
-        UROS_RETCODE_LOG(rcl_publish(&joystick_state_pub, &msg, NULL));
+        UROS_RETCODE_LOG(rcl_publish(&joystick_state_pub, &msg, nullptr));
     }
 }
 
@@ -114,12 +114,12 @@ void publish_potentiometer_state(void *parameters) {
     uint32_t last_pub_time = 0;
 
     while (true) {
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+        xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
         check_exec_interval(last_pub_time, POTENTIOMETER_PUB_RT_INTERVAL + 10, 
                             PUB_TIMER_INTERVAL_EXCEEDED, "potentiometer/publisher", true);
 
         msg.potentiometer_reading = get_potentiometer_val();
-        UROS_RETCODE_LOG(rcl_publish(&potentiometer_state_pub, &msg, NULL));
+        UROS_RETCODE_LOG(rcl_publish(&potentiometer_state_pub, &msg, nullptr));
     }
 }
 
@@ -152,9 +152,9 @@ bool publish_potentiometer_notify(struct repeating_timer *rt) {
 
 // ---- Timer control ----
 void start_sensor_publishers(alarm_pool_t* alarm_pool) {
-    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, SW_STATE_PUB_RT_INTERVAL, publish_sw_state_notify, NULL, &sw_state_publish_rt));
-    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, JOYSTICK_PUB_RT_INTERVAL, publish_joystick_notify, NULL, &joystick_publish_rt));
-    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, POTENTIOMETER_PUB_RT_INTERVAL, publish_potentiometer_notify, NULL, &potentiometer_publish_rt));
+    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, SW_STATE_PUB_RT_INTERVAL, publish_sw_state_notify, nullptr, &sw_state_publish_rt));
+    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, JOYSTICK_PUB_RT_INTERVAL, publish_joystick_notify, nullptr, &joystick_publish_rt));
+    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, POTENTIOMETER_PUB_RT_INTERVAL, publish_potentiometer_notify, nullptr, &potentiometer_publish_rt));
 }
 
 void stop_sensor_publishers() {
