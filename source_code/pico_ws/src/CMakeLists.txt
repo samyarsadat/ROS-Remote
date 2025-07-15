@@ -17,9 +17,18 @@
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
 
-# Custom library subdirectories
-set(PICO_LOG_FREERTOS 1)
-add_subdirectory(lib)
-
 # Pico firmware
 add_subdirectory(pico)
+
+# Library options
+set(PICO_LOG_FREERTOS              1)
+set(BRIDGE_EXEC_INTERVAL           250)
+set(DIAG_PUBLISHER_DISABLE_PUBLISH 1)
+set(MAX_EXECUTORS                  1)
+set(MAX_PUBLISHERS                 5)
+set(MAX_SERVICES                   5)
+set(MAX_SUBSCRIBERS                0)
+set(DIAG_FIRMWARE_HARDWARE_ID      pico-fw-${PROJECT_NAME}-v${PROJECT_VERSION})
+
+# Custom library subdirectories
+add_subdirectory(lib)

@@ -29,11 +29,19 @@
 #include "config/diag_msg_defs.h"
 
 
+// Is an LED self-test in progress?
+bool test_in_progress = false;
+
+
 // ---- LEDs self-test FreeRTOS task ----
 void leds_selftest_task(void* parameters) {
     (void) parameters;
+    
     LOG(LOG_LVL_INFO, "Running LED self-test...");
     leds_test();
+    LOG(LOG_LVL_INFO, "LED self-test completed.");
+
+    test_in_progress = false;
     vTaskDelete(nullptr);
 }
 
@@ -43,7 +51,13 @@ void leds_selftest_callback(const void *req, void *res) {
     diagnostic_msgs__srv__SelfTest_Response *res_in = (diagnostic_msgs__srv__SelfTest_Response *) res;
 
     LOG(LOG_LVL_INFO, "LED self-test requested.");
-    (void) xTaskCreate(leds_selftest_task, "leds_selftest", LED_ST_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, nullptr);
+
+    if (!test_in_progress) {
+        test_in_progress = true;
+        (void) xTaskCreate(leds_selftest_task, "leds_selftest", LED_ST_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, nullptr);
+    } else {
+        LOG(LOG_LVL_WARN, "LED self-test already in progress!")
+    }
 
     selftest_resp_free(res_in);
     selftest_resp_init(res_in, DIAG_FIRMWARE_HARDWARE_ID, 1);
@@ -56,5 +70,4 @@ void leds_selftest_callback(const void *req, void *res) {
     );
 
     res_in->passed = true;
-    LOG(LOG_LVL_INFO, "LED self-test completed.");
 }

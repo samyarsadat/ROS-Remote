@@ -158,10 +158,11 @@ void setup(void *parameters) {
     init_pin(JOYSTICK_Y_AXIS_PIN, INPUT_ADC);
     init_pin(JOYSTICK_X_AXIS_PIN, INPUT_ADC);
     init_pin(POTENTIOMETER_PIN, INPUT_ADC);
+    init_leds();
 
     gpio_set_irq_callback(gpio_irq_call);
     init_momentary_buttons();
-    init_leds();
+    irq_set_enabled(IO_IRQ_BANK0, true);
 
     // ADC init
     adc_init();

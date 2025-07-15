@@ -41,8 +41,8 @@ void publish_sw_states(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
-        check_exec_interval(last_pub_time, SW_STATE_PUB_RT_INTERVAL + 10,
-                            PUB_TIMER_INTERVAL_EXCEEDED, "switches/publisher", true);
+        CHECK_EXEC_INTERVAL(last_pub_time, SW_STATE_PUB_RT_INTERVAL + 10,
+                            PUB_TIMER_INTERVAL_EXCEEDED, "hw/switches/publisher", true);
 
         msg.left_key_sw = !gpio_get(LEFT_KEY_SW_PIN);
         msg.left_top_toggle_sw = !gpio_get(LEFT_TOP_TOGGLE_SW_PIN);
@@ -98,8 +98,8 @@ void publish_joystick_state(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
-        check_exec_interval(last_pub_time, JOYSTICK_PUB_RT_INTERVAL + 10, 
-                            PUB_TIMER_INTERVAL_EXCEEDED, "joystick/publisher", true);
+        CHECK_EXEC_INTERVAL(last_pub_time, JOYSTICK_PUB_RT_INTERVAL + 10, 
+                            PUB_TIMER_INTERVAL_EXCEEDED, "hw/joystick/publisher", true);
 
         msg.joystick_x_axis_reading = get_joystick_x_val();
         msg.joystick_y_axis_reading = get_joystick_y_val();
@@ -115,8 +115,8 @@ void publish_potentiometer_state(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
-        check_exec_interval(last_pub_time, POTENTIOMETER_PUB_RT_INTERVAL + 10, 
-                            PUB_TIMER_INTERVAL_EXCEEDED, "potentiometer/publisher", true);
+        CHECK_EXEC_INTERVAL(last_pub_time, POTENTIOMETER_PUB_RT_INTERVAL + 10, 
+                            PUB_TIMER_INTERVAL_EXCEEDED, "hw/potentiometer/publisher", true);
 
         msg.potentiometer_reading = get_potentiometer_val();
         UROS_RETCODE_LOG(rcl_publish(&potentiometer_state_pub, &msg, nullptr));

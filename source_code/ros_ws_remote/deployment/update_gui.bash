@@ -14,12 +14,13 @@ done
 
 cd "$HOME/ros_remote" || exit 1
 git fetch origin
-IS_UPTODATE=$(git diff origin/main)
+GIT_BRANCH=$(git branch --show-current)
+IS_UPTODATE=$(git diff "origin/$GIT_BRANCH")
 
 if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_RESET" == "true" ]; then
     git clean -dfx
     git reset --recurse-submodules --hard
-    git pull origin main
+    git pull origin "$GIT_BRANCH"
     git submodule update --recursive
 fi
 
@@ -36,4 +37,4 @@ if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_REBUILD" == "true" ]; then
     fi
 fi
 
-echo "All up to date."
+echo "All up to date with $GIT_BRANCH."
