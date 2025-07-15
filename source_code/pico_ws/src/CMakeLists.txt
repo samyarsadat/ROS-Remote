@@ -18,6 +18,7 @@
 
 
 # Custom library subdirectories
+set(PICO_LOG_FREERTOS 1)
 add_subdirectory(lib)
 
 # Pico firmware

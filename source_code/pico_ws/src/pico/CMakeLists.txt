@@ -39,16 +39,18 @@ pico_add_extra_outputs(${TARGET_NAME})
 target_link_libraries(${TARGET_NAME} pico_stdlib
                                      hardware_pwm
                                      hardware_adc
+                                     pico_stdio_usb
+                                     pico_stdio_uart
+                                     cmsis_core
                                      FreeRTOS-Kernel
                                      FreeRTOS-Kernel-Heap4
-                                     cmsis_core
+                                     micro_ros
                                      utils_lib
                                      uros_utils_lib
                                      freertos_agent_lib
                                      uros_freertos_abstract_lib
                                      pico_log_lib
                                      cpp_freertos_alloc_lib
-                                     micro_ros
 )
 
 # Link to include directories
@@ -58,9 +60,18 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_compile_definitions(${TARGET_NAME} PRIVATE
     PICO_RP2040_B0_SUPPORTED=0
     PICO_STACK_SIZE=0x1000
+    PICO_USE_STACK_GUARDS=0
+    PICO_USE_FASTEST_SUPPORTED_CLOCK=1
     PICO_DEFAULT_UART=0
     PICO_DEFAULT_UART_TX_PIN=16
     PICO_DEFAULT_UART_RX_PIN=17
+    PICO_DEFAULT_UART_BAUD_RATE=921600
+    PICO_STDIO_ENABLE_CRLF_SUPPORT=0
+    PICO_STDIO_DEFAULT_CRLF=0
+    MAX_EXECUTORS=1
+    MAX_PUBLISHERS=5
+    MAX_SERVICES=5
+    MAX_SUBSCRIBERS=0
 )
 
 # PicoTool binary information

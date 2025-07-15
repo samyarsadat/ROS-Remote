@@ -63,10 +63,10 @@ inline const char* RETCODE_CHECK_MSG = "%s failed! Error code: %d";
         return false;                                         \
     }
 
-#define REQ_SYSTEM_RESET(mem_mode)                                           \
-    (void) xTaskNotify(reset_task_handle, mem_mode, eSetValueWithOverwrite); \
+#define REQ_SYSTEM_RESET()                     \
+    (void) xTaskNotifyGive(reset_task_handle); \
     while (1);
 
-#define REQ_SYSTEM_RESET_ISR(mem_mode)                                             \
-    xTaskNotifyFromISR(reset_task_handle, mem_mode, eSetValueWithOverwrite, NULL); \
+#define REQ_SYSTEM_RESET_ISR()                          \
+    vTaskNotifyGiveFromISR(reset_task_handle, nullptr); \
     while (1);

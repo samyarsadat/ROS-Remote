@@ -103,7 +103,7 @@ void publish_joystick_state(void *parameters) {
 
         msg.joystick_x_axis_reading = get_joystick_x_val();
         msg.joystick_y_axis_reading = get_joystick_y_val();
-        UROS_RETCODE_LOG(rcl_publish(&button_state_pub, &msg, NULL));
+        UROS_RETCODE_LOG(rcl_publish(&joystick_state_pub, &msg, NULL));
     }
 }
 
@@ -158,7 +158,7 @@ void start_sensor_publishers(alarm_pool_t* alarm_pool) {
 }
 
 void stop_sensor_publishers() {
-    opassert(cancel_repeating_timer(&sw_state_publish_rt));
-    opassert(cancel_repeating_timer(&joystick_publish_rt));
-    opassert(cancel_repeating_timer(&potentiometer_publish_rt));
+    cancel_repeating_timer(&sw_state_publish_rt);
+    cancel_repeating_timer(&joystick_publish_rt);
+    cancel_repeating_timer(&potentiometer_publish_rt);
 }

@@ -39,9 +39,12 @@ bool uros_init_ent() {
     const rosidl_service_type_support_t *set_led_states_type = ROSIDL_GET_SRV_TYPE_SUPPORT(remote_pico_coms, srv, SetLedStates);
     const rosidl_service_type_support_t *run_self_test_type = ROSIDL_GET_SRV_TYPE_SUPPORT(diagnostic_msgs, srv, SelfTest);
 
+    // Add executor to the bridge
+    uRosBridgeAgent* bridge = uRosBridgeAgent::get_instance();
+    opassert(bridge->uros_add_executor(&uros_executor));
+
     // Publishers
     LOG(LOG_LVL_INFO, "Initializing publishers...");
-    uRosBridgeAgent* bridge = uRosBridgeAgent::get_instance();
     UROS_RETCODE_CHECK(bridge->init_publisher(&button_state_pub, button_state_type, "inputs/buttons"));
     UROS_RETCODE_CHECK(bridge->init_publisher(&switch_state_pub, switch_state_type, "inputs/switches"));
     UROS_RETCODE_CHECK(bridge->init_publisher(&joystick_state_pub, joystick_state_type, "inputs/joystick"));
@@ -50,15 +53,11 @@ bool uros_init_ent() {
 
     // Service servers
     LOG(LOG_LVL_INFO, "Initializing services...");
-    UROS_RETCODE_CHECK(core1_executor.init_service(&get_joystick_config_srv, get_joystick_config_type, "inputs/joystick/get_config"));
-    UROS_RETCODE_CHECK(core1_executor.init_service(&set_joystick_config_srv, set_joystick_config_type, "inputs/joystick/set_config"));
-    UROS_RETCODE_CHECK(core0_executor.init_service(&get_led_states_srv, get_led_states_type, "outputs/leds/get_states"));
-    UROS_RETCODE_CHECK(core0_executor.init_service(&set_led_states_srv, set_led_states_type, "outputs/leds/set_states"));
-    UROS_RETCODE_CHECK(core0_executor.init_service(&led_selftest_srv, run_self_test_type, "self_test/leds"));
-
-    // Add executors to the bridge
-    opassert(bridge->uros_add_executor(&core0_executor));
-    opassert(bridge->uros_add_executor(&core1_executor));
+    UROS_RETCODE_CHECK(uros_executor.init_service(&get_joystick_config_srv, get_joystick_config_type, "inputs/joystick/get_config"));
+    UROS_RETCODE_CHECK(uros_executor.init_service(&set_joystick_config_srv, set_joystick_config_type, "inputs/joystick/set_config"));
+    UROS_RETCODE_CHECK(uros_executor.init_service(&get_led_states_srv, get_led_states_type, "outputs/leds/get_states"));
+    UROS_RETCODE_CHECK(uros_executor.init_service(&set_led_states_srv, set_led_states_type, "outputs/leds/set_states"));
+    UROS_RETCODE_CHECK(uros_executor.init_service(&led_selftest_srv, run_self_test_type, "self_test/leds"));
 
     return true;
 }
@@ -68,11 +67,11 @@ bool uros_init_ent() {
 bool uros_exec_setup() {
     LOG(LOG_LVL_INFO, "Initializing micro-ROS executors...");
 
-    UROS_RETCODE_CHECK(core1_executor.add_service(&get_joystick_config_srv, &get_joystick_config_req, &get_joystick_config_res, get_joystick_config_callback));
-    UROS_RETCODE_CHECK(core1_executor.add_service(&set_joystick_config_srv, &set_joystick_config_req, &set_joystick_config_res, set_joystick_config_callback));
-    UROS_RETCODE_CHECK(core0_executor.add_service(&get_led_states_srv, &get_led_states_req, &get_led_states_res, get_led_states_callback));
-    UROS_RETCODE_CHECK(core0_executor.add_service(&set_led_states_srv, &set_led_states_req, &set_led_states_res, set_led_states_callback));
-    UROS_RETCODE_CHECK(core0_executor.add_service(&led_selftest_srv, &led_selftest_req, &led_selftest_res, leds_selftest_callback));
+    UROS_RETCODE_CHECK(uros_executor.add_service(&get_joystick_config_srv, &get_joystick_config_req, &get_joystick_config_res, get_joystick_config_callback));
+    UROS_RETCODE_CHECK(uros_executor.add_service(&set_joystick_config_srv, &set_joystick_config_req, &set_joystick_config_res, set_joystick_config_callback));
+    UROS_RETCODE_CHECK(uros_executor.add_service(&get_led_states_srv, &get_led_states_req, &get_led_states_res, get_led_states_callback));
+    UROS_RETCODE_CHECK(uros_executor.add_service(&set_led_states_srv, &set_led_states_req, &set_led_states_res, set_led_states_callback));
+    UROS_RETCODE_CHECK(uros_executor.add_service(&led_selftest_srv, &led_selftest_req, &led_selftest_res, leds_selftest_callback));
 
     return true;
 }

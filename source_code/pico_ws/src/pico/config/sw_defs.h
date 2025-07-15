@@ -27,9 +27,9 @@
 #define UROS_DOMAIN_ID                     75
 #define AGENT_WAITING_LED_TOGGLE_DELAY_MS  500   // In milliseconds
 #define AGENT_AVAIL_LED_TOGGLE_DELAY_MS    250   // In milliseconds
-#define EXECUTOR_EXEC_INTERVAL_MS          75    // In milliseconds
-#define EXECUTOR_EXEC_TIME_LIMIT_MS        85    // In milliseconds
-#define EXECUTOR_TIMEOUT_MS                50    // In milliseconds
+#define EXECUTOR_EXEC_INTERVAL_MS          50    // In milliseconds
+#define EXECUTOR_EXEC_TIME_LIMIT_MS        60    // In milliseconds
+#define EXECUTOR_TIMEOUT_MS                5     // In milliseconds
 
 // Logger config
 #define LOOGER_LOG_LEVEL   LOG_LVL_DEBUG
@@ -60,8 +60,8 @@
 
 // Misc.
 #define SETUP_TASK_STACK_DEPTH     1024   // In FreeRTOS words
-#define TIMER_TASK_STACK_DEPTH     1024   // In FreeRTOS words
 #define RESET_TASK_STACK_DEPTH     1024   // In FreeRTOS words
-#define GENERIC_TASK_STACK_DEPTH   1024   // In FreeRTOS words
+#define TIMER_TASK_STACK_DEPTH     512    // In FreeRTOS words
 #define TIMER_COMMAND_TIMEOUT_T    500    // In FreeRTOS ticks
 #define WATCHDOG_RESET_TIMEOUT_MS  1000   // In milliseconds
+#define PRE_RESET_WAIT_MS          5      // In milliseconds

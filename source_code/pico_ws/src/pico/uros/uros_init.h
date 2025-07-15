@@ -46,8 +46,7 @@ inline uRosExecAgent::exectr_timing_conf_t exec_timing_conf = {
     .exectr_timeout_ms = EXECUTOR_TIMEOUT_MS
 };
 
-inline uRosExecAgent core0_executor("core0_executor", &exec_timing_conf);
-inline uRosExecAgent core1_executor("core1_executor", &exec_timing_conf);
+inline uRosExecAgent uros_executor("main_exec", &exec_timing_conf);
 
 // ---- Publishers ----
 // Button, switch, joystick, potentiometer states
