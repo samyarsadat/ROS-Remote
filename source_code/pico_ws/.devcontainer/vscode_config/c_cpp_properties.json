@@ -16,8 +16,7 @@
                 "/opt/ros/${ROS_DISTRO}/include/**",
                 "/usr/include/**",
                 "${PICO_SDK_PATH}/**",
-                "${workspaceFolder}/src/**",
-                "${workspaceFolder}/libmicroros/firmware/build/**"
+                "${workspaceFolder}/src/**"
             ]
         }
     ],

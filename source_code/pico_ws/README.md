@@ -42,15 +42,5 @@ Run `udevadm control --reload` (again, on the host machine) to make sure that th
 
 <br>
 
-## Note On GUI Apps & Non-NVIDIA GPUs
-If you're using an NVIDIA GPU, make sure to install the NVIDIA Container Toolkit (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
-If you aren't using an NVIDIA GPU, please remove the `"--gpus", "all",` line from `"runArgs"` in `devcontainer.json`.<br>
-<br>
-For GUI support, the devcontainer is currently configured for using X11. If you're using Wayland, you will have to change the
-`"-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw",` line from `"runArgs"` in `devcontainer.json`.
-If you don't want GUI support at all, simply remove `"-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw",` and `"--env=DISPLAY",`.
-
-<br>
-
-## Updating MicroROS Tools or the FreeRTOS Kernel
+## Updating the FreeRTOS Kernel
 Discard all changes to the submodule repository, pull the latest version, and rebuild the devcontainer.

@@ -21,8 +21,6 @@
 #include "pico/stdlib.h"
 #include "pico_log_lib/logger.h"
 #include "config/sw_defs.h"
-#include "uros_utils_lib/diag_util.h"
-#include "uros/uros_init.h"
 
 
 // Logger configuration
@@ -36,33 +34,10 @@ inline logger_options_t logger_options = {
 inline Logger logger(&stdio_usb, &logger_options);
 #define LOG(lvl, msg, ...) logger.log(__func__, "", __LINE__, lvl, msg, ##__VA_ARGS__);
 
-// Micro-ROS diagnostics
-inline DiagPublisher diag_util(&diagnostics_pub);
-
 // Reset task handle
 inline TaskHandle_t reset_task_handle;
 
 // Utility macros
-inline const char* RETCODE_LOG_MSG = "Micro-ROS operation failed! Code: %d";
-inline const char* RETCODE_CHECK_MSG = "%s failed! Error code: %d";
-
-#define UROS_RETCODE_LOG(ret_code)                     \
-    if (ret_code != RCL_RET_OK) {                      \
-        LOG(LOG_LVL_FATAL, RETCODE_LOG_MSG, ret_code); \
-    }
-
-#define UROS_RETCODE_CHECK(ret_code)                   \
-    if (ret_code != RCL_RET_OK) {                      \
-        LOG(LOG_LVL_FATAL, RETCODE_LOG_MSG, ret_code); \
-        return false;                                  \
-    }
-
-#define UROS_RETCODE_CHECK_MSG(ret_code, msg)                 \
-    if (ret_code != RCL_RET_OK) {                             \
-        LOG(LOG_LVL_FATAL, RETCODE_CHECK_MSG, msg, ret_code); \
-        return false;                                         \
-    }
-
 #define REQ_SYSTEM_RESET()                     \
     (void) xTaskNotifyGive(reset_task_handle); \
     while (1);

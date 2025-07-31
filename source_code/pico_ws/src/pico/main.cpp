@@ -141,6 +141,11 @@ void setup(void *parameters) {
     (void) xTaskCreate(publish_potentiometer_state, "potentiometer_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &potentiometer_publish_th);
     (void) xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &btn_state_publish_th);
     (void) xTaskCreate(publish_sw_states, "sw_states_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &sw_state_publish_th);
+    vTaskCoreAffinitySet(reset_task_handle,        (1 << 0));
+    vTaskCoreAffinitySet(joystick_publish_th,      (1 << 1));
+    vTaskCoreAffinitySet(potentiometer_publish_th, (1 << 1));
+    vTaskCoreAffinitySet(btn_state_publish_th,     (1 << 1));
+    vTaskCoreAffinitySet(sw_state_publish_th,      (1 << 1));
 
     LOG(LOG_LVL_INFO, "Hardware initialization.");
     
@@ -181,7 +186,7 @@ void setup(void *parameters) {
 
     // Start MicroROS bridge agent
     LOG(LOG_LVL_INFO, "Starting micro-ROS bridge...");
-    (void) bridge->start(configMAX_PRIORITIES - 2);
+    (void) bridge->start(configMAX_PRIORITIES - 1, (1 << 0), true);
 
     // Start the waiting for MicroROS agent LED blink timer
     (void) xTimerStart(waiting_for_agent_timer, TIMER_COMMAND_TIMEOUT_T);
@@ -239,7 +244,7 @@ bool uros_init() {
         return false;
     }
 
-    (void) uros_executor.start(configMAX_PRIORITIES - 1);
+    (void) uros_executor.start(configMAX_PRIORITIES - 1, (1 << 0), true);
 
     LOG(LOG_LVL_INFO, "Micro-ROS initialized successfully.");
     return start_timers();

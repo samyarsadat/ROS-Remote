@@ -29,10 +29,6 @@ RUN export NONROOT_USERNAME=${USERNAME} \
     && bash /pico_setup.sh \
     && rm -rf /var/lib/apt/lists/* && apt-get autoremove && apt-get autoclean
 
-# MicroROS agent helpers
-USER ${USERNAME}
-COPY uros_agent/* /home/$USERNAME/pico_ws/uros_agent/
-
 # Copy configuration files
 USER ${USERNAME}
 COPY vscode_config/* /home/$USERNAME/pico_ws/.vscode/
