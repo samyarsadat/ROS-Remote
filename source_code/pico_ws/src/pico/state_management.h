@@ -1,7 +1,7 @@
 /*
-    The ROS remote project - Buttons related IO helpers
-    Copyright 2025 Samyar Sadat Akhavi.
-    Written by Samyar Sadat Akhavi, 2025.
+    The ROS remote project - State management functions
+    Copyright 2024-2025 Samyar Sadat Akhavi.
+    Written by Samyar Sadat Akhavi, 2024-2025.
  
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,24 +18,17 @@
 */
 
 #pragma once
-#include "pico/stdlib.h"
-#include "config/hw_defs.h"
 
 
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
-    extern const uint8_t momen_btn_pins_order[];
-    extern uint8_t momen_btn_states;  // Lower 5 bits used.
-
-    // ---- Button de-bouncing function ----
-    // ---- Returns true if the button should be considered pressed, false if not. ----
-    // ---- NOTE: Only for the 5 momentary push buttons! ----
-    bool button_bounce_check(uint8_t pin);
-
-    // ---- Initialize momentary button pins ----
-    void init_momentary_buttons();
+    // ---- Device state management ----
+    void enter_state_mounted();
+    void enter_state_unmounted();
+    void enter_state_suspended();
+    void enter_state_resumed();
 #ifdef __cplusplus
 }
 #endif

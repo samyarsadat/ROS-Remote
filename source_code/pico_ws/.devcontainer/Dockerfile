@@ -15,7 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-FROM samyarsadat/custom_base_images:base-ros-jazzy
+FROM samyarsadat/custom_base_images:default-ubuntu-24.04
+USER root
 
 
 # Install pip

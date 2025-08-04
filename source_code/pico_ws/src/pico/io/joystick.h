@@ -24,19 +24,20 @@
 #include "timers.h"
 
 
-inline float joystick_x_center_offset = DEFAULT_JOYSTICK_X_CENTER_OFFSET;
-inline float joystick_y_center_offset = DEFAULT_JOYSTICK_Y_CENTER_OFFSET;
-inline uint16_t joystick_x_deadzone = DEFAULT_JOYSTICK_X_DEADZONE;
-inline uint16_t joystick_y_deadzone = DEFAULT_JOYSTICK_Y_DEADZONE;
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+    // ---- Get joystick axis positions (readings) ----
+    // ---- These functions take into account the deadzone, offset, and inversion configs of the axis ----
+    // ---- They return values between -512 and +512, with 0 being center ----
+    int16_t get_joystick_x_val();
+    int16_t get_joystick_y_val();
 
-
-// ---- Get joystick axis positions (readings) ----
-// ---- These functions take into account the deadzone, offset, and inversion configs of the axis ----
-// ---- They return values between -512 and +512, with 0 being center ----
-int16_t get_joystick_x_val();
-int16_t get_joystick_y_val();
-
-// ---- Get potentiometer reading ----
-// ---- This function takes into account the potentiometer's inversion config ----
-// ---- It returns a value between 0 and 1024 ----
-uint16_t get_potentiometer_val();
+    // ---- Get potentiometer reading ----
+    // ---- This function takes into account the potentiometer's inversion config ----
+    // ---- It returns a value between 0 and 1024 ----
+    uint16_t get_potentiometer_val();
+#ifdef __cplusplus
+}
+#endif

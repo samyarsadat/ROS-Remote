@@ -1,5 +1,5 @@
 /*
-    The ROS remote project - Buttons related IO helpers
+    The ROS remote project - Looger init
     Copyright 2025 Samyar Sadat Akhavi.
     Written by Samyar Sadat Akhavi, 2025.
  
@@ -17,25 +17,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-#include "pico/stdlib.h"
-#include "config/hw_defs.h"
+#include "diagnostics.h"
+#include "config/sw_defs.h"
 
 
-#ifdef __cplusplus
-extern "C" 
-{
-#endif
-    extern const uint8_t momen_btn_pins_order[];
-    extern uint8_t momen_btn_states;  // Lower 5 bits used.
+// Logger configuration
+logger_options_t logger_options = {
+    .logging_level = LOGGER_LOG_LEVEL,
+    .log_format = LOGGER_LOG_FORMAT,
+    .ansi_styling = true,
+    .process_style_tags = false  
+};
+Logger logger(&stdio_uart, &logger_options);
 
-    // ---- Button de-bouncing function ----
-    // ---- Returns true if the button should be considered pressed, false if not. ----
-    // ---- NOTE: Only for the 5 momentary push buttons! ----
-    bool button_bounce_check(uint8_t pin);
-
-    // ---- Initialize momentary button pins ----
-    void init_momentary_buttons();
-#ifdef __cplusplus
-}
-#endif
+// Logger handle for C API
+logger_handle_t logger_handle = static_cast<logger_handle_t>(&logger);

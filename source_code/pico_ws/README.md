@@ -1,8 +1,3 @@
-## How To Build MicroROS
-Run `bash ~/pico_ws/libmicroros/build_uros.sh -rf` as `nonroot` inside of the devcontainer to build the MicroROS library.
-
-<br>
-
 ## Pico Firmware Pre-built Binaries
 ~~If you don't want to build MicroROS and the Pico firmware from source, pre-built `.uf2` binaries can be found in the `build/src` folder.~~<br>
 Please take a look at the [`pico-build` workflow](https://github.com/samyarsadat/ROS-Remote/actions/workflows/pico-build.yml) artifact called 

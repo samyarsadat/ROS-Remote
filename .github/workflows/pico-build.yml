@@ -1,4 +1,4 @@
-#  Raspberry Pi RP2350 MicroROS tests (RP2040 backport) - The ROS Robot Project Research.
+#  The ROS Remote Project - Pico Build Workflow
 #  Copyright 2025 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2025.
 #
@@ -23,48 +23,6 @@ env:
     FREERTOS_KERNEL_IMPORT: "libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake"
 
 jobs:
-    build_uros:
-        name: Build the micro-ROS library
-        runs-on: ubuntu-latest
-        permissions:
-            contents: read
-
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  submodules: recursive
-
-            - name: Copy FreeRTOS Kernel Import File
-              shell: bash
-              run: |
-                  cp "${FIRMWARE_PATH}/${FREERTOS_KERNEL_IMPORT}" \
-                  "${FIRMWARE_PATH}/FreeRTOS_Kernel_import.cmake"
-
-            - name: Generate Pico SDK Headers
-              uses: samyarsadat/Pico-Build-Action@v1
-              with:
-                  source_dir: ${{env.FIRMWARE_PATH}}
-                  output_dir: "build"
-                  cmake_config_only: "true"
-                  cmake_args: "-DCMAKE_BUILD_TYPE=Release"
-
-            - name: Build MicroROS Library
-              id: build
-              uses: samyarsadat/MicroROS-Build-Action@v1-jazzy
-              with:
-                  microros_dir: ${{env.FIRMWARE_PATH}}/libmicroros
-                  clone_microros_setup: "false"
-                  environment_setup_script: ".github/workflows/rp2_env_setup.sh"
-                  extra_build_packages: "remote_pico_coms"
-
-            - name: Upload MicroROS Library Artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: uros_library_artifacts
-                  path: ${{steps.build.outputs.library_build_dir}}
-                  if-no-files-found: error
-
     build_pico:
         name: Build the Pico source code
         runs-on: ubuntu-latest
@@ -77,12 +35,6 @@ jobs:
               uses: actions/checkout@v4
               with:
                   submodules: recursive
-
-            - name: Download MicroROS Library Artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: uros_library_artifacts
-                  path: ${{env.FIRMWARE_PATH}}/libmicroros/firmware/build
 
             - name: Copy FreeRTOS Kernel Import File
               shell: bash

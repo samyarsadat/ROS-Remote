@@ -2,6 +2,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
+ * Copyright (c) 2025 Samyar Sadat Akhavi
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,29 +49,30 @@ extern "C" {
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------
 
-// defined by compiler flags for flexibility
 #ifndef CFG_TUSB_MCU
 #error CFG_TUSB_MCU must be defined
 #endif
 
+#define CFG_TUSB_RHPORT0_MODE  OPT_MODE_DEVICE
+
 #ifndef CFG_TUSB_OS
-#define CFG_TUSB_OS           OPT_OS_PICO
+#define CFG_TUSB_OS            OPT_OS_PICO
 #endif
 
 #ifndef CFG_TUSB_DEBUG
-#define CFG_TUSB_DEBUG        0
+#define CFG_TUSB_DEBUG         0
 #endif
 
 // Enable Device stack
-#define CFG_TUD_ENABLED       1
-#define CFG_TUD_MAX_SPEED     BOARD_TUD_MAX_SPEED
+#define CFG_TUD_ENABLED        1
+#define CFG_TUD_MAX_SPEED      BOARD_TUD_MAX_SPEED
 
 #ifndef CFG_TUSB_MEM_SECTION
 #define CFG_TUSB_MEM_SECTION
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN        __attribute__ ((aligned(4)))
+#define CFG_TUSB_MEM_ALIGN     __attribute__ ((aligned(4)))
 #endif
 
 //--------------------------------------------------------------------
@@ -78,18 +80,18 @@ extern "C" {
 //--------------------------------------------------------------------
 
 #ifndef CFG_TUD_ENDPOINT0_SIZE
-#define CFG_TUD_ENDPOINT0_SIZE    64
+#define CFG_TUD_ENDPOINT0_SIZE   64
 #endif
 
 //------------- CLASS -------------//
-#define CFG_TUD_HID               1
-#define CFG_TUD_CDC               0
-#define CFG_TUD_MSC               0
-#define CFG_TUD_MIDI              0
-#define CFG_TUD_VENDOR            0
+#define CFG_TUD_HID              1
+#define CFG_TUD_CDC              0
+#define CFG_TUD_MSC              0
+#define CFG_TUD_MIDI             0
+#define CFG_TUD_VENDOR           0
 
 // HID buffer size Should be sufficient to hold ID (if any) + Data
-#define CFG_TUD_HID_EP_BUFSIZE    64
+#define CFG_TUD_HID_EP_BUFSIZE   64
 
 #ifdef __cplusplus
 }

@@ -39,11 +39,11 @@
 #define LEFT_KEY_SW_PIN          18
 #define LEFT_TOP_TOGGLE_SW_PIN   19
 
-// Buttons
+// Buttons (toggle)
 #define RIGHT_E_STOP_BTN_PIN  4
 #define RIGHT_KD2_BTN_PIN     5
 
-// Momentary Buttons
+// Momentary buttons
 #define LEFT_GREEN_RIGHT_BTN_PIN     6
 #define LEFT_RED_BTN_PIN             7
 #define LEFT_GREEN_KD2_BTN_PIN       20

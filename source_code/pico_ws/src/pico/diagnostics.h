@@ -18,30 +18,14 @@
 */
 
 #pragma once
-#include "pico/stdlib.h"
+#include "pico_log_lib/logger_c.h"
+
+
+#ifdef __cplusplus
 #include "pico_log_lib/logger.h"
-#include "config/sw_defs.h"
-
-
-// Logger configuration
-inline logger_options_t logger_options = {
-    .logging_level = LOOGER_LOG_LEVEL,
-    .log_format = LOGGER_LOG_FORMAT,
-    .ansi_styling = true,
-    .process_style_tags = false  
-};
-
-inline Logger logger(&stdio_usb, &logger_options);
+extern Logger logger;
 #define LOG(lvl, msg, ...) logger.log(__func__, "", __LINE__, lvl, msg, ##__VA_ARGS__);
-
-// Reset task handle
-inline TaskHandle_t reset_task_handle;
-
-// Utility macros
-#define REQ_SYSTEM_RESET()                     \
-    (void) xTaskNotifyGive(reset_task_handle); \
-    while (1);
-
-#define REQ_SYSTEM_RESET_ISR()                          \
-    vTaskNotifyGiveFromISR(reset_task_handle, nullptr); \
-    while (1);
+#else
+extern logger_handle_t logger_handle;
+#define LOG(lvl, msg, ...) logger_log(logger_handle, __func__, "", __LINE__, lvl, msg, ##__VA_ARGS__);
+#endif

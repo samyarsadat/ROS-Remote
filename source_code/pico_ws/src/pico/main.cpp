@@ -18,14 +18,7 @@
 */
 
 #include "pico/stdlib.h"
-#include "hardware/watchdog.h"
 #include "hardware/adc.h"
-#include "hardware/regs/psm.h"
-#include "hardware/structs/psm.h"
-#include "uros/uros_init.h"
-#include "uros/sensor_publishers.h"
-#include "uros_freertos_abstract_lib/uros_bridge.h"
-#include "uros_freertos_abstract_lib/uros_executor.h"
 #include "FreeRTOS.h"
 #include "timers.h"
 #include "utils_lib/hardware.h"
@@ -33,63 +26,32 @@
 #include "io/buttons.h"
 #include "utils_lib/adc/adc_lock.h"
 #include "diagnostics.h"
-#include "uros/sensor_publishers.h"
 #include "common/opassert.h"
-#include "RP2040.h"
-#include "core_cm0plus.h"
-#include <pico/multicore.h>
+#include "tusb/hid_report_senders.h"
+#include "config/sw_defs.h"
+#include "bsp/board_api.h"
+#include "tusb.h"
+#include "state_management.h"
+#include "pico/unique_id.h"
 
 
 // ---- Global variables ----
+char pico_unique_id[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
 alarm_pool_t *core_1_alarm_pool;
-TimerHandle_t waiting_for_agent_timer;
-uRosBridgeAgent *bridge;
+TimerHandle_t status_led_timer;
+TaskHandle_t tusb_spin_task_th = nullptr;
+bool mount_init = false, resume_init = false;
 
-
-// ---- Graceful reset ----
-void reset_task(void* parameters) {
-    (void) parameters;
-    xTaskNotifyWait(0, 0, nullptr, portMAX_DELAY);
-    
-    watchdog_disable();
-    watchdog_enable(WATCHDOG_RESET_TIMEOUT_MS, true);
-    LOG(LOG_LVL_FATAL, "A clean reset has been triggered.");
-
-    // Stop all repeating timers & disable interrupts
-    stop_sensor_publishers(); watchdog_update();
-    led_timers_stop(); watchdog_update();
-    portDISABLE_INTERRUPTS();
-    
-    // We don't really need to destroy the timers as we're resetting anyway, but it's a good practice.
-    led_timers_destroy(); watchdog_update();
-    
-    // IO cleanup
-    all_leds_off();
-    init_pin(PICO_DEFAULT_LED_PIN, OUTPUT);
-    gpio_put(PICO_DEFAULT_LED_PIN, false);
-    watchdog_update();
-
-    // This will stop the bridge agent as well as the executor agents.
-    // It will also cancel their repeating timers, and finalize all micro-ROS resources.
-    bridge->uros_fini(); watchdog_update();
-
-    sleep_ms(PRE_RESET_WAIT_MS);
-    watchdog_reset();
-}
 
 // ---- FreeRTOS task stack overflow hook ----
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName) {
     (void) xTask;
-    LOG(LOG_LVL_FATAL, "Stack overflow! Task: %s", pcTaskName);
-    sleep_ms(PRE_RESET_WAIT_MS);
-    watchdog_reset();
+    panic("FreeRTOS stack overflow in task: %s", pcTaskName);
 }
 
 // ---- FreeRTOS malloc failure hook ----
 void vApplicationMallocFailedHook() {
-    LOG(LOG_LVL_FATAL, "Memory allocation failure!");
-    sleep_ms(PRE_RESET_WAIT_MS);
-    watchdog_reset();
+    panic("FreeRTOS malloc failed!");
 }
 
 // ---- GPIO IRQ callback ----
@@ -99,54 +61,54 @@ void gpio_irq_call(uint pin, uint32_t events) {
     // Momentary button IRQs
     if (button_bounce_check(pin)) {
         BaseType_t higher_prio_woken;
-        xTaskNotifyFromISR(btn_state_publish_th, static_cast<uint32_t>(pin), eSetValueWithOverwrite, &higher_prio_woken);
+        xTaskNotifyFromISR(report_button_states_th, static_cast<uint32_t>(pin), eSetValueWithOverwrite, &higher_prio_woken);
         portYIELD_FROM_ISR(higher_prio_woken);
     }
 }
 
-// ---- Waiting for agent LED flash timer callback ----
-void waiting_for_agent_timer_call(TimerHandle_t timer) {
-    if (bridge->get_agent_state() == uRosBridgeAgent::WAITING_FOR_AGENT) {
-        gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get_out_level(PICO_DEFAULT_LED_PIN));
-        return;
+// ---- LED flash state handler ----
+void status_led_timer_call(TimerHandle_t timer) {
+    TickType_t timer_period;
+    bool led_always_on = false;
+
+    if (mount_init && resume_init) {
+        led_always_on = true;
+        timer_period = pdMS_TO_TICKS(STAT_LED_IDLE_CHECK_MS);
+    } else if (mount_init && !resume_init) {
+        led_always_on = false;
+        timer_period = pdMS_TO_TICKS(STAT_LED_SUSPENDED_MS);
+    } else {
+        led_always_on = false;
+        timer_period = pdMS_TO_TICKS(STAT_LED_UNMOUNTED_MS);
     }
 
-    if (bridge->get_agent_state() == uRosBridgeAgent::AGENT_AVAILABLE) {
-        if (xTimerGetPeriod(timer) != pdMS_TO_TICKS(AGENT_AVAIL_LED_TOGGLE_DELAY_MS)) {
-            (void) xTimerChangePeriod(timer, pdMS_TO_TICKS(AGENT_AVAIL_LED_TOGGLE_DELAY_MS), 0);
+    if (xTimerGetPeriod(timer) != pdMS_TO_TICKS(timer_period)) {
+        (void) xTimerChangePeriod(timer, pdMS_TO_TICKS(timer_period), TIMER_COMMAND_TIMEOUT_T);
+    }
+
+    gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN) || led_always_on);
+}
+
+// ---- TinyUSB spin task ----
+void tusb_spin_task(void *parameters) {
+    (void) parameters;
+    LOG(LOG_LVL_INFO, "TinyUSB task started!");
+    TickType_t wake = xTaskGetTickCount();
+
+    while (true) {
+        if (tud_task_event_ready()) {
+            tud_task();
         }
 
-        gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get_out_level(PICO_DEFAULT_LED_PIN));
-        return;
+        xTaskDelayUntil(&wake, pdMS_TO_TICKS(TUSB_TASK_EXEC_RATE_MS));
     }
-
-    if (bridge->get_agent_state() == uRosBridgeAgent::AGENT_CONNECTED) {
-        gpio_put(PICO_DEFAULT_LED_PIN, true);
-    } else {
-        gpio_put(PICO_DEFAULT_LED_PIN, false);
-    }
-
-    (void) xTimerDelete(timer, TIMER_COMMAND_TIMEOUT_T);
 }
+
 
 // ---- Setup function (core 0) ----
 void setup(void *parameters) {
     (void) parameters;
     LOG(LOG_LVL_INFO, "Core 0 setup task started!");
-
-    // Create timer tasks
-    LOG(LOG_LVL_INFO, "Creating timer tasks.");
-    (void) xTaskCreate(reset_task, "sys_reset", RESET_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, &reset_task_handle);
-    (void) xTaskCreate(publish_joystick_state, "joystick_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &joystick_publish_th);
-    (void) xTaskCreate(publish_potentiometer_state, "potentiometer_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &potentiometer_publish_th);
-    (void) xTaskCreate(publish_btn_states, "btn_states_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &btn_state_publish_th);
-    (void) xTaskCreate(publish_sw_states, "sw_states_publish", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &sw_state_publish_th);
-    vTaskCoreAffinitySet(reset_task_handle,        (1 << 0));
-    vTaskCoreAffinitySet(joystick_publish_th,      (1 << 1));
-    vTaskCoreAffinitySet(potentiometer_publish_th, (1 << 1));
-    vTaskCoreAffinitySet(btn_state_publish_th,     (1 << 1));
-    vTaskCoreAffinitySet(sw_state_publish_th,      (1 << 1));
-
     LOG(LOG_LVL_INFO, "Hardware initialization.");
     
     // Force SMPS into PWM mode
@@ -167,29 +129,24 @@ void setup(void *parameters) {
 
     gpio_set_irq_callback(gpio_irq_call);
     init_momentary_buttons();
-    irq_set_enabled(IO_IRQ_BANK0, true);
 
     // ADC init
     adc_init();
-    adc_set_temp_sensor_enabled(true);
-    if (!adc_init_mutex()) {
-        LOG(LOG_LVL_FATAL, "ADC mutex initialization failed!");
-        REQ_SYSTEM_RESET();
-        while (1);
-    }
+    opassert(adc_init_mutex());
 
     // Create FreeRTOS timers
     LOG(LOG_LVL_INFO, "Creating FreeRTOS software timers.");
-    waiting_for_agent_timer = xTimerCreate("agent_wait_led", pdMS_TO_TICKS(AGENT_WAITING_LED_TOGGLE_DELAY_MS), pdTRUE, nullptr, waiting_for_agent_timer_call);
-    assert(waiting_for_agent_timer != nullptr);
+    status_led_timer = xTimerCreate("agent_wait_led", pdMS_TO_TICKS(STAT_LED_UNMOUNTED_MS), pdTRUE, nullptr, status_led_timer_call);
+    assert(status_led_timer != nullptr);
     led_timers_init();
 
-    // Start MicroROS bridge agent
-    LOG(LOG_LVL_INFO, "Starting micro-ROS bridge...");
-    (void) bridge->start(configMAX_PRIORITIES - 1, (1 << 0), true);
-
     // Start the waiting for MicroROS agent LED blink timer
-    (void) xTimerStart(waiting_for_agent_timer, TIMER_COMMAND_TIMEOUT_T);
+    (void) xTimerStart(status_led_timer, TIMER_COMMAND_TIMEOUT_T);
+
+    // TinyUSB initialization
+    LOG(LOG_LVL_INFO, "TinyUSB initialization.");
+    tusb_init();
+    (void) xTaskCreate(tusb_spin_task, "tusb_task", TUSB_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, &tusb_spin_task_th);
 
     // Delete setup task
     vTaskDelete(nullptr);
@@ -208,73 +165,83 @@ void setup1(void *parameters) {
     vTaskDelete(nullptr);
 }
 
-// ---- Micro-ROS init & fini functions ----
-bool start_timers() {
-    LOG(LOG_LVL_INFO, "Starting timers...");
-    
-    if (!led_timers_start()) {
-        LOG(LOG_LVL_ERROR, "LED timers start failed!");
-        return false;
+
+// ---- Device state management ----
+void enter_state_resumed() {
+    if(!resume_init && mount_init) {
+        LOG(LOG_LVL_INFO, "Entering resumed state.");
+
+        start_hid_reporters(core_1_alarm_pool);
+        led_timers_start();
+        leds_enable_override(false);
+        set_led_outputs();
+        irq_set_enabled(IO_IRQ_BANK0, true);
+        resume_init = true;
     }
-    
-    start_sensor_publishers(core_1_alarm_pool);
-    return true;
 }
 
-bool uros_init() {
-    LOG(LOG_LVL_INFO, "Micro-ROS initializing.");
-    
-    UROS_RETCODE_CHECK_MSG(
-        bridge->uros_init_node(UROS_NODE_NAME, UROS_NODE_NAMESPACE, UROS_DOMAIN_ID), 
-        "Micro-ROS node initialization"
-    );
+void enter_state_suspended() {
+    if (resume_init && mount_init) {
+        LOG(LOG_LVL_INFO, "Entering suspended state.");
 
-    if (!uros_init_ent()) {
-        LOG(LOG_LVL_ERROR, "Micro-ROS entity initialization failed!");
-        return false;
+        stop_hid_reporters();
+        led_timers_stop();
+        leds_enable_override(true);
+        irq_set_enabled(IO_IRQ_BANK0, false);
+
+        for (uint i = 0; i < NUMBER_OF_LEDS; i++) {
+            gpio_put_pwm(led_pins_order[i], 0);
+        }
+
+        resume_init = false;
     }
-
-    UROS_RETCODE_CHECK_MSG(
-        bridge->uros_init_executors(),
-        "Micro-ROS executors initialization"
-    );
-    
-    if (!uros_exec_setup()) {
-        LOG(LOG_LVL_ERROR, "Micro-ROS executor setup failed!");
-        return false;
-    }
-
-    (void) uros_executor.start(configMAX_PRIORITIES - 1, (1 << 0), true);
-
-    LOG(LOG_LVL_INFO, "Micro-ROS initialized successfully.");
-    return start_timers();
 }
 
-void uros_fini() {
-    LOG(LOG_LVL_INFO, "Requesting reset to finalize micro-ROS.");
-    REQ_SYSTEM_RESET();
+void enter_state_mounted() {
+    if (!mount_init) {
+        LOG(LOG_LVL_INFO, "Entering mounted state, creating reporter tasks.");
+        (void) xTaskCreate(report_axes_states_task, "axes_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &report_axes_states_th);
+        (void) xTaskCreate(report_button_states_task, "button_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &report_button_states_th);
+        (void) xTaskCreate(report_sw_states_task, "switch_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &report_sw_states_th);
+        mount_init = true;
+
+        enter_state_resumed();
+    }
+}
+
+void enter_state_unmounted() {
+    if (mount_init) {
+        LOG(LOG_LVL_INFO, "Entering unmounted state.");
+        enter_state_suspended();
+        
+        vTaskDelete(report_axes_states_th);
+        vTaskDelete(report_button_states_th);
+        vTaskDelete(report_sw_states_th);
+
+        for (uint i = 0; i < NUMBER_OF_LEDS; i++) {
+            set_led_state(i, LED_SOLID_PWM, 0);
+        }
+
+        mount_init = false;
+    }
 }
 
 
 // ****** END OF MAIN PROGRAM *******
 // *********** ENTRYPOINT ***********
 int main() {
-    // UART & USB STDIO outputs
-    opassert(stdio_init_all());
-    while (!stdio_usb_connected()) { sleep_ms(100); }
-    stdio_filter_driver(&stdio_uart);   // Filter the output of STDIO to UART.
+    // Load the unique ID
+    pico_get_unique_board_id_string(pico_unique_id, sizeof(pico_unique_id));
 
-    LOG(LOG_LVL_INFO, "STDIO init, program starting.");
+    // Logging over UART, USB HID used for data.
+    stdio_uart_init();
+    board_init();
+    LOG(LOG_LVL_INFO, "Board init, program starting.");
 
     if (!logger.init_mutex()) {
         LOG(LOG_LVL_ERROR, "Logger mutex initialization failed!");
         return 0;
     }
-
-    // MicroROS pre-init
-    LOG(LOG_LVL_INFO, "MicroROS pre-init.");
-    bridge = uRosBridgeAgent::get_instance();
-    bridge->configure(uros_init, uros_fini);
 
     // Setup function tasks
     LOG(LOG_LVL_INFO, "Creating setup tasks.");

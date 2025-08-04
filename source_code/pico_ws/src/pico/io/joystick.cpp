@@ -29,7 +29,8 @@
 
 // ---- INTERNAL: Calculate joystick output ---- 
 // ---- Used in the two functions below ----
-int16_t calc_joystick_reading(uint16_t adc_reading, bool inverted, float center_offset, uint16_t deadzone) {
+inline int16_t calc_joystick_reading(uint16_t adc_reading, const bool inverted, 
+                                     const float center_offset, const uint16_t deadzone) {
     // Inversion
     if (inverted) {
         adc_reading = 4095 - adc_reading;
@@ -52,7 +53,7 @@ int16_t calc_joystick_reading(uint16_t adc_reading, bool inverted, float center_
 
     if (reading <= -1) {
         return map<int16_t>(reading, reading_min_val, -1, -512, -1);
-    } else if (adc_reading >= 1) {
+    } else if (reading >= 1) {
         return map<int16_t>(reading, 1, reading_max_val, 1, 512);
     }
 
@@ -69,7 +70,7 @@ int16_t get_joystick_x_val() {
         uint16_t adc_reading = adc_read();
         adc_release_mutex();
 
-        return calc_joystick_reading(adc_reading, JOYSTICK_X_INVERTED, joystick_x_center_offset, joystick_x_deadzone);
+        return calc_joystick_reading(adc_reading, JOYSTICK_X_INVERTED, JOYSTICK_X_CENTER_OFFSET, JOYSTICK_X_DEADZONE);
     }
 
     LOG(LOG_LVL_ERROR, "Failed to acquire ADC mutex for joystick X axis reading.");
@@ -83,7 +84,7 @@ int16_t get_joystick_y_val() {
         uint16_t adc_reading = adc_read();
         adc_release_mutex();
 
-        return calc_joystick_reading(adc_reading, JOYSTICK_Y_INVERTED, joystick_y_center_offset, joystick_y_deadzone);
+        return calc_joystick_reading(adc_reading, JOYSTICK_Y_INVERTED, JOYSTICK_Y_CENTER_OFFSET, JOYSTICK_Y_DEADZONE);
     }
 
     LOG(LOG_LVL_ERROR, "Failed to acquire ADC mutex for joystick Y axis reading.");
@@ -100,11 +101,11 @@ uint16_t get_potentiometer_val() {
         uint16_t adc_reading = adc_read();
         adc_release_mutex();
 
-        if (!POTENTIOMETER_INVERTED) {
-            return map<uint16_t>(adc_reading, 0, 4095, 0, 1024);
-        } else {
-            return map<uint16_t>(adc_reading, 0, 4095, 1024, 0);
-        }
+        #if !POTENTIOMETER_INVERTED
+        return map<uint16_t>(adc_reading, 0, 4095, 0, 1024);
+        #else
+        return map<uint16_t>(adc_reading, 0, 4095, 1024, 0);
+        #endif
     }
 
     LOG(LOG_LVL_ERROR, "Failed to acquire ADC mutex for potentiometer reading.");

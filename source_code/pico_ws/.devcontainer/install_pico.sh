@@ -13,7 +13,7 @@ OUTDIR="/pico"  # Where will the output go?
 # Dependencies
 GIT_DEPS="git"
 SDK_DEPS="cmake gcc-arm-none-eabi gcc g++"
-OPENOCD_DEPS="gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev"
+OPENOCD_DEPS="gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev libjim-dev pkg-config"
 DEPS="$GIT_DEPS $SDK_DEPS $OPENOCD_DEPS minicom"  # Full list of dependencies
 
 echo "Installing Dependencies"
@@ -81,8 +81,8 @@ cd $OUTDIR
 # Build OpenOCD
 echo "Building OpenOCD"
 cd $OUTDIR
-OPENOCD_BRANCH="sdk-2.0.0"
-OPENOCD_CONFIGURE_ARGS="--enable-ftdi --enable-sysfsgpio --enable-bcm2835gpio --enable-picoprobe"
+OPENOCD_BRANCH="rpi-common"
+OPENOCD_CONFIGURE_ARGS="--disable-werror"
 git clone "${GITHUB_PREFIX}openocd${GITHUB_SUFFIX}" -b $OPENOCD_BRANCH --depth=1
 cd openocd
 ./bootstrap

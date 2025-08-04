@@ -37,10 +37,6 @@
             "extensions": [
                 "ms-python.python",
                 "ms-vscode.cpptools-extension-pack",
-                "smilerobotics.urdf",
-                "redhat.vscode-xml",
-                "redhat.vscode-yaml",
-                "tamasfe.even-better-toml",
                 "timonwong.shellcheck",
                 "yzhang.markdown-all-in-one",
                 "ms-vscode.cmake-tools",
@@ -48,9 +44,7 @@
                 "mcu-debug.rtos-views",
                 "mcu-debug.peripheral-viewer",
                 "mcu-debug.debug-tracker-vscode",
-                "marus25.cortex-debug",
-                "zainchen.json",
-                "ms-vscode.vscode-serial-monitor"
+                "marus25.cortex-debug"
             ]
         }
     },
@@ -58,8 +52,7 @@
     "workspaceFolder": "/home/nonroot/pico_ws",
     "mounts": [{"source": "${localWorkspaceFolder}/src", "target": "/home/nonroot/pico_ws/src", "type": "bind"},
                {"source": "${localWorkspaceFolder}/libfreertos", "target": "/home/nonroot/pico_ws/libfreertos", "type": "bind"},
-               {"source": "${localWorkspaceFolder}/CMakeLists.txt", "target": "/home/nonroot/pico_ws/CMakeLists.txt", "type": "bind"},
-               {"source": "${localWorkspaceFolder}/build", "target": "/home/nonroot/pico_ws/build", "type": "bind"}],
+               {"source": "${localWorkspaceFolder}/CMakeLists.txt", "target": "/home/nonroot/pico_ws/CMakeLists.txt", "type": "bind"}],
 
     "runArgs": ["--net=host",
                 "--cap-add=SYS_PTRACE",

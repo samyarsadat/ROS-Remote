@@ -23,32 +23,29 @@ message("Configuring Pico firmware build... (${TARGET_NAME})")
 
 # Add source files
 add_executable(${TARGET_NAME} main.cpp
-                              posix.c
+                              diagnostics.cpp
                               io/buttons.cpp
                               io/joystick.cpp
-                              io/leds.cpp
-                              uros/uros_init.cpp
-                              uros/service_handlers.cpp
-                              uros/sensor_publishers.cpp
-                              selftest/leds.cpp)
+                              io/leds.c
+                              tusb/usb_descriptors.c
+                              tusb/callback_handlers.c
+                              tusb/hid_report_senders.c)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(${TARGET_NAME})
 
 # Link to libraries
 target_link_libraries(${TARGET_NAME} pico_stdlib
+                                     pico_unique_id
+                                     tinyusb_device
+                                     tinyusb_board
                                      hardware_pwm
                                      hardware_adc
-                                     pico_stdio_usb
                                      pico_stdio_uart
                                      cmsis_core
                                      FreeRTOS-Kernel
                                      FreeRTOS-Kernel-Heap4
-                                     micro_ros
                                      utils_lib
-                                     uros_utils_lib
-                                     freertos_agent_lib
-                                     uros_freertos_abstract_lib
                                      pico_log_lib
                                      cpp_freertos_alloc_lib
 )
@@ -60,7 +57,7 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_compile_definitions(${TARGET_NAME} PRIVATE
     PICO_RP2040_B0_SUPPORTED=0
     PICO_STACK_SIZE=0x1000
-    PICO_USE_STACK_GUARDS=0
+    PICO_USE_STACK_GUARDS=1
     PICO_USE_FASTEST_SUPPORTED_CLOCK=1
     PICO_DEFAULT_UART=0
     PICO_DEFAULT_UART_TX_PIN=16
@@ -68,15 +65,16 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
     PICO_DEFAULT_UART_BAUD_RATE=230400
     PICO_STDIO_ENABLE_CRLF_SUPPORT=0
     PICO_STDIO_DEFAULT_CRLF=0
+    CFG_TUSB_CONFIG_FILE="tusb/tusb_config.h"
 )
 
 # PicoTool binary information
 pico_set_program_name(${TARGET_NAME} ${TARGET_NAME})
 pico_set_program_version(${TARGET_NAME} ${PROJECT_VERSION})
-pico_set_program_description(${TARGET_NAME} "The ROS Remote Project - Main Pico Firmware")
+pico_set_program_description(${TARGET_NAME} "ROS Remote Physical Interface")
 
 # Enable STDIO over USB and UART
-pico_enable_stdio_usb(${TARGET_NAME} 1)
+pico_enable_stdio_usb(${TARGET_NAME} 0)
 pico_enable_stdio_uart(${TARGET_NAME} 1)
 
 # Enable all/pedantic warnings

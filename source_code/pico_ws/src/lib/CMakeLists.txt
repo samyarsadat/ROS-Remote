@@ -1,2 +1,4 @@
 # Library subdirectories
-add_subdirectory(Common_libs)
+add_subdirectory(Common_libs/cpp_freertos_alloc_lib)
+add_subdirectory(Common_libs/pico_log_lib)
+add_subdirectory(Common_libs/utils_lib)

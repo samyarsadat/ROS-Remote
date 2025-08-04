@@ -1,7 +1,7 @@
 /*
-    The ROS remote project - Buttons related IO helpers
-    Copyright 2025 Samyar Sadat Akhavi.
-    Written by Samyar Sadat Akhavi, 2025.
+    The ROS remote project - Sensor Data MicroROS Publishers
+    Copyright 2024-2025 Samyar Sadat Akhavi.
+    Written by Samyar Sadat Akhavi, 2024-2025.
  
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,23 +19,29 @@
 
 #pragma once
 #include "pico/stdlib.h"
-#include "config/hw_defs.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
-    extern const uint8_t momen_btn_pins_order[];
-    extern uint8_t momen_btn_states;  // Lower 5 bits used.
+    // ---- Task handles ----
+    extern TaskHandle_t report_sw_states_th, report_button_states_th, report_axes_states_th;
 
-    // ---- Button de-bouncing function ----
-    // ---- Returns true if the button should be considered pressed, false if not. ----
-    // ---- NOTE: Only for the 5 momentary push buttons! ----
-    bool button_bounce_check(uint8_t pin);
+    // ---- Toggle switch states ----
+    void report_sw_states_task(void *parameters);
 
-    // ---- Initialize momentary button pins ----
-    void init_momentary_buttons();
+    // ---- Momentary button states ----
+    void report_button_states_task(void *parameters);
+
+    // ---- Joystick axes & potentiometer state ----
+    void report_axes_states_task(void *parameters);
+
+    // ---- Timer control ----
+    void start_hid_reporters(alarm_pool_t* alarm_pool);
+    void stop_hid_reporters();
 #ifdef __cplusplus
 }
 #endif

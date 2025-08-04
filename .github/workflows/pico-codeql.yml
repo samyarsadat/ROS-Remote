@@ -1,4 +1,4 @@
-#  Raspberry Pi RP2350 MicroROS tests (RP2040 backport) - The ROS Robot Project Research.
+#  The ROS Remote Project - Pico CodeQL Workflow
 #  Copyright 2025 Samyar Sadat Akhavi
 #  Written by Samyar Sadat Akhavi, 2025.
 #
@@ -22,20 +22,50 @@ permissions:
     security-events: write
     contents: read
 
-jobs:
-    analyze_uros:
-        name: MicroROS CodeQL
-        uses: ./.github/workflows/analyze-uros.yml
-        with:
-            UROS_BUILD_SCRIPT_BRANCH: ros-jazzy
-            FIRMWARE_PATH: source_code/pico_ws
-            FREERTOS_KERNEL_IMPORT: libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake
+env:
+    FIRMWARE_PATH: source_code/pico_ws
+    FREERTOS_KERNEL_IMPORT: libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake
+    PICO_BUILD_SCRIPT_BRANCH: main
 
+jobs:
     analyze_pico:
-        name: Pico CodeQL
-        needs: analyze_uros
-        uses: ./.github/workflows/analyze-pico.yml
-        with:
-            PICO_BUILD_SCRIPT_BRANCH: main
-            FIRMWARE_PATH: source_code/pico_ws
-            FREERTOS_KERNEL_IMPORT: libfreertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake
+        name: Analyze Pico source code
+        runs-on: ubuntu-latest
+        container: samyarsadat/service_images:pico-build-action-latest
+
+        permissions:
+            security-events: write
+            contents: read
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+
+            - name: Copy FreeRTOS Kernel Import File
+              shell: bash
+              run: |
+                  cp "${FIRMWARE_PATH}/${FREERTOS_KERNEL_IMPORT}" \
+                  "${FIRMWARE_PATH}/FreeRTOS_Kernel_import.cmake"
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: c-cpp
+                  build-mode: manual
+                  queries: security-and-quality
+
+            - name: Build Pico Source Code
+              id: build
+              shell: bash
+              run: |
+                  apt-get update && apt-get install -y wget
+                  wget "https://raw.githubusercontent.com/samyarsadat/Pico-Build-Action/${PICO_BUILD_SCRIPT_BRANCH}/entrypoint.sh" -O pico-build.sh
+                  chmod +x pico-build.sh
+                  ./pico-build.sh "${FIRMWARE_PATH}" "build" "" "-DCMAKE_BUILD_TYPE=Release" "" "false" "Unix Makefiles"
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: "pico-source-code:c-cpp"

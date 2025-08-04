@@ -18,43 +18,49 @@
 */
 
 #pragma once
-#include "pico_log_lib/logger.h"
+#include "pico_log_lib/internal/common.h"
 
 
 // Logger config
-#define LOOGER_LOG_LEVEL   LOG_LVL_DEBUG
+#define LOGGER_LOG_LEVEL   LOG_LVL_DEBUG
 #define LOGGER_LOG_FORMAT  "[%TSTMP%] [%LVL%] [%FUNC%:%LINE%] [%TASK%]: %MSG%"
 
 // Repeating timer intervals
-#define SW_STATE_PUB_RT_INTERVAL       100   // In milliseconds
-#define JOYSTICK_PUB_RT_INTERVAL       100   // In milliseconds
-#define POTENTIOMETER_PUB_RT_INTERVAL  200   // In milliseconds
-#define LED_SLOW_FLASH_INTERVAL        800   // In milliseconds
-#define LED_FAST_FLASH_INTERVAL        400   // In milliseconds
-#define LED_FADE_EXEC_INTERVAL         15    // In milliseconds
+#define SW_STATE_REPORT_INTERVAL    50    // In milliseconds
+#define BTN_STATE_REPORT_INTERVAL   200   // In milliseconds
+#define AXES_STATE_REPORT_INTERVAL  50    // In milliseconds
+#define LED_SLOW_FLASH_INTERVAL     800   // In milliseconds
+#define LED_FAST_FLASH_INTERVAL     400   // In milliseconds
+#define LED_FADE_EXEC_INTERVAL      10    // In milliseconds
 
 // LEDs
 #define LED_FAST_FADING_TIME_MS  400   // In milliseconds
 #define LED_SLOW_FADING_TIME_MS  800   // In milliseconds
+#define LED_TEST_DELAY_TICKS     200   // In FreeRTOS ticks
 
 // Joystick
-#define DEFAULT_JOYSTICK_X_DEADZONE       100
-#define DEFAULT_JOYSTICK_Y_DEADZONE       100
-#define DEFAULT_JOYSTICK_X_CENTER_OFFSET  0
-#define DEFAULT_JOYSTICK_Y_CENTER_OFFSET  0
-#define JOYSTICK_Y_INVERTED               false
-#define JOYSTICK_X_INVERTED               false
+#define JOYSTICK_X_DEADZONE                100
+#define JOYSTICK_Y_DEADZONE                100
+#define JOYSTICK_X_CENTER_OFFSET           0
+#define JOYSTICK_Y_CENTER_OFFSET           0
+#define JOYSTICK_Y_INVERTED                false
+#define JOYSTICK_X_INVERTED                false
+#define JOYSTICK_AXIS_SWAP_BUTTON_ENABLED  true
+#define JOYSTICK_AXIS_SWAP_BUTTON_NUM      1
 
 // Potentiometer
 #define POTENTIOMETER_INVERTED  true
 
 // FreeRTOS task stack sizes (all in FreeRTOS words)
-#define SETUP_TASK_STACK_DEPTH   1024
-#define RESET_TASK_STACK_DEPTH   1024
-#define TIMER_TASK_STACK_DEPTH   512
-#define LED_ST_TASK_STACK_DEPTH  256
+#define SETUP_TASK_STACK_DEPTH  1024
+#define TIMER_TASK_STACK_DEPTH  512
+#define TUSB_TASK_STACK_DEPTH   2048
+
+// Status LED
+#define STAT_LED_IDLE_CHECK_MS     1000   // In milliseconds
+#define STAT_LED_SUSPENDED_MS      500    // In milliseconds
+#define STAT_LED_UNMOUNTED_MS      250    // In milliseconds
 
 // Misc.
 #define TIMER_COMMAND_TIMEOUT_T    500    // In FreeRTOS ticks
-#define WATCHDOG_RESET_TIMEOUT_MS  1000   // In milliseconds
-#define PRE_RESET_WAIT_MS          5      // In milliseconds
+#define TUSB_TASK_EXEC_RATE_MS     10     // In milliseconds
