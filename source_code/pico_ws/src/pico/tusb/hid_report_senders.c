@@ -31,7 +31,7 @@
 
 
 // Timers & tasks
-struct repeating_timer report_sw_states_rt, report_button_states_rt, report_axes_states_rt;
+struct repeating_timer report_sw_states_rt, report_axes_states_rt;
 TaskHandle_t report_sw_states_th, report_button_states_th, report_axes_states_th;
 const char* report_time_lim_msg = "HID report sending interval time limit exceeded!";
 
@@ -71,22 +71,24 @@ void report_sw_states_task(void *parameters) {
 // ---- Momentary button states ----
 void report_button_states_task(void *parameters) {
     (void) parameters;
-    uint32_t last_pub_time = 0;
     uint32_t notification_value;
-    bool last_report_successful = false;
+    bool retry_send = false;
     hid_buttons_report_t report;
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_pub_time, (BTN_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
-        
-        if (!tud_hid_ready()) {
-            continue;
+
+        if (notification_value) {
+            retry_send = true;
         }
 
-        if (report.buttons != momen_btn_states || !last_report_successful || notification_value == 1) {
+        // TODO: we don't need to check for a change here,
+        // notifications are only sent when the state changes.
+        // Also, reports aren't resent becaus of the lack of a
+        // repeating timer. This needs to be fixed.
+        if ((report.buttons != momen_btn_states || retry_send) && tud_hid_ready()) {
             report.buttons = momen_btn_states;
-            last_report_successful = tud_hid_report(BUTTONS_INPUT_REPORT_ID, &report, sizeof(report));
+            retry_send = !tud_hid_report(BUTTONS_INPUT_REPORT_ID, &report, sizeof(report));
         }
     }
 }
@@ -96,15 +98,15 @@ void report_axes_states_task(void *parameters) {
     (void) parameters;
     uint32_t last_pub_time = 0;
     uint32_t notification_value;
-    bool last_report_successful = false;
+    bool retry_send = false;
     hid_joy_axes_report_t report;
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
         CHECK_EXEC_INTERVAL(&last_pub_time, (AXES_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
 
-        if (!tud_hid_ready()) {
-            continue;
+        if (notification_value) {
+            retry_send = true;
         }
 
         hid_joy_axes_report_t new_report;
@@ -129,9 +131,9 @@ void report_axes_states_task(void *parameters) {
                               (new_report.rz  != report.rz) ||
                               (new_report.pot != report.pot);
         
-        if (report_changed || !last_report_successful || notification_value == 1) {
+        if ((report_changed || retry_send) && tud_hid_ready()) {
             report = new_report;
-            last_report_successful = tud_hid_report(AXES_INPUT_REPORT_ID, &report, sizeof(report));
+            retry_send = !tud_hid_report(AXES_INPUT_REPORT_ID, &report, sizeof(report));
         }
     }  
 }
@@ -148,7 +150,6 @@ void report_axes_states_task(void *parameters) {
     }
 
 _TASK_NOTIFIER_TIMER_CB(report_sw_states)
-_TASK_NOTIFIER_TIMER_CB(report_button_states)
 _TASK_NOTIFIER_TIMER_CB(report_axes_states)
 
 
@@ -157,13 +158,10 @@ void start_hid_reporters(alarm_pool_t* alarm_pool) {
     // Staggered start to prevent potential report congestion.
     opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, SW_STATE_REPORT_INTERVAL, report_sw_states_notify, NULL, &report_sw_states_rt));
     vTaskDelay(pdMS_TO_TICKS(TUSB_TASK_EXEC_RATE_MS));
-    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, BTN_STATE_REPORT_INTERVAL, report_button_states_notify, NULL, &report_button_states_rt));
-    vTaskDelay(pdMS_TO_TICKS(TUSB_TASK_EXEC_RATE_MS));
     opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, AXES_STATE_REPORT_INTERVAL, report_axes_states_notify, NULL, &report_axes_states_rt));
 }
 
 void stop_hid_reporters() {
     cancel_repeating_timer(&report_sw_states_rt);
-    cancel_repeating_timer(&report_button_states_rt);
     cancel_repeating_timer(&report_axes_states_rt);
 }

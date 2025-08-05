@@ -22,7 +22,7 @@ add_subdirectory(pico)
 
 # Library options
 set(PICO_LOG_FREERTOS 1)
-add_compile_definitions(PERF_PROFILE_EN=1)
+add_compile_definitions(PERF_PROFILE_EN)
 
 # Custom library subdirectories
 add_subdirectory(lib)

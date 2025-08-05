@@ -27,7 +27,6 @@
 
 // Repeating timer intervals
 #define SW_STATE_REPORT_INTERVAL    50    // In milliseconds
-#define BTN_STATE_REPORT_INTERVAL   200   // In milliseconds
 #define AXES_STATE_REPORT_INTERVAL  50    // In milliseconds
 #define LED_SLOW_FLASH_INTERVAL     800   // In milliseconds
 #define LED_FAST_FLASH_INTERVAL     400   // In milliseconds
@@ -36,7 +35,7 @@
 // LEDs
 #define LED_FAST_FADING_TIME_MS  400   // In milliseconds
 #define LED_SLOW_FADING_TIME_MS  800   // In milliseconds
-#define LED_TEST_DELAY_TICKS     200   // In FreeRTOS ticks
+#define LED_TEST_DELAY_TICKS     100   // In FreeRTOS ticks
 
 // Joystick
 #define JOYSTICK_X_DEADZONE                100
@@ -50,6 +49,10 @@
 
 // Potentiometer
 #define POTENTIOMETER_INVERTED  true
+
+// Momentary buttons
+#define BUTTON_BOUNCE_TIME_MS    50   // De-bouncing bounce time, in milliseconds
+#define BUTTON_POLL_INTERVAL_MS  10   // Polling task exec. interval, in milliseconds
 
 // FreeRTOS task stack sizes (all in FreeRTOS words)
 #define SETUP_TASK_STACK_DEPTH  1024

@@ -24,7 +24,7 @@ message("Configuring Pico firmware build... (${TARGET_NAME})")
 # Add source files
 add_executable(${TARGET_NAME} main.cpp
                               diagnostics.cpp
-                              io/buttons.cpp
+                              io/buttons.c
                               io/joystick.cpp
                               io/leds.c
                               tusb/usb_descriptors.c

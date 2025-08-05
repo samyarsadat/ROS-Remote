@@ -50,7 +50,6 @@
 #define LEFT_RED_KD2_BTN_PIN         21
 #define LEFT_GREEN_LEFT_BTN_PIN      22
 #define NUMBER_OF_MOMENTARY_BUTTONS  5     // Total number of momentary buttons
-#define BUTTON_BOUNCE_TIME_MS        200   // De-bouncing bounce time, in milliseconds
 
 // Joystick
 #define JOYSTICK_Y_AXIS_PIN  26

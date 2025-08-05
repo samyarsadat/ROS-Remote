@@ -77,19 +77,19 @@ led_state_t get_led_state(uint8_t index) {
 }
 
 // ---- Self-test ----
-void leds_test() {
+void leds_test_blocking() {
     led_control_override = true;
 
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         gpio_put_pwm(led_pins_order[i], 0);
     }
 
-    vTaskDelay(LED_TEST_DELAY_TICKS);
-
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         gpio_put_pwm(led_pins_order[i], 65535);
         vTaskDelay(LED_TEST_DELAY_TICKS);
     }
+
+    vTaskDelay(LED_TEST_DELAY_TICKS * 2);
 
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
         gpio_put_pwm(led_pins_order[i], 0);

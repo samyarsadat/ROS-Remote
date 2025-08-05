@@ -33,6 +33,7 @@
 #include "tusb.h"
 #include "state_management.h"
 #include "pico/unique_id.h"
+#include "utils_lib/perf/exec_interval.h"
 
 
 // ---- Global variables ----
@@ -52,18 +53,6 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName) {
 // ---- FreeRTOS malloc failure hook ----
 void vApplicationMallocFailedHook() {
     panic("FreeRTOS malloc failed!");
-}
-
-// ---- GPIO IRQ callback ----
-void gpio_irq_call(uint pin, uint32_t events) {
-    (void) events;
-
-    // Momentary button IRQs
-    if (button_bounce_check(pin)) {
-        BaseType_t higher_prio_woken;
-        xTaskNotifyFromISR(report_button_states_th, static_cast<uint32_t>(pin), eSetValueWithOverwrite, &higher_prio_woken);
-        portYIELD_FROM_ISR(higher_prio_woken);
-    }
 }
 
 // ---- LED flash state handler ----
@@ -94,8 +83,11 @@ void tusb_spin_task(void *parameters) {
     (void) parameters;
     LOG(LOG_LVL_INFO, "TinyUSB task started!");
     TickType_t wake = xTaskGetTickCount();
+    uint32_t last_exec_time = 0;
 
     while (true) {
+        CHECK_EXEC_INTERVAL(&last_exec_time, (TUSB_TASK_EXEC_RATE_MS + 2), "TinyUSB task execution time limit exceeded!");
+
         if (tud_task_event_ready()) {
             tud_task();
         }
@@ -126,13 +118,15 @@ void setup(void *parameters) {
     init_pin(JOYSTICK_X_AXIS_PIN, INPUT_ADC);
     init_pin(POTENTIOMETER_PIN, INPUT_ADC);
     init_leds();
-
-    gpio_set_irq_callback(gpio_irq_call);
     init_momentary_buttons();
 
     // ADC init
     adc_init();
     opassert(adc_init_mutex());
+
+    // Perform LED test
+    LOG(LOG_LVL_INFO, "Performing LED test.");
+    leds_test_blocking();
 
     // Create FreeRTOS timers
     LOG(LOG_LVL_INFO, "Creating FreeRTOS software timers.");
@@ -140,13 +134,14 @@ void setup(void *parameters) {
     assert(status_led_timer != nullptr);
     led_timers_init();
 
-    // Start the waiting for MicroROS agent LED blink timer
+    // Start the status LED blink timer
     (void) xTimerStart(status_led_timer, TIMER_COMMAND_TIMEOUT_T);
 
     // TinyUSB initialization
     LOG(LOG_LVL_INFO, "TinyUSB initialization.");
     tusb_init();
     (void) xTaskCreate(tusb_spin_task, "tusb_task", TUSB_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, &tusb_spin_task_th);
+    vTaskCoreAffinitySet(tusb_spin_task_th, 1 << 0);
 
     // Delete setup task
     vTaskDelete(nullptr);
@@ -159,7 +154,7 @@ void setup1(void *parameters) {
 
     // Create alarm pool for core 1 timers
     LOG(LOG_LVL_INFO, "Creating core 1 alarm pool.");
-    core_1_alarm_pool = alarm_pool_create(2, 8);
+    core_1_alarm_pool = alarm_pool_create(2, 3);
 
     // Delete setup task
     vTaskDelete(nullptr);
@@ -175,7 +170,7 @@ void enter_state_resumed() {
         led_timers_start();
         leds_enable_override(false);
         set_led_outputs();
-        irq_set_enabled(IO_IRQ_BANK0, true);
+        vTaskResume(button_poll_task_th);
         resume_init = true;
     }
 }
@@ -187,7 +182,7 @@ void enter_state_suspended() {
         stop_hid_reporters();
         led_timers_stop();
         leds_enable_override(true);
-        irq_set_enabled(IO_IRQ_BANK0, false);
+        vTaskSuspend(button_poll_task_th);
 
         for (uint i = 0; i < NUMBER_OF_LEDS; i++) {
             gpio_put_pwm(led_pins_order[i], 0);
@@ -203,6 +198,7 @@ void enter_state_mounted() {
         (void) xTaskCreate(report_axes_states_task, "axes_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &report_axes_states_th);
         (void) xTaskCreate(report_button_states_task, "button_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &report_button_states_th);
         (void) xTaskCreate(report_sw_states_task, "switch_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &report_sw_states_th);
+        (void) xTaskCreate(button_poll_task, "button_poll", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &button_poll_task_th);
         mount_init = true;
 
         enter_state_resumed();
@@ -217,6 +213,11 @@ void enter_state_unmounted() {
         vTaskDelete(report_axes_states_th);
         vTaskDelete(report_button_states_th);
         vTaskDelete(report_sw_states_th);
+        vTaskDelete(button_poll_task_th);
+        report_axes_states_th = nullptr;
+        report_button_states_th = nullptr;
+        report_sw_states_th = nullptr;
+        button_poll_task_th = nullptr;
 
         for (uint i = 0; i < NUMBER_OF_LEDS; i++) {
             set_led_state(i, LED_SOLID_PWM, 0);

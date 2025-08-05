@@ -66,7 +66,7 @@ extern "C"
     led_state_t get_led_state(uint8_t index);
 
     // ---- Self-test ----
-    void leds_test();
+    void leds_test_blocking();
 
     // ---- Set all LED outputs ----
     // ---- This function only handles LEDs that are set to mode 0 (solid PWM) ----

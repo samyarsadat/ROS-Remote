@@ -19,7 +19,8 @@
 
 #pragma once
 #include "pico/stdlib.h"
-#include "config/hw_defs.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 
 #ifdef __cplusplus
@@ -28,11 +29,10 @@ extern "C"
 #endif
     extern const uint8_t momen_btn_pins_order[];
     extern uint8_t momen_btn_states;  // Lower 5 bits used.
+    extern TaskHandle_t button_poll_task_th;
 
-    // ---- Button de-bouncing function ----
-    // ---- Returns true if the button should be considered pressed, false if not. ----
-    // ---- NOTE: Only for the 5 momentary push buttons! ----
-    bool button_bounce_check(uint8_t pin);
+    // ---- Button polling task ----
+    void button_poll_task(void *parameters);
 
     // ---- Initialize momentary button pins ----
     void init_momentary_buttons();

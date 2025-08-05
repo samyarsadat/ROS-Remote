@@ -53,6 +53,8 @@ typedef struct {
 } __attribute__((packed)) hid_led_report_t;
 
 
+// TODO: separate the potentiometer into its own report.
+// TODO: expose two HID interfaces: one for the axes/buttons, and one for the LEDs.
 static const uint8_t hid_report_desc[] = {
     0x05, 0x01,   // Usage Page: Generic Desktop
     0x09, 0x04,   // Usage: Joystick
