@@ -37,17 +37,17 @@ const uint8_t led_pins_order[NUMBER_OF_LEDS] = {
 
 
 // ---- Initialize LEDs and LED state structs ----
-void init_leds() {
+void init_led_pins() {
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
+        init_pin(led_pins_order[i], OUTPUT_PWM);
+        gpio_put_pwm(led_pins_order[i], 0);
+
         led_states[i].pin = led_pins_order[i];
         led_states[i].mode = 0;
         led_states[i].pwm_current_out = 0;
         led_states[i].pwm_fade_steps_per_cycle = 0;
         led_states[i].pwm_set_out = 0;
         led_states[i].led_fade_rising = true;
-
-        init_pin(led_pins_order[i], OUTPUT_PWM);
-        gpio_put_pwm(led_pins_order[i], 0);
     }
 }
 

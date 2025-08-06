@@ -52,23 +52,36 @@ void tud_resume_cb() {
 
 // Set an LEDs state from an HID report.
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
-    (void) instance;
-    
     if (report_type == HID_REPORT_TYPE_OUTPUT) {
-        if (report_id == LED_OUTPUT_REPORT_ID && bufsize == sizeof(hid_led_report_t)) {
-            hid_led_report_t* led_cmd = (hid_led_report_t*) buffer;
-            
-            if (led_cmd->index < NUMBER_OF_LEDS && led_cmd->mode <= LED_FAST_FADE) {
-                set_led_state(led_cmd->index, (LED_MODE_t) led_cmd->mode, led_cmd->pwm_out);
-                set_led_output_index(led_cmd->index);
-            }
-        } else if (report_id == INPUT_POLL_REPORT_ID) {
-            // Notify the tasks to re-send their reports.
-            LOG(LOG_LVL_DEBUG, "Received input poll report, notifying tasks to send reports.");
-            assert(report_axes_states_th != NULL && report_button_states_th != NULL && report_sw_states_th != NULL);
-            (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);
-            (void) xTaskNotify(report_button_states_th, 1, eSetValueWithOverwrite);
-            (void) xTaskNotify(report_sw_states_th, 1, eSetValueWithOverwrite);
+        switch (instance) {
+            case ITF_NUM_JOYSTICK_HID:
+                if (report_id == INPUT_POLL_OUTPUT_REPORT_ID) {
+                    // Notify the tasks to re-send their reports.
+                    LOG(LOG_LVL_DEBUG, "Received input poll report, notifying tasks to send reports.");
+                    assert(report_axes_states_th != NULL && report_button_states_th != NULL && 
+                        report_sw_states_th != NULL && report_pot_state_th != NULL);
+                    
+                    (void) xTaskNotifyGive(report_button_states_th);
+                    (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);
+                    (void) xTaskNotify(report_sw_states_th, 1, eSetValueWithOverwrite);
+                    (void) xTaskNotify(report_pot_state_th, 1, eSetValueWithOverwrite);
+                }
+
+                break;
+            case ITF_NUM_LEDS_HID:
+                if (report_id == LED_OUTPUT_REPORT_ID && bufsize == sizeof(hid_led_report_t)) {
+                    hid_led_report_t* led_cmd = (hid_led_report_t*) buffer;
+                    
+                    if (led_cmd->index < NUMBER_OF_LEDS && led_cmd->mode <= LED_FAST_FADE) {
+                        set_led_state(led_cmd->index, (LED_MODE_t) led_cmd->mode, led_cmd->pwm_out);
+                        set_led_output_index(led_cmd->index);
+                    }
+                } else if (report_id == LED_GET_STATES_OUTPUT_REPORT_ID) {
+                    assert(report_led_states_th != NULL);
+                    (void) xTaskNotifyGive(report_led_states_th);
+                }
+
+                break;
         }
     }
 }
@@ -90,23 +103,34 @@ void tud_hid_report_failed_cb(uint8_t instance, hid_report_type_t report_type, u
 
     if (report_type == HID_REPORT_TYPE_INPUT) {
         uint8_t report_id = report[0];
-        LOG(LOG_LVL_ERROR, "HID input report transfer failed! Report ID: %d", report_id);
 
-        // Notify the corresponding task to retry sending the report.
-        // A notification value of 1 causes the report to be sent, even
-        // if none of the report values have changed.
-        switch (report_id) {
-            case AXES_INPUT_REPORT_ID:
-                (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);
+        switch (instance) {
+            case ITF_NUM_JOYSTICK_HID:
+                LOG(LOG_LVL_ERROR, "HID input report transfer failed! Report ID: %d", report_id);
+
+                // Notify the corresponding task to retry sending the report.
+                // A notification value of 1 causes the report to be sent, even
+                // if none of the report values have changed.
+                switch (report_id) {
+                    case BUTTONS_INPUT_REPORT_ID:
+                        (void) xTaskNotifyGive(report_button_states_th);
+                        break;
+                    case AXES_INPUT_REPORT_ID:
+                        (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);
+                        break;
+                    case SWITCHES_INPUT_REPORT_ID:
+                        (void) xTaskNotify(report_sw_states_th, 1, eSetValueWithOverwrite);
+                        break;
+                    case POT_INPUT_REPORT_ID:
+                        (void) xTaskNotify(report_pot_state_th, 1, eSetValueWithOverwrite);
+                        break;
+                }
+
                 break;
-            case BUTTONS_INPUT_REPORT_ID:
-                (void) xTaskNotify(report_button_states_th, 1, eSetValueWithOverwrite);
-                break;
-            case SWITCHES_INPUT_REPORT_ID:
-                (void) xTaskNotify(report_sw_states_th, 1, eSetValueWithOverwrite);
-                break;
-            default:
-                LOG(LOG_LVL_WARN, "Unknown HID input report ID.");
+            case ITF_NUM_LEDS_HID:
+                if (report_id == LED_STATES_INPUT_REPORT_ID) {
+                    (void) xTaskNotifyGive(report_led_states_th);
+                }
                 break;
         }
     }

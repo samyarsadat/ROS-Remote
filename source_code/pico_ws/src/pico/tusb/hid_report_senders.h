@@ -28,16 +28,13 @@ extern "C"
 {
 #endif
     // ---- Task handles ----
-    extern TaskHandle_t report_sw_states_th, report_button_states_th, report_axes_states_th;
+    extern TaskHandle_t report_sw_states_th, report_button_states_th, 
+                        report_axes_states_th, report_pot_state_th,
+                        report_led_states_th;
 
-    // ---- Toggle switch states ----
-    void report_sw_states_task(void *parameters);
-
-    // ---- Momentary button states ----
-    void report_button_states_task(void *parameters);
-
-    // ---- Joystick axes & potentiometer state ----
-    void report_axes_states_task(void *parameters);
+    // ---- Reporter tasks ----
+    void create_hid_reporter_tasks();
+    void delete_hid_reporter_tasks();
 
     // ---- Timer control ----
     void start_hid_reporters(alarm_pool_t* alarm_pool);

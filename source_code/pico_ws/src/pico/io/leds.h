@@ -32,7 +32,7 @@ typedef enum {
     LED_FAST_FADE
 } LED_MODE_t;
 
-typedef struct led_state {
+typedef struct {
     uint8_t pin;
     LED_MODE_t mode;
     uint16_t pwm_set_out;
@@ -50,7 +50,7 @@ extern "C"
     extern const uint8_t led_pins_order[];
 
     // ---- Initialize LEDs and LED state objects ----
-    void init_leds();
+    void init_led_pins();
 
     // ---- Enable LED output override ----
     void leds_enable_override(bool enable);

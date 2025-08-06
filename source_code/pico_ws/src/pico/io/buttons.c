@@ -29,8 +29,8 @@
 
 // Last button state change times (Last State Change)
 uint32_t momen_btn_lsc[NUMBER_OF_MOMENTARY_BUTTONS] = {0};
-uint8_t momen_btn_states = 0;  // Lower 5 bits used.
-TaskHandle_t button_poll_task_th;
+uint8_t momen_btn_ls_state = 0, momen_btn_states = 0;  // LS State: Last Sent State - Lower 5 bits used.
+TaskHandle_t button_poll_task_th = NULL;
 const uint8_t momen_btn_pins_order[NUMBER_OF_MOMENTARY_BUTTONS] = {
     LEFT_GREEN_RIGHT_BTN_PIN, LEFT_RED_BTN_PIN, LEFT_GREEN_KD2_BTN_PIN,
     LEFT_RED_KD2_BTN_PIN, LEFT_GREEN_LEFT_BTN_PIN
@@ -47,6 +47,11 @@ void button_poll_task(void *parameters) {
     while (true) {
         CHECK_EXEC_INTERVAL(&last_exec_time, (BUTTON_POLL_INTERVAL_MS + 2), "Button polling interval time limit exceeded!");
         curr_time = xTaskGetTickCount();
+
+        if (momen_btn_states != momen_btn_ls_state) {
+            xTaskNotify(report_button_states_th, 0, eNoAction);
+            continue;   // Skip this cycle. We don't want to send two notifications this close to each other.
+        }
 
         for (int i = 0; i < NUMBER_OF_MOMENTARY_BUTTONS; i++) {
             btn_state = !gpio_get(momen_btn_pins_order[i]);
@@ -69,8 +74,20 @@ void button_poll_task(void *parameters) {
 }
 
 // ---- Initialize momentary button pins ----
-void init_momentary_buttons() {
+void init_momentary_button_pins() {
     for (int i = 0; i < NUMBER_OF_MOMENTARY_BUTTONS; i++) {
         init_pin(momen_btn_pins_order[i], INPUT_PULLUP);
     }
+}
+
+// ---- Task creation & deletion ----
+void create_button_poll_task() {
+    assert(button_poll_task_th == NULL);
+    (void) xTaskCreate(button_poll_task, "button_poll", TIMER_TASK_STACK_DEPTH, NULL, BUTTON_POLL_TASK_PRIORITY, &button_poll_task_th);
+}
+
+void delete_button_poll_task() {
+    assert(button_poll_task_th != NULL);
+    vTaskDelete(button_poll_task_th);
+    button_poll_task_th = NULL;
 }

@@ -28,14 +28,69 @@
 #include "utils_lib/perf/exec_interval.h"
 #include "tusb.h"
 #include "diagnostics.h"
+#include "io/leds.h"
 
 
 // Timers & tasks
-struct repeating_timer report_sw_states_rt, report_axes_states_rt;
-TaskHandle_t report_sw_states_th, report_button_states_th, report_axes_states_th;
+struct repeating_timer report_sw_states_rt, report_axes_states_rt, report_pot_state_rt;
+TaskHandle_t report_sw_states_th = NULL, report_button_states_th = NULL, 
+             report_axes_states_th = NULL, report_pot_state_th = NULL,
+             report_led_states_th = NULL;
 const char* report_time_lim_msg = "HID report sending interval time limit exceeded!";
 
 
+// ******** EXTERNALLY TRIGGERED HID REPORT SENDERS ********
+// ---- Momentary button states ----
+void report_button_states_task(void *parameters) {
+    (void) parameters;
+    hid_buttons_report_t report;
+
+    while (true) {
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+        
+        if (tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
+            report.buttons = momen_btn_states;
+            
+            if (tud_hid_n_report(ITF_NUM_JOYSTICK_HID, BUTTONS_INPUT_REPORT_ID, &report, sizeof(report))) {
+                momen_btn_ls_state = momen_btn_states;
+            }
+        }
+    }
+}
+
+void report_led_states_task(void *parameters) {
+    (void) parameters;
+    hid_led_states_report_t report;
+
+    while (true) {
+        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+
+        if (tud_hid_n_ready(ITF_NUM_LEDS_HID)) {
+            for (int i = 0; i < NUMBER_OF_LEDS; i++) {
+                led_state_t state = get_led_state(i);
+                report.mode[i] = state.mode;
+                report.pwm_out[i] = state.pwm_set_out;
+            }
+
+            if (tud_hid_n_report(ITF_NUM_LEDS_HID, LED_STATES_INPUT_REPORT_ID, &report, sizeof(report))) {
+                return;
+            }
+        }
+
+        (void) xTaskNotifyGive(report_led_states_th);
+
+        // We want to avoid sending two reports in close succession.
+        // Other reporters don't need delays, as their respective timers
+        // act as a sufficient cooldown. This isn't ideal, but it's okay.
+        // The task notification array size is 3, and I really doubt that
+        // any host-side program is going to request LED states twice within 10ms.
+        // Besides, the TUSB spin task is only executed every 10ms anyway.
+        vTaskDelay(pdMS_TO_TICKS(LED_STATE_REPORT_RETRY_COOLDOWN_MS));
+    }
+}
+
+
+// ******** TIMER-BASED HID REPORT SENDERS ********
 // ---- Toggle switch states ----
 void report_sw_states_task(void *parameters) {
     (void) parameters;
@@ -61,34 +116,9 @@ void report_sw_states_task(void *parameters) {
         state |= (!gpio_get(RIGHT_KD2_BTN_PIN)       << 3);
         state |= (!gpio_get(RIGHT_TOP_TOGGLE_SW_PIN) << 4);
 
-        if ((report.switches != state || retry_send) && tud_hid_ready()) {
+        if ((report.switches != state || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report.switches = state;
-            retry_send = !tud_hid_report(SWITCHES_INPUT_REPORT_ID, &report, sizeof(report));
-        }
-    }
-}
-
-// ---- Momentary button states ----
-void report_button_states_task(void *parameters) {
-    (void) parameters;
-    uint32_t notification_value;
-    bool retry_send = false;
-    hid_buttons_report_t report;
-
-    while (true) {
-        xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-
-        if (notification_value) {
-            retry_send = true;
-        }
-
-        // TODO: we don't need to check for a change here,
-        // notifications are only sent when the state changes.
-        // Also, reports aren't resent becaus of the lack of a
-        // repeating timer. This needs to be fixed.
-        if ((report.buttons != momen_btn_states || retry_send) && tud_hid_ready()) {
-            report.buttons = momen_btn_states;
-            retry_send = !tud_hid_report(BUTTONS_INPUT_REPORT_ID, &report, sizeof(report));
+            retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, SWITCHES_INPUT_REPORT_ID, &report, sizeof(report));
         }
     }
 }
@@ -111,7 +141,6 @@ void report_axes_states_task(void *parameters) {
 
         hid_joy_axes_report_t new_report;
         new_report.y = get_joystick_y_val();
-        new_report.pot = get_potentiometer_val();
 
         #if JOYSTICK_AXIS_SWAP_BUTTON_ENABLED
         if ((momen_btn_states >> JOYSTICK_AXIS_SWAP_BUTTON_NUM) & 1) {
@@ -126,16 +155,40 @@ void report_axes_states_task(void *parameters) {
         new_report.x = 0;
         #endif
 
-        bool report_changed = (new_report.x   != report.x) ||
-                              (new_report.y   != report.y) ||
-                              (new_report.rz  != report.rz) ||
-                              (new_report.pot != report.pot);
+        bool report_changed = (new_report.x  != report.x) ||
+                              (new_report.y  != report.y) ||
+                              (new_report.rz != report.rz);
         
-        if ((report_changed || retry_send) && tud_hid_ready()) {
+        if ((report_changed || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report = new_report;
-            retry_send = !tud_hid_report(AXES_INPUT_REPORT_ID, &report, sizeof(report));
+            retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, AXES_INPUT_REPORT_ID, &report, sizeof(report));
         }
     }  
+}
+
+// ---- Potentiometer state ----
+void report_pot_state_task(void *parameters) {
+    (void) parameters;
+    uint32_t last_pub_time = 0;
+    uint32_t notification_value;
+    bool retry_send = false;
+    hid_pot_report_t report;
+
+    while (true) {
+        xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
+        CHECK_EXEC_INTERVAL(&last_pub_time, (POT_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+
+        if (notification_value) {
+            retry_send = true;
+        }
+
+        uint16_t pot_val = get_potentiometer_val();
+
+        if ((report.pot != pot_val || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
+            report.pot = pot_val;
+            retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, POT_INPUT_REPORT_ID, &report, sizeof(report));
+        }
+    }
 }
 
 
@@ -151,7 +204,7 @@ void report_axes_states_task(void *parameters) {
 
 _TASK_NOTIFIER_TIMER_CB(report_sw_states)
 _TASK_NOTIFIER_TIMER_CB(report_axes_states)
-
+_TASK_NOTIFIER_TIMER_CB(report_pot_state)
 
 // ---- Timer control ----
 void start_hid_reporters(alarm_pool_t* alarm_pool) {
@@ -159,9 +212,47 @@ void start_hid_reporters(alarm_pool_t* alarm_pool) {
     opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, SW_STATE_REPORT_INTERVAL, report_sw_states_notify, NULL, &report_sw_states_rt));
     vTaskDelay(pdMS_TO_TICKS(TUSB_TASK_EXEC_RATE_MS));
     opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, AXES_STATE_REPORT_INTERVAL, report_axes_states_notify, NULL, &report_axes_states_rt));
+    vTaskDelay(pdMS_TO_TICKS(TUSB_TASK_EXEC_RATE_MS));
+    opassert(alarm_pool_add_repeating_timer_ms(alarm_pool, POT_STATE_REPORT_INTERVAL, report_pot_state_notify, NULL, &report_pot_state_rt));
 }
 
 void stop_hid_reporters() {
     cancel_repeating_timer(&report_sw_states_rt);
     cancel_repeating_timer(&report_axes_states_rt);
+    cancel_repeating_timer(&report_pot_state_rt);
+}
+
+
+// ******** REPORTER TASK CREATION & DELETION ********
+void create_hid_reporter_tasks() {
+    assert(report_sw_states_th == NULL && report_button_states_th == NULL &&
+           report_axes_states_th == NULL && report_pot_state_th == NULL &&
+           report_led_states_th == NULL);
+    
+    (void) xTaskCreate(report_button_states_task, "button_report", TIMER_TASK_STACK_DEPTH, NULL, BUTTON_REPORT_TASK_PRIORITY, &report_button_states_th);
+    (void) xTaskCreate(report_axes_states_task, "axes_report", TIMER_TASK_STACK_DEPTH, NULL, AXES_REPORT_TASK_PRIORITY, &report_axes_states_th);
+    (void) xTaskCreate(report_sw_states_task, "switch_report", TIMER_TASK_STACK_DEPTH, NULL, SW_REPORT_TASK_PRIORITY, &report_sw_states_th);
+    (void) xTaskCreate(report_pot_state_task, "pot_report", TIMER_TASK_STACK_DEPTH, NULL, POT_REPORT_TASK_PRIORITY, &report_pot_state_th);
+    (void) xTaskCreate(report_led_states_task, "led_states_report", TIMER_TASK_STACK_DEPTH, NULL, LED_STATES_REPORT_TASK_PRIORITY, &report_led_states_th);
+}
+
+void delete_hid_reporter_tasks() {
+    assert(report_sw_states_th != NULL && report_button_states_th != NULL && 
+           report_axes_states_th != NULL && report_pot_state_th != NULL &&
+           report_led_states_th != NULL);
+    
+    vTaskDelete(report_sw_states_th);
+    report_sw_states_th = NULL;
+
+    vTaskDelete(report_button_states_th);
+    report_button_states_th = NULL;
+
+    vTaskDelete(report_axes_states_th);
+    report_axes_states_th = NULL;
+
+    vTaskDelete(report_pot_state_th);
+    report_pot_state_th = NULL;
+
+    vTaskDelete(report_led_states_th);
+    report_led_states_th = NULL;
 }

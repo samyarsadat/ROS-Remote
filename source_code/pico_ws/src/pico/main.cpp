@@ -55,6 +55,7 @@ void vApplicationMallocFailedHook() {
     panic("FreeRTOS malloc failed!");
 }
 
+
 // ---- LED flash state handler ----
 void status_led_timer_call(TimerHandle_t timer) {
     TickType_t timer_period;
@@ -86,7 +87,7 @@ void tusb_spin_task(void *parameters) {
     uint32_t last_exec_time = 0;
 
     while (true) {
-        CHECK_EXEC_INTERVAL(&last_exec_time, (TUSB_TASK_EXEC_RATE_MS + 2), "TinyUSB task execution time limit exceeded!");
+        CHECK_EXEC_INTERVAL(&last_exec_time, (TUSB_TASK_EXEC_RATE_MS + 2), "USB task execution time limit exceeded!");
 
         if (tud_task_event_ready()) {
             tud_task();
@@ -117,8 +118,8 @@ void setup(void *parameters) {
     init_pin(JOYSTICK_Y_AXIS_PIN, INPUT_ADC);
     init_pin(JOYSTICK_X_AXIS_PIN, INPUT_ADC);
     init_pin(POTENTIOMETER_PIN, INPUT_ADC);
-    init_leds();
-    init_momentary_buttons();
+    init_momentary_button_pins();
+    init_led_pins();
 
     // ADC init
     adc_init();
@@ -130,7 +131,7 @@ void setup(void *parameters) {
 
     // Create FreeRTOS timers
     LOG(LOG_LVL_INFO, "Creating FreeRTOS software timers.");
-    status_led_timer = xTimerCreate("agent_wait_led", pdMS_TO_TICKS(STAT_LED_UNMOUNTED_MS), pdTRUE, nullptr, status_led_timer_call);
+    status_led_timer = xTimerCreate("usb_status_led", pdMS_TO_TICKS(STAT_LED_UNMOUNTED_MS), pdTRUE, nullptr, status_led_timer_call);
     assert(status_led_timer != nullptr);
     led_timers_init();
 
@@ -140,7 +141,7 @@ void setup(void *parameters) {
     // TinyUSB initialization
     LOG(LOG_LVL_INFO, "TinyUSB initialization.");
     tusb_init();
-    (void) xTaskCreate(tusb_spin_task, "tusb_task", TUSB_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, &tusb_spin_task_th);
+    (void) xTaskCreate(tusb_spin_task, "tusb_task", TUSB_TASK_STACK_DEPTH, nullptr, TUSB_TASK_PRIORITY, &tusb_spin_task_th);
     vTaskCoreAffinitySet(tusb_spin_task_th, 1 << 0);
 
     // Delete setup task
@@ -195,10 +196,9 @@ void enter_state_suspended() {
 void enter_state_mounted() {
     if (!mount_init) {
         LOG(LOG_LVL_INFO, "Entering mounted state, creating reporter tasks.");
-        (void) xTaskCreate(report_axes_states_task, "axes_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &report_axes_states_th);
-        (void) xTaskCreate(report_button_states_task, "button_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 2, &report_button_states_th);
-        (void) xTaskCreate(report_sw_states_task, "switch_report", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &report_sw_states_th);
-        (void) xTaskCreate(button_poll_task, "button_poll", TIMER_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 3, &button_poll_task_th);
+        
+        create_hid_reporter_tasks();
+        create_button_poll_task();
         mount_init = true;
 
         enter_state_resumed();
@@ -208,16 +208,10 @@ void enter_state_mounted() {
 void enter_state_unmounted() {
     if (mount_init) {
         LOG(LOG_LVL_INFO, "Entering unmounted state.");
-        enter_state_suspended();
         
-        vTaskDelete(report_axes_states_th);
-        vTaskDelete(report_button_states_th);
-        vTaskDelete(report_sw_states_th);
-        vTaskDelete(button_poll_task_th);
-        report_axes_states_th = nullptr;
-        report_button_states_th = nullptr;
-        report_sw_states_th = nullptr;
-        button_poll_task_th = nullptr;
+        enter_state_suspended();
+        delete_hid_reporter_tasks();
+        delete_button_poll_task();
 
         for (uint i = 0; i < NUMBER_OF_LEDS; i++) {
             set_led_state(i, LED_SOLID_PWM, 0);
@@ -246,8 +240,8 @@ int main() {
 
     // Setup function tasks
     LOG(LOG_LVL_INFO, "Creating setup tasks.");
-    xTaskCreateAffinitySet(setup, "setup_core0", SETUP_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, (1 << 0), nullptr);
-    xTaskCreateAffinitySet(setup1, "setup_core1", SETUP_TASK_STACK_DEPTH, nullptr, configMAX_PRIORITIES - 1, (1 << 1), nullptr);
+    xTaskCreateAffinitySet(setup, "setup_core0", SETUP_TASK_STACK_DEPTH, nullptr, SETUP_TASK_PRIORITY, (1 << 0), nullptr);
+    xTaskCreateAffinitySet(setup1, "setup_core1", SETUP_TASK_STACK_DEPTH, nullptr, SETUP_TASK_PRIORITY, (1 << 1), nullptr);
 
     // Start FreeRTOS scheduler
     LOG(LOG_LVL_INFO, "Starting FreeRTOS scheduler...");

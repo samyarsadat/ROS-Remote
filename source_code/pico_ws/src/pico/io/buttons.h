@@ -28,14 +28,15 @@ extern "C"
 {
 #endif
     extern const uint8_t momen_btn_pins_order[];
-    extern uint8_t momen_btn_states;  // Lower 5 bits used.
+    extern uint8_t momen_btn_ls_state, momen_btn_states;  // Lower 5 bits used.
     extern TaskHandle_t button_poll_task_th;
 
-    // ---- Button polling task ----
-    void button_poll_task(void *parameters);
-
     // ---- Initialize momentary button pins ----
-    void init_momentary_buttons();
+    void init_momentary_button_pins();
+
+    // ---- Task creation & deletion ----
+    void create_button_poll_task();
+    void delete_button_poll_task();
 #ifdef __cplusplus
 }
 #endif

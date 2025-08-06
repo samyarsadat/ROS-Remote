@@ -29,13 +29,15 @@
 
 
 // The USB VID and PID used here are for testing purposes only!
-#define USB_PID            0x0001   // USB Product ID
-#define USB_VID            0x1FC9   // USB Vendor ID
-#define USB_BCD            0x0200   // USB Spec. Release Number
-#define DEVICE_VER         0x0100   // Device Version
-#define DEVICE_CURRENT     500      // Device Current (mA)
-#define MANUFACTURER_NAME  "Samyar Projects"
-#define PRODUCT_NAME       "ROS Remote Interface"
+#define USB_PID                 0x0001   // USB Product ID
+#define USB_VID                 0x1FC9   // USB Vendor ID
+#define USB_BCD                 0x0200   // USB Spec. Release Number
+#define DEVICE_VER              0x0100   // Device Version
+#define DEVICE_CURRENT          500      // Device Current (mA)
+#define MANUFACTURER_NAME       "Samyar Projects"
+#define PRODUCT_NAME            "The ROS Remote"
+#define JOYSTICK_HID_ITF_NAME   "ROS Remote Joystick Interface"
+#define LED_HID_ITF_NAME        "ROS Remote LED Interface"
 
 
 //--------------------------------------------------------------------+
@@ -74,25 +76,28 @@ uint8_t const* tud_descriptor_device_cb(void) {
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const* tud_hid_descriptor_report_cb(uint8_t itf) {
-    (void) itf;
-    return hid_report_desc;
+    switch (itf) {
+        case ITF_NUM_JOYSTICK_HID:
+            return hid_joystick_report_desc;
+        case ITF_NUM_LEDS_HID:
+            return hid_leds_report_desc;
+        default:
+            return NULL;  // Unknown interface
+    }
 }
 
 //--------------------------------------------------------------------+
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-enum {
-    ITF_NUM_HID,
-    ITF_NUM_TOTAL
-};
-
-#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN)
-#define EPNUM_HID  0x81   // Endpoint number
+#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
+#define EPNUM_HID_JOYSTICK  0x81   // Endpoint number (joystick)
+#define EPNUM_HID_LEDS      0x82   // Endpoint number (LEDs)
 
 uint8_t const desc_configuration[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, DEVICE_CURRENT),
-    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, sizeof(hid_report_desc), EPNUM_HID, CFG_TUD_HID_EP_BUFSIZE, 10)
+    TUD_HID_DESCRIPTOR(ITF_NUM_JOYSTICK_HID, 4, HID_ITF_PROTOCOL_NONE, sizeof(hid_joystick_report_desc), EPNUM_HID_JOYSTICK, CFG_TUD_HID_EP_BUFSIZE, 10),
+    TUD_HID_DESCRIPTOR(ITF_NUM_LEDS_HID, 5, HID_ITF_PROTOCOL_NONE, sizeof(hid_leds_report_desc), EPNUM_HID_LEDS, CFG_TUD_HID_EP_BUFSIZE, 10)
 };
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -115,6 +120,8 @@ char const* string_desc_arr[] = {
     MANUFACTURER_NAME,               // 1: Manufacturer Name
     PRODUCT_NAME,                    // 2: Product Name
     pico_unique_id,                  // 3: Unique ID/Serial Number
+    JOYSTICK_HID_ITF_NAME,           // 4: Joystick HID Interface Name
+    LED_HID_ITF_NAME                 // 5: LED HID Interface Name
 };
 
 static uint16_t _desc_str[32];
@@ -141,7 +148,7 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         }
 
         for(uint8_t i = 0; i < chr_count; i++) {
-            _desc_str[1+i] = str[i];
+            _desc_str[1 + i] = str[i];
         }
     }
 
