@@ -65,7 +65,7 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
     PICO_DEFAULT_UART_BAUD_RATE=230400
     PICO_STDIO_ENABLE_CRLF_SUPPORT=0
     PICO_STDIO_DEFAULT_CRLF=0
-    CFG_TUSB_CONFIG_FILE="tusb/tusb_config.h"
+    CFG_TUSB_CONFIG_FILE="config/tusb_config.h"
 )
 
 # PicoTool binary information

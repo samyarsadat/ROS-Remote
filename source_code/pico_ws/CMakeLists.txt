@@ -40,7 +40,7 @@ set(FREERTOS_KERNEL_PATH "${CMAKE_CURRENT_LIST_DIR}/libfreertos/FreeRTOS-Kernel"
 include(FreeRTOS_Kernel_import.cmake)
 
 # FreeRTOS config
-set(FREERTOS_CONFIG_DIR "${CMAKE_CURRENT_LIST_DIR}/libfreertos/Config" CACHE STRING "FreeRTOS Config Path" FORCE)
+set(FREERTOS_CONFIG_DIR "${CMAKE_CURRENT_LIST_DIR}/src/pico/config" CACHE STRING "FreeRTOS Config Path" FORCE)
 include_directories("${FREERTOS_CONFIG_DIR}") 
 
 # Add our source directory
