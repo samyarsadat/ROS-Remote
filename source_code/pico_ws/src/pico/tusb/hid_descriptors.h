@@ -139,8 +139,8 @@ static const uint8_t hid_joystick_report_desc[] = {
 };
 
 static const uint8_t hid_leds_report_desc[] = {
-    0x05, 0x01,   // Usage Page: Generic Desktop
-    0x09, 0x59,   // Usage: Lighting & Illumination
+    0x05, 0x59,   // Usage Page: Lighting & Illumination
+    0x09, 0x01,   // Usage: Lamp Array
     
     // Collection: Application
     0xA1, 0x01,            

@@ -76,7 +76,6 @@
 #define configMAX_TASK_NAME_LEN                 20
 
 
-
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configKERNEL_PROVIDED_STATIC_MEMORY     1
