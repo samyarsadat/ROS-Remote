@@ -59,7 +59,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
                     // Notify the tasks to re-send their reports.
                     LOG(LOG_LVL_DEBUG, "Received input poll report, notifying tasks to send reports.");
                     assert(report_axes_states_th != NULL && report_button_states_th != NULL && 
-                        report_sw_states_th != NULL && report_pot_state_th != NULL);
+                           report_sw_states_th != NULL && report_pot_state_th != NULL);
                     
                     (void) xTaskNotifyGive(report_button_states_th);
                     (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);

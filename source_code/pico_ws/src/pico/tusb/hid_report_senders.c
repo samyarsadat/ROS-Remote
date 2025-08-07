@@ -58,6 +58,7 @@ void report_button_states_task(void *parameters) {
     }
 }
 
+// ---- Send LED states ----
 void report_led_states_task(void *parameters) {
     (void) parameters;
     hid_led_states_report_t report;
@@ -73,7 +74,7 @@ void report_led_states_task(void *parameters) {
             }
 
             if (tud_hid_n_report(ITF_NUM_LEDS_HID, LED_STATES_INPUT_REPORT_ID, &report, sizeof(report))) {
-                return;
+                continue;   
             }
         }
 
@@ -94,21 +95,20 @@ void report_led_states_task(void *parameters) {
 // ---- Toggle switch states ----
 void report_sw_states_task(void *parameters) {
     (void) parameters;
-    uint32_t last_pub_time = 0;
+    uint32_t last_exec_time = 0;
     uint32_t notification_value;
     bool retry_send = false;
     hid_switches_report_t report;
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_pub_time, (SW_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+        CHECK_EXEC_INTERVAL(&last_exec_time, (SW_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
 
         // Explicit re-send has been requested.
         if (notification_value) {
             retry_send = true;
         }
         
-        // TODO: for loop, please.
         uint8_t state = 0;
         state |= (!gpio_get(LEFT_KEY_SW_PIN)         << 0);
         state |= (!gpio_get(LEFT_TOP_TOGGLE_SW_PIN)  << 1);
@@ -126,14 +126,14 @@ void report_sw_states_task(void *parameters) {
 // ---- Joystick axes & potentiometer state ----
 void report_axes_states_task(void *parameters) {
     (void) parameters;
-    uint32_t last_pub_time = 0;
+    uint32_t last_exec_time = 0;
     uint32_t notification_value;
     bool retry_send = false;
     hid_joy_axes_report_t report;
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_pub_time, (AXES_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+        CHECK_EXEC_INTERVAL(&last_exec_time, (AXES_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
 
         if (notification_value) {
             retry_send = true;
@@ -169,14 +169,14 @@ void report_axes_states_task(void *parameters) {
 // ---- Potentiometer state ----
 void report_pot_state_task(void *parameters) {
     (void) parameters;
-    uint32_t last_pub_time = 0;
+    uint32_t last_exec_time = 0;
     uint32_t notification_value;
     bool retry_send = false;
     hid_pot_report_t report;
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_pub_time, (POT_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+        CHECK_EXEC_INTERVAL(&last_exec_time, (POT_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
 
         if (notification_value) {
             retry_send = true;

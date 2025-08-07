@@ -172,6 +172,7 @@ void enter_state_resumed() {
         leds_enable_override(false);
         set_led_outputs();
         vTaskResume(button_poll_task_th);
+
         resume_init = true;
     }
 }

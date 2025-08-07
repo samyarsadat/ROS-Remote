@@ -66,12 +66,14 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
     PICO_STDIO_ENABLE_CRLF_SUPPORT=0
     PICO_STDIO_DEFAULT_CRLF=0
     CFG_TUSB_CONFIG_FILE="config/tusb_config.h"
+    PERF_PROFILE_EN=1
 )
 
 # PicoTool binary information
 pico_set_program_name(${TARGET_NAME} ${TARGET_NAME})
 pico_set_program_version(${TARGET_NAME} ${PROJECT_VERSION})
 pico_set_program_description(${TARGET_NAME} "ROS Remote Physical Interface")
+pico_set_program_url(${TARGET_NAME} "https://github.com/samyarsadat/ROS-Remote")
 
 # Enable STDIO over USB and UART
 pico_enable_stdio_usb(${TARGET_NAME} 0)

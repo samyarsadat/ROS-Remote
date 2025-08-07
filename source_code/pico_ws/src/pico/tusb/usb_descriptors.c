@@ -90,7 +90,7 @@ uint8_t const* tud_hid_descriptor_report_cb(uint8_t itf) {
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
+#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + (2 * TUD_HID_DESC_LEN))
 #define EPNUM_HID_JOYSTICK  0x81   // Endpoint number (joystick)
 #define EPNUM_HID_LEDS      0x82   // Endpoint number (LEDs)
 
