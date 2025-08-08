@@ -98,7 +98,7 @@ static const uint8_t hid_joystick_report_desc[] = {
         0x09, 0x36,                  // Usage: Slider
         0x15, 0x00,                  // Logical minimum: 0
         0x25, 0x64,                  // Logical maximum: 100
-        0x75, 0x08,                  // Report size: 16 bits
+        0x75, 0x08,                  // Report size: 8 bits
         0x95, 0x01,                  // Report count: 1
         0x81, 0x02,                  // Input: Data, Variable, Absolute
         
