@@ -31,6 +31,8 @@ extern "C"
     extern TaskHandle_t report_sw_states_th, report_button_states_th, 
                         report_axes_states_th, report_pot_state_th,
                         report_led_states_th;
+    extern TickType_t report_sw_states_lst, report_button_states_lst,   // Last Send Tick
+                      report_pot_state_lst, report_axes_states_lst;
 
     // ---- Reporter tasks ----
     void create_hid_reporter_tasks();

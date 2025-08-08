@@ -76,6 +76,12 @@
 #define POT_REPORT_TASK_PRIORITY          (configMAX_PRIORITIES - 3)
 #define LED_STATES_REPORT_TASK_PRIORITY   (configMAX_PRIORITIES - 4)
 
+// Idle HID report
+#define DEFAULT_IDLE_REPORT_INTERVAL_MS  1000   // In milliseconds
+#define MIN_IDLE_REPORT_INTERVAL_MS      250    // In milliseconds
+#define HID_REPORT_IDLE_RATE_UNIT_MS     4      // In milliseconds
+#define IDLE_NOTIFY_TIME_CHECK_MARGIN_T  100    // In FreeRTOS ticks
+
 // Misc.
-#define TIMER_COMMAND_TIMEOUT_T    500    // In FreeRTOS ticks
-#define TUSB_TASK_EXEC_RATE_MS     10     // In milliseconds
+#define TIMER_COMMAND_TIMEOUT_T          500   // In FreeRTOS ticks
+#define TUSB_TASK_EXEC_RATE_MS           10    // In milliseconds

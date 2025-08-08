@@ -38,8 +38,8 @@
 
 // ---- Global variables ----
 char pico_unique_id[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
-alarm_pool_t *core_1_alarm_pool;
-TimerHandle_t status_led_timer;
+alarm_pool_t *core_1_alarm_pool = nullptr;
+TimerHandle_t status_led_timer = nullptr, idle_hid_report_timer = nullptr;
 TaskHandle_t tusb_spin_task_th = nullptr;
 bool mount_init = false, resume_init = false;
 
@@ -79,6 +79,31 @@ void status_led_timer_call(TimerHandle_t timer) {
     gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN) || led_always_on);
 }
 
+// ---- Idle HID report timer ----
+#define _IDLE_HID_NOTIFY_CHECK(name)                                                  \
+    if (curr_time - name##_lst > curr_tmr_period - IDLE_NOTIFY_TIME_CHECK_MARGIN_T) { \
+        (void) xTaskNotify(name##_th, 1, eSetValueWithOverwrite);                     \
+    }
+
+void idle_hid_report_timer_call(TimerHandle_t timer) {
+    (void) timer;
+
+    // In case the timer stop command fails for whatever reason.
+    if (resume_init && mount_init) {
+        assert(report_axes_states_th != NULL && report_button_states_th != NULL && 
+               report_sw_states_th != NULL && report_pot_state_th != NULL);
+        
+        TickType_t curr_tmr_period = xTimerGetPeriod(timer);
+        TickType_t curr_time = xTaskGetTickCount();
+        
+        // Note: This is only for the joystick HID interface.
+        _IDLE_HID_NOTIFY_CHECK(report_axes_states)
+        _IDLE_HID_NOTIFY_CHECK(report_sw_states)
+        _IDLE_HID_NOTIFY_CHECK(report_pot_state)
+        _IDLE_HID_NOTIFY_CHECK(report_button_states)
+    }
+}
+
 // ---- TinyUSB spin task ----
 void tusb_spin_task(void *parameters) {
     (void) parameters;
@@ -87,7 +112,7 @@ void tusb_spin_task(void *parameters) {
     uint32_t last_exec_time = 0;
 
     while (true) {
-        CHECK_EXEC_INTERVAL(&last_exec_time, (TUSB_TASK_EXEC_RATE_MS + 2), "USB task execution time limit exceeded!");
+        CHECK_EXEC_INTERVAL_DBG(&last_exec_time, (TUSB_TASK_EXEC_RATE_MS + 2), "USB task execution time limit exceeded!");
 
         if (tud_task_event_ready()) {
             tud_task();
@@ -132,7 +157,8 @@ void setup(void *parameters) {
     // Create FreeRTOS timers
     LOG(LOG_LVL_INFO, "Creating FreeRTOS software timers.");
     status_led_timer = xTimerCreate("usb_status_led", pdMS_TO_TICKS(STAT_LED_UNMOUNTED_MS), pdTRUE, nullptr, status_led_timer_call);
-    assert(status_led_timer != nullptr);
+    idle_hid_report_timer = xTimerCreate("idle_hid_report", pdMS_TO_TICKS(DEFAULT_IDLE_REPORT_INTERVAL_MS), pdTRUE, nullptr, idle_hid_report_timer_call);
+    assert(status_led_timer != nullptr && idle_hid_report_timer != nullptr);
     led_timers_init();
 
     // Start the status LED blink timer
@@ -172,6 +198,7 @@ void enter_state_resumed() {
         leds_enable_override(false);
         set_led_outputs();
         vTaskResume(button_poll_task_th);
+        opequal(xTimerStart(idle_hid_report_timer, TIMER_COMMAND_TIMEOUT_T), pdPASS);
 
         resume_init = true;
     }
@@ -185,6 +212,7 @@ void enter_state_suspended() {
         led_timers_stop();
         leds_enable_override(true);
         vTaskSuspend(button_poll_task_th);
+        opequal(xTimerStop(idle_hid_report_timer, TIMER_COMMAND_TIMEOUT_T), pdPASS);
 
         for (uint i = 0; i < NUMBER_OF_LEDS; i++) {
             gpio_put_pwm(led_pins_order[i], 0);
@@ -200,6 +228,7 @@ void enter_state_mounted() {
         
         create_hid_reporter_tasks();
         create_button_poll_task();
+        opequal(xTimerChangePeriod(idle_hid_report_timer, pdMS_TO_TICKS(DEFAULT_IDLE_REPORT_INTERVAL_MS), TIMER_COMMAND_TIMEOUT_T), pdPASS);
         mount_init = true;
 
         enter_state_resumed();

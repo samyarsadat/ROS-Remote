@@ -18,12 +18,16 @@
 */
 
 #pragma once
+#include "FreeRTOS.h"
+#include "timers.h"
 
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    extern TimerHandle_t idle_hid_report_timer;
+
     // ---- Device state management ----
     void enter_state_mounted();
     void enter_state_unmounted();

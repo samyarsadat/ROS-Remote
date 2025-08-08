@@ -45,11 +45,11 @@ void button_poll_task(void *parameters) {
     bool btn_state;
 
     while (true) {
-        CHECK_EXEC_INTERVAL(&last_exec_time, (BUTTON_POLL_INTERVAL_MS + 2), "Button polling interval time limit exceeded!");
+        CHECK_EXEC_INTERVAL_DBG(&last_exec_time, (BUTTON_POLL_INTERVAL_MS + 2), "Button polling interval time limit exceeded!");
         curr_time = xTaskGetTickCount();
 
         if (momen_btn_states != momen_btn_ls_state) {
-            xTaskNotify(report_button_states_th, 0, eNoAction);
+            xTaskNotifyGive(report_button_states_th);
             continue;   // Skip this cycle. We don't want to send two notifications this close to each other.
         }
 
@@ -65,7 +65,7 @@ void button_poll_task(void *parameters) {
                     momen_btn_states &= ~(1 << i);
                 }
 
-                xTaskNotify(report_button_states_th, 0, eNoAction);
+                xTaskNotifyGive(report_button_states_th);
             }
         }
 

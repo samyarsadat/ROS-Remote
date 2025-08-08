@@ -36,8 +36,8 @@ extern "C"
 
     // ---- Get potentiometer reading ----
     // ---- This function takes into account the potentiometer's inversion config ----
-    // ---- It returns a value between 0 and 1024 ----
-    uint16_t get_potentiometer_val();
+    // ---- It returns a value between 0 and 100 ----
+    uint8_t get_potentiometer_val();
 #ifdef __cplusplus
 }
 #endif

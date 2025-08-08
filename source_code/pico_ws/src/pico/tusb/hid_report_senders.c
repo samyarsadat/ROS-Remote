@@ -31,12 +31,15 @@
 #include "io/leds.h"
 
 
+#define REPORT_TIME_LIM_MSG  "HID report sending interval time limit exceeded!"
+
 // Timers & tasks
 struct repeating_timer report_sw_states_rt, report_axes_states_rt, report_pot_state_rt;
 TaskHandle_t report_sw_states_th = NULL, report_button_states_th = NULL, 
              report_axes_states_th = NULL, report_pot_state_th = NULL,
              report_led_states_th = NULL;
-const char* report_time_lim_msg = "HID report sending interval time limit exceeded!";
+TickType_t report_sw_states_lst = 0, report_button_states_lst = 0,   // Last Send Tick
+           report_pot_state_lst = 0, report_axes_states_lst = 0;
 
 
 // ******** EXTERNALLY TRIGGERED HID REPORT SENDERS ********
@@ -54,6 +57,8 @@ void report_button_states_task(void *parameters) {
             if (tud_hid_n_report(ITF_NUM_JOYSTICK_HID, BUTTONS_INPUT_REPORT_ID, &report, sizeof(report))) {
                 momen_btn_ls_state = momen_btn_states;
             }
+
+            report_button_states_lst = xTaskGetTickCount();
         }
     }
 }
@@ -102,7 +107,7 @@ void report_sw_states_task(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_exec_time, (SW_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+        CHECK_EXEC_INTERVAL_DBG(&last_exec_time, (SW_STATE_REPORT_INTERVAL + 10), REPORT_TIME_LIM_MSG);
 
         // Explicit re-send has been requested.
         if (notification_value) {
@@ -119,6 +124,7 @@ void report_sw_states_task(void *parameters) {
         if ((report.switches != state || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report.switches = state;
             retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, SWITCHES_INPUT_REPORT_ID, &report, sizeof(report));
+            report_sw_states_lst = xTaskGetTickCount();
         }
     }
 }
@@ -133,7 +139,7 @@ void report_axes_states_task(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_exec_time, (AXES_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+        CHECK_EXEC_INTERVAL_DBG(&last_exec_time, (AXES_STATE_REPORT_INTERVAL + 10), REPORT_TIME_LIM_MSG);
 
         if (notification_value) {
             retry_send = true;
@@ -162,6 +168,7 @@ void report_axes_states_task(void *parameters) {
         if ((report_changed || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report = new_report;
             retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, AXES_INPUT_REPORT_ID, &report, sizeof(report));
+            report_axes_states_lst = xTaskGetTickCount();
         }
     }  
 }
@@ -176,17 +183,18 @@ void report_pot_state_task(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0xffffffff, &notification_value, portMAX_DELAY);
-        CHECK_EXEC_INTERVAL(&last_exec_time, (POT_STATE_REPORT_INTERVAL + 10), report_time_lim_msg);
+        CHECK_EXEC_INTERVAL_DBG(&last_exec_time, (POT_STATE_REPORT_INTERVAL + 10), REPORT_TIME_LIM_MSG);
 
         if (notification_value) {
             retry_send = true;
         }
 
-        uint16_t pot_val = get_potentiometer_val();
+        uint8_t pot_val = get_potentiometer_val();
 
         if ((report.pot != pot_val || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report.pot = pot_val;
             retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, POT_INPUT_REPORT_ID, &report, sizeof(report));
+            report_pot_state_lst = xTaskGetTickCount();
         }
     }
 }

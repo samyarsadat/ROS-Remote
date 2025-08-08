@@ -25,6 +25,8 @@
 #include "diagnostics.h"
 #include "hid_report_senders.h"
 #include "state_management.h"
+#include "config/sw_defs.h"
+#include "common/opassert.h"
 
 
 // ---- Device state callbacks ----
@@ -54,20 +56,6 @@ void tud_resume_cb() {
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     if (report_type == HID_REPORT_TYPE_OUTPUT) {
         switch (instance) {
-            case ITF_NUM_JOYSTICK_HID:
-                if (report_id == INPUT_POLL_OUTPUT_REPORT_ID) {
-                    // Notify the tasks to re-send their reports.
-                    LOG(LOG_LVL_DEBUG, "Received input poll report, notifying tasks to send reports.");
-                    assert(report_axes_states_th != NULL && report_button_states_th != NULL && 
-                           report_sw_states_th != NULL && report_pot_state_th != NULL);
-                    
-                    (void) xTaskNotifyGive(report_button_states_th);
-                    (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);
-                    (void) xTaskNotify(report_sw_states_th, 1, eSetValueWithOverwrite);
-                    (void) xTaskNotify(report_pot_state_th, 1, eSetValueWithOverwrite);
-                }
-
-                break;
             case ITF_NUM_LEDS_HID:
                 if (report_id == LED_OUTPUT_REPORT_ID && bufsize == sizeof(hid_led_report_t)) {
                     hid_led_report_t* led_cmd = (hid_led_report_t*) buffer;
@@ -79,6 +67,20 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
                 } else if (report_id == LED_GET_STATES_OUTPUT_REPORT_ID) {
                     assert(report_led_states_th != NULL);
                     (void) xTaskNotifyGive(report_led_states_th);
+                }
+
+                break;
+            case ITF_NUM_JOYSTICK_HID:
+                if (report_id == INPUT_POLL_OUTPUT_REPORT_ID) {
+                    // Notify the tasks to re-send their reports.
+                    LOG(LOG_LVL_DEBUG, "Received input poll report, notifying tasks to send reports.");
+                    assert(report_axes_states_th != NULL && report_button_states_th != NULL && 
+                           report_sw_states_th != NULL && report_pot_state_th != NULL);
+                    
+                    (void) xTaskNotify(report_axes_states_th, 1, eSetValueWithOverwrite);
+                    (void) xTaskNotify(report_sw_states_th, 1, eSetValueWithOverwrite);
+                    (void) xTaskNotify(report_pot_state_th, 1, eSetValueWithOverwrite);
+                    (void) xTaskNotifyGive(report_button_states_th);
                 }
 
                 break;
@@ -134,4 +136,29 @@ void tud_hid_report_failed_cb(uint8_t instance, hid_report_type_t report_type, u
                 break;
         }
     }
+}
+
+// Idle state
+bool tud_hid_set_idle_cb(uint8_t instance, uint8_t idle_rate) {
+    if (instance == ITF_NUM_JOYSTICK_HID) {
+        const uint32_t idle_rate_ms = idle_rate * HID_REPORT_IDLE_RATE_UNIT_MS;
+        assert(idle_hid_report_timer != NULL);
+
+        if (idle_rate_ms > MIN_IDLE_REPORT_INTERVAL_MS) {
+            LOG(LOG_LVL_DEBUG, "Joystick HID idle rate set to %d ms.", idle_rate_ms);
+            return xTimerChangePeriod(idle_hid_report_timer, pdMS_TO_TICKS(idle_rate_ms), TIMER_COMMAND_TIMEOUT_T) == pdPASS &&
+                   xTimerStart(idle_hid_report_timer, TIMER_COMMAND_TIMEOUT_T) == pdPASS;
+        } else if (idle_rate_ms == 0) {
+            //LOG(LOG_LVL_DEBUG, "Joystick HID idle reporting disabled.");
+            //return xTimerStop(idle_hid_report_timer, TIMER_COMMAND_TIMEOUT_T) == pdPASS;
+            LOG(LOG_LVL_DEBUG, "Ignoring idle_rate of 0 for joystick HID.");
+            return true;
+        } else {
+            LOG(LOG_LVL_DEBUG, "Joystick HID idle rate set to %d ms, requested %d.", MIN_IDLE_REPORT_INTERVAL_MS, idle_rate_ms);
+            return xTimerChangePeriod(idle_hid_report_timer, pdMS_TO_TICKS(MIN_IDLE_REPORT_INTERVAL_MS), TIMER_COMMAND_TIMEOUT_T) == pdPASS &&
+                   xTimerStart(idle_hid_report_timer, TIMER_COMMAND_TIMEOUT_T) == pdPASS;
+        }
+    }
+
+    return true;
 }

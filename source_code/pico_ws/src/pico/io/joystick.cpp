@@ -93,8 +93,8 @@ int16_t get_joystick_y_val() {
 
 // ---- Get potentiometer reading ----
 // ---- This function takes into account the potentiometer's inversion config ----
-// ---- It returns a value between 0 and 1024 ----
-uint16_t get_potentiometer_val() {
+// ---- It returns a value between 0 and 100 ----
+uint8_t get_potentiometer_val() {
     if (adc_take_mutex())  {
         adc_select_input(get_gpio_adc_channel(POTENTIOMETER_PIN));
         sleep_us(10);
@@ -102,9 +102,9 @@ uint16_t get_potentiometer_val() {
         adc_release_mutex();
 
         #if !POTENTIOMETER_INVERTED
-        return map<uint16_t>(adc_reading, 0, 4095, 0, 1024);
+        return static_cast<uint8_t>(map<uint16_t>(adc_reading, 0, 4095, 0, 100));
         #else
-        return map<uint16_t>(adc_reading, 0, 4095, 1024, 0);
+        return static_cast<uint8_t>(map<uint16_t>(adc_reading, 0, 4095, 100, 0));
         #endif
     }
 
