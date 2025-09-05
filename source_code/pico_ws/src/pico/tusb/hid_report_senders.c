@@ -36,8 +36,7 @@
 // Timers & tasks
 struct repeating_timer report_sw_states_rt, report_axes_states_rt, report_pot_state_rt;
 TaskHandle_t report_sw_states_th = NULL, report_button_states_th = NULL, 
-             report_axes_states_th = NULL, report_pot_state_th = NULL,
-             report_led_states_th = NULL;
+             report_axes_states_th = NULL, report_pot_state_th = NULL;
 TickType_t report_sw_states_lst = 0, report_button_states_lst = 0,   // Last Send Tick
            report_pot_state_lst = 0, report_axes_states_lst = 0;
 
@@ -60,38 +59,6 @@ void report_button_states_task(void *parameters) {
 
             report_button_states_lst = xTaskGetTickCount();
         }
-    }
-}
-
-// ---- Send LED states ----
-void report_led_states_task(void *parameters) {
-    (void) parameters;
-    hid_led_states_report_t report;
-
-    while (true) {
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
-
-        if (tud_hid_n_ready(ITF_NUM_LEDS_HID)) {
-            for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-                led_state_t state = get_led_state(i);
-                report.mode[i] = state.mode;
-                report.pwm_out[i] = state.pwm_set_out;
-            }
-
-            if (tud_hid_n_report(ITF_NUM_LEDS_HID, LED_STATES_INPUT_REPORT_ID, &report, sizeof(report))) {
-                continue;   
-            }
-        }
-
-        (void) xTaskNotifyGive(report_led_states_th);
-
-        // We want to avoid sending two reports in close succession.
-        // Other reporters don't need delays, as their respective timers
-        // act as a sufficient cooldown. This isn't ideal, but it's okay.
-        // The task notification array size is 3, and I really doubt that
-        // any host-side program is going to request LED states twice within 10ms.
-        // Besides, the TUSB spin task is only executed every 10ms anyway.
-        vTaskDelay(pdMS_TO_TICKS(LED_STATE_REPORT_RETRY_COOLDOWN_MS));
     }
 }
 
@@ -234,20 +201,17 @@ void stop_hid_reporters() {
 // ******** REPORTER TASK CREATION & DELETION ********
 void create_hid_reporter_tasks() {
     assert(report_sw_states_th == NULL && report_button_states_th == NULL &&
-           report_axes_states_th == NULL && report_pot_state_th == NULL &&
-           report_led_states_th == NULL);
+           report_axes_states_th == NULL && report_pot_state_th == NULL);
     
     (void) xTaskCreate(report_button_states_task, "button_report", TIMER_TASK_STACK_DEPTH, NULL, BUTTON_REPORT_TASK_PRIORITY, &report_button_states_th);
     (void) xTaskCreate(report_axes_states_task, "axes_report", TIMER_TASK_STACK_DEPTH, NULL, AXES_REPORT_TASK_PRIORITY, &report_axes_states_th);
     (void) xTaskCreate(report_sw_states_task, "switch_report", TIMER_TASK_STACK_DEPTH, NULL, SW_REPORT_TASK_PRIORITY, &report_sw_states_th);
     (void) xTaskCreate(report_pot_state_task, "pot_report", TIMER_TASK_STACK_DEPTH, NULL, POT_REPORT_TASK_PRIORITY, &report_pot_state_th);
-    (void) xTaskCreate(report_led_states_task, "led_states_report", TIMER_TASK_STACK_DEPTH, NULL, LED_STATES_REPORT_TASK_PRIORITY, &report_led_states_th);
 }
 
 void delete_hid_reporter_tasks() {
     assert(report_sw_states_th != NULL && report_button_states_th != NULL && 
-           report_axes_states_th != NULL && report_pot_state_th != NULL &&
-           report_led_states_th != NULL);
+           report_axes_states_th != NULL && report_pot_state_th != NULL);
     
     vTaskDelete(report_sw_states_th);
     report_sw_states_th = NULL;
@@ -260,7 +224,4 @@ void delete_hid_reporter_tasks() {
 
     vTaskDelete(report_pot_state_th);
     report_pot_state_th = NULL;
-
-    vTaskDelete(report_led_states_th);
-    report_led_states_th = NULL;
 }

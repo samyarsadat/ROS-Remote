@@ -63,7 +63,7 @@ extern "C"
     void set_led_state(uint8_t index, LED_MODE_t mode, uint16_t pwm_output);
 
     // ---- Get a single LED's state ----
-    led_state_t get_led_state(uint8_t index);
+    const led_state_t* get_led_states();
 
     // ---- Self-test ----
     void leds_test_blocking();

@@ -21,6 +21,13 @@
 set(TARGET_NAME "${PROJECT_NAME}_Pico")
 message("Configuring Pico firmware build... (${TARGET_NAME})")
 
+# Generate version.h
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config/version.h
+    @ONLY
+)
+
 # Add source files
 add_executable(${TARGET_NAME} main.cpp
                               diagnostics.cpp
@@ -51,7 +58,10 @@ target_link_libraries(${TARGET_NAME} pico_stdlib
 )
 
 # Link to include directories
-target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(${TARGET_NAME} PUBLIC 
+    ${CMAKE_CURRENT_LIST_DIR} 
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
 
 # Target-specific compile definitions
 target_compile_definitions(${TARGET_NAME} PRIVATE

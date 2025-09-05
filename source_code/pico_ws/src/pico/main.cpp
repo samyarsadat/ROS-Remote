@@ -34,6 +34,7 @@
 #include "state_management.h"
 #include "pico/unique_id.h"
 #include "utils_lib/perf/exec_interval.h"
+#include "config/version.h"
 
 
 // ---- Global variables ----
@@ -262,6 +263,7 @@ int main() {
     stdio_uart_init();
     board_init();
     LOG(LOG_LVL_INFO, "Board init, program starting.");
+    LOG(LOG_LVL_INFO, "Firmware build: %s", FIRMWARE_VERSION_FULL_STRING);
 
     if (!logger.init_mutex()) {
         LOG(LOG_LVL_ERROR, "Logger mutex initialization failed!");

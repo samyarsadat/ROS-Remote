@@ -10,7 +10,6 @@
 
     <exec_depend>launch</exec_depend>
     <exec_depend>launch_ros</exec_depend>
-    <exec_depend>micro_ros_agent</exec_depend>
 
     <depend>rclpy</depend>
     <depend>std_msgs</depend>

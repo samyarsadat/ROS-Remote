@@ -49,10 +49,9 @@
     },
 
     "workspaceFolder": "/home/nonroot/ros_ws",
-    "mounts": [{"source": "${localWorkspaceFolder}/../ros_robot_project/source_code/ros_ws_robot_infra/src/ros_robot_msgs",
-                "target": "/home/nonroot/ros_ws/src/ros_robot_msgs", "type": "bind"},
-               {"source": "${localWorkspaceFolder}/../pico_ws/libmicroros/src/remote_pico_coms",
-                "target": "/home/nonroot/ros_ws/src/remote_pico_coms", "type": "bind"}],
+    "mounts": [{"source": "${localWorkspaceFolder}/src", "target": "/home/nonroot/ros_ws/src", "type": "bind"},
+               {"source": "${localWorkspaceFolder}/../ros_robot_project/source_code/ros_ws_robot_infra/src/ros_robot_msgs",
+                "target": "/home/nonroot/ros_ws/src/ros_robot_msgs", "type": "bind"}],
 
     "runArgs": ["--net=host",
                 "--cap-add=SYS_PTRACE",

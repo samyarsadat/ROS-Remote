@@ -27,10 +27,13 @@ set(PICO_BOARD pico)
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 # Set project name and C/C++ standards
-string(TIMESTAMP DATEVER "%Y.%m.%d" UTC)
+string(TIMESTAMP DATEVER "%y.%m.%d" UTC)
 project(ROS_Remote VERSION ${DATEVER} LANGUAGES C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
+
+# Full build timestamp
+string(TIMESTAMP BUILD_TS "%Y-%m-%dT%H:%M:%SZ" UTC)
 
 # Initialize the Pico SDK
 pico_sdk_init()

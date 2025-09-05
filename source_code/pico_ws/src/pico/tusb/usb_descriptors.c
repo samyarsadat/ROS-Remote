@@ -26,16 +26,16 @@
 
 #include "tusb.h"
 #include "hid_descriptors.h"
+#include "config/version.h"
 
 
 // The USB VID and PID used here are for testing purposes only!
 #define USB_PID                 0x0001   // USB Product ID
 #define USB_VID                 0x1FC9   // USB Vendor ID
-#define USB_BCD                 0x0200   // USB Spec. Release Number
 #define DEVICE_VER              0x0100   // Device Version
 #define DEVICE_CURRENT          500      // Device Current (mA)
 #define MANUFACTURER_NAME       "Samyar Projects"
-#define PRODUCT_NAME            "The ROS Remote"
+#define PRODUCT_NAME            "ROS Remote"
 #define JOYSTICK_HID_ITF_NAME   "ROS Remote Joystick Interface"
 #define LED_HID_ITF_NAME        "ROS Remote LED Interface"
 
@@ -47,7 +47,7 @@
 tusb_desc_device_t const desc_device = {
     .bLength            = sizeof(tusb_desc_device_t),
     .bDescriptorType    = TUSB_DESC_DEVICE,
-    .bcdUSB             = USB_BCD,
+    .bcdUSB             = USB_DEVICE_BCD,
     .bDeviceClass       = 0x00,
     .bDeviceSubClass    = 0x00,
     .bDeviceProtocol    = 0x00,

@@ -1,0 +1,65 @@
+# TODO: formatting is currently not ideal, needs improvement.
+
+BasedOnStyle: LLVM
+Language: Cpp
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+ColumnLimit: 100
+MaxEmptyLinesToKeep: 2
+
+BreakBeforeBraces: Attach
+BraceWrapping:
+    AfterClass: false
+    AfterControlStatement: false
+    AfterEnum: false
+    AfterFunction: false
+    AfterNamespace: false
+    AfterStruct: false
+    AfterUnion: false
+    BeforeCatch: false
+    BeforeElse: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
+
+IndentAccessModifiers: true
+AccessModifierOffset: 0
+EmptyLineBeforeAccessModifier: LogicalBlock
+
+AlwaysBreakAfterReturnType: None
+AllowShortFunctionsOnASingleLine: None
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+AllowAllConstructorInitializersOnNextLine: true
+
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: true
+PenaltyBreakBeforeFirstCallParameter: 1
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Right
+SpaceAfterCStyleCast: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeParens: ControlStatements
+
+SortIncludes: false
+IncludeBlocks: Preserve
+
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignTrailingComments: false
+SpacesBeforeTrailingComments: 1
+ReflowComments: false
+
+IndentCaseLabels: true
+BreakBeforeBinaryOperators: NonAssignment
+
+Cpp11BracedListStyle: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+SortUsingDeclarations: false
+FixNamespaceComments: true

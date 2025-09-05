@@ -28,8 +28,7 @@
 #define SWITCHES_INPUT_REPORT_ID          0x04
 #define INPUT_POLL_OUTPUT_REPORT_ID       0x05
 #define LED_OUTPUT_REPORT_ID              0x06
-#define LED_GET_STATES_OUTPUT_REPORT_ID   0x07
-#define LED_STATES_INPUT_REPORT_ID        0x08
+#define LED_STATES_FEATURE_REPORT_ID      0x07
 
 // Interfaces
 enum {
@@ -178,16 +177,10 @@ static const uint8_t hid_leds_report_desc[] = {
             0x91, 0x02,         // Output: Data, Variable, Absolute
         0xC0,   // End Collection (Logical)
 
-        // ==== GET LED STATES OUTPUT REPORT ====
-        0x85, LED_GET_STATES_OUTPUT_REPORT_ID,   // Report ID for getting LED states
-        0x75, 0x08,                              // Report size: 8 bits
-        0x95, 0x00,                              // Report count: 0 bytes
-        0x91, 0x03,                              // Output: Constant, Variable, Absolute
-
-        // ==== LED STATES INPUT REPORT ====
-        0x85, LED_STATES_INPUT_REPORT_ID,   // Report ID for LED states report
-        0x05, 0x08,                         // Usage Page: LEDs
-        0x09, 0x4B,                         // Usage: Generic Indicator
+        // ==== LED STATES FEATURE REPORT ====
+        0x85, LED_STATES_FEATURE_REPORT_ID,   // Report ID for LED states report
+        0x05, 0x08,                           // Usage Page: LEDs
+        0x09, 0x4B,                           // Usage: Generic Indicator
 
         // Collection: Logical
         0xA1, 0x02,
@@ -199,7 +192,7 @@ static const uint8_t hid_leds_report_desc[] = {
             0x25, 0x04,   // Logical maximum: 4 (5 modes)
             0x75, 0x08,   // Report size: 8 bits
             0x95, 0x0B,   // Report count: 11
-            0x81, 0x02,   // Input: Data, Variable, Absolute
+            0xB1, 0x02,   // Feature: Data, Variable, Absolute
             
             // === LED BRIGHTNESS (0-65535) ===
             0x09, 0x03,         // Usage: LED Brightness
@@ -207,7 +200,7 @@ static const uint8_t hid_leds_report_desc[] = {
             0x26, 0xFF, 0xFF,   // Logical maximum: 65535
             0x75, 0x10,         // Report size: 16 bits
             0x95, 0x0B,         // Report count: 11
-            0x81, 0x02,         // Input: Data, Variable, Absolute
+            0xB1, 0x02,         // Feature: Data, Variable, Absolute
         0xC0,   // End Collection (Logical)
     0xC0   // End Collection (Application)
 };

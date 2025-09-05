@@ -70,10 +70,9 @@ void set_led_state(uint8_t index, LED_MODE_t mode, uint16_t pwm_output) {
     led_states[index].led_fade_rising = true;
 }
 
-// ---- Get a single LED's state ----
-led_state_t get_led_state(uint8_t index) {
-    assert(index < NUMBER_OF_LEDS);
-    return led_states[index];
+// ---- Get a all LED states ----
+const led_state_t* get_led_states() {
+    return led_states;
 }
 
 // ---- Self-test ----
