@@ -8,8 +8,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(diagnostic_msgs REQUIRED)
-find_package(diagnostic_updater REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -38,10 +36,8 @@ target_link_directories(${TARGET_NAME} PRIVATE ${HIDAPI_LIBRARY_DIRS})
 target_link_libraries(${TARGET_NAME} PRIVATE
     ${HIDAPI_LIBRARIES}
     ${cpp_typesupport_target}
-    ${diagnostic_msgs_TARGETS}
     ${sensor_msgs_TARGETS}
     ${std_srvs_TARGETS}
-    diagnostic_updater::diagnostic_updater
     rclcpp::rclcpp
     rclcpp_components::component
 )

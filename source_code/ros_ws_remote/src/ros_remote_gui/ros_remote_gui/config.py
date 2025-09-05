@@ -16,15 +16,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2025.1.18"
+PROGRAM_VERSION = "25.9.6"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2025-01-18 @ 16:16 UTC"
-
+    VERSION_DATE = "2025-09-06 @ 12:39 UTC"
 
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
@@ -45,7 +44,6 @@ class RosConfig:
     QOS_BEST_EFFORT = QoSProfile(reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST, depth=1, liveliness=LivelinessPolicy.AUTOMATIC)
     QOS_RELIABLE = QoSProfile(reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=1, liveliness=LivelinessPolicy.AUTOMATIC)
     THREAD_NAME = "ros_thread"
-
 
 class RosNames:
     ROBOT_NAMESPACE = "ros_robot"
@@ -88,7 +86,6 @@ class RosNames:
 
     CLIFF_SENS_TOPIC_BASE = ROBOT_NAMESPACE + "/range_sens/cliff/{}"
     CLIFF_SENS_TOPIC_NAMES = ["front_1", "front_2", "front_3", "front_4", "back_1", "back_2", "back_3", "back_4"]
-
 
 class RosFrameIds:
     CLIFF_SENS_BASE_FRAME_ID = "cliff_sens_{}"

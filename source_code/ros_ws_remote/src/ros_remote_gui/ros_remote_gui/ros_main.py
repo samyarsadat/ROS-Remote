@@ -216,19 +216,19 @@ class RosNode(Node):
 
 
 # ---- Node object ----
-_gui_ros_node = RosNode
+_gui_ros_node: RosNode | None = None
 
 
 # ---- Executor ----
 def is_ros_node_initialized() -> bool:
-    global _gui_ros_node
-    return isinstance(_gui_ros_node, RosNode)
+    return _gui_ros_node is not None
 
-def get_ros_node() -> RosNode:
-    global _gui_ros_node
+def get_ros_node() -> RosNode | None:
     return _gui_ros_node
 
 def ros_executor_thread(stop_thread):
+    from ros_remote_pui.ros_main import init_ros_node
+
     try:
         internal_context = rclpy.Context()
         rclpy.init(context=internal_context, domain_id=RosConfig.EXECUTOR_DOMAIN_ID)
@@ -239,6 +239,7 @@ def ros_executor_thread(stop_thread):
 
         executor = MultiThreadedExecutor(context=internal_context)
         executor.add_node(_gui_ros_node)
+        executor.add_node(init_ros_node(internal_context))
         _gui_ros_node.get_logger().info("Executor initialized!")
 
         _gui_ros_node.get_logger().info("Starting the executor...")

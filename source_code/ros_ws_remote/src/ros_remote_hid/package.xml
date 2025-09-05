@@ -14,8 +14,6 @@
     <depend>sensor_msgs</depend>
     <depend>std_srvs</depend>
     <depend>rosidl_default_generators</depend>
-    <depend>diagnostic_msgs</depend>
-    <depend>diagnostic_updater</depend>
     <depend>libhidapi-dev</depend>
 
     <test_depend>ament_lint_auto</test_depend>

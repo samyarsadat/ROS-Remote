@@ -22,18 +22,13 @@ import subprocess
 import re
 from asyncio import Future
 from PySide6.QtCore import QTimer, QObject, Signal, Slot, QProcess
-from geometry_msgs.msg import Twist
-from remote_pico_coms.srv import SetLedStates, GetLedStates
-from ros_remote_gui.main import qt_app
+from ros_remote_hid.srv import SetLedState, GetLedStates
 from ros_remote_gui.main_window import get_main_window
 from ros_remote_gui.ros_main import get_ros_node as get_gui_ros_node
-from ros_remote_gui.ros_main import is_ros_node_initialized as is_gui_node_initialized
-from ros_remote_gui.utils.gui_utils import get_msg_box_helper
-from ros_remote_pui.config import ProgramConfig
-from datetime import datetime, timedelta
+from ros_remote_pui.config import ProgramConfig, RpiIoConfig
+from datetime import datetime
 from std_msgs.msg import Empty, Bool
 from std_srvs.srv import SetBool
-from numpy import interp
 
 
 # ROS signals
@@ -43,7 +38,6 @@ class RosSignals(QObject):
     left_red_btn_press_sig = Signal()
     left_l_green_btn_press_sig = Signal()
     left_r_green_btn_press_sig = Signal()
-    joystick_msg_recv_sig = Signal()
 
 
 # Remote state
@@ -61,6 +55,11 @@ class RemoteState:
     last_joystick_pub: datetime
     max_linear_velocity_mps: float
     max_angular_velocity_rps: float
+    left_red_btn_en: bool
+    left_green_kd2_btn_en: bool
+    left_red_kd2_btn_en: bool
+    left_green_left_btn_en: bool
+    left_green_right_btn_en: bool
 
     def __init__(self):
         self._ros_signals = RosSignals()
@@ -69,7 +68,6 @@ class RemoteState:
         self._ros_signals.left_red_btn_press_sig.connect(self.left_red_btn_press)
         self._ros_signals.left_l_green_btn_press_sig.connect(self.left_l_green_btn_press)
         self._ros_signals.left_r_green_btn_press_sig.connect(self.left_r_green_btn_press)
-        self._ros_signals.joystick_msg_recv_sig.connect(self._publish_joystick)
 
         self.key_sw_en = False          # Lock/unlock remote
         self.left_top_sw_en = False     # Not assigned
@@ -81,8 +79,11 @@ class RemoteState:
         self.right_kd2_en = False       # Joystick enable
         self.potentiometer_val = 0      # Robot max. linear velocity
 
-        self.joystick_vals = [0, 0]
-        self.last_joystick_pub = datetime.now()
+        self.left_red_btn_en = False          # Emergency stop
+        self.left_green_kd2_btn_en = False    # Not assigned
+        self.left_red_kd2_btn_en = False      # Not assigned
+        self.left_green_left_btn_en = False   # UI - previous page
+        self.left_green_right_btn_en = False  # UI - next page
 
         self.max_linear_velocity_mps = 0.0
         self.max_angular_velocity_rps = 0.0
@@ -108,6 +109,7 @@ class RemoteState:
         self._sw_state_act_tmr.timeout.connect(self._sw_state_act_tmr_call)
         self._sw_state_act_tmr.start(ProgramConfig.SW_ACT_TIMER_INTERVAL_MS)
 
+        from ros_remote_gui.main import qt_app
         qt_app.aboutToQuit.connect(self._set_all_leds_off)
 
     def _sw_state_act_tmr_call(self) -> None:
@@ -116,29 +118,29 @@ class RemoteState:
             if (not self.key_sw_en) and get_main_window().isEnabled():
                 get_main_window().setEnabled(False)
                 if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["disable", self._touchscreen_id])
-                self._set_led_state(3, 3, 65535)
+                self._make_set_led_request(3, 3, 65535)
             elif self.key_sw_en and (not get_main_window().isEnabled()):
                 get_main_window().setEnabled(True)
                 if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["enable", self._touchscreen_id])
-                self._set_led_state(3, 0, 0)
+                self._make_set_led_request(3, 0, 0)
 
             # LED states
             if not self._power_led_set:
-                self._power_led_set = self._set_led_state(4, 0, 32000)
+                self._power_led_set = self._make_set_led_request(4, 0, 32000)
 
             if self.right_kd2_en != self._last_joystick_en_state or self._last_joystick_lock_state != self.key_sw_en:
                 self._last_joystick_en_state = self.right_kd2_en
                 self._last_joystick_lock_state = self.key_sw_en
 
                 if self.key_sw_en:
-                    self._set_led_state(0, 2, 65535 if self.right_kd2_en else 0)
+                    self._make_set_led_request(0, 2, 65535 if self.right_kd2_en else 0)
                 else:
-                    self._set_led_state(0, 3, 65535 if self.right_kd2_en else 0)
+                    self._make_set_led_request(0, 3, 65535 if self.right_kd2_en else 0)
 
             if get_main_window().power_tab_ui_handler.batt_voltage < ProgramConfig.BATT_WARN_LED_TRIG_VOLT and not self._last_battery_led_state:
-                self._last_battery_led_state = self._set_led_state(6, 2, 65535)
+                self._last_battery_led_state = self._make_set_led_request(6, 2, 65535)
             elif get_main_window().power_tab_ui_handler.batt_voltage > ProgramConfig.BATT_WARN_LED_TRIG_VOLT and self._last_battery_led_state:
-                self._last_battery_led_state = not self._set_led_state(6, 0, 0)
+                self._last_battery_led_state = not self._make_set_led_request(6, 0, 0)
 
             # Motor controller LED
             current_mtr_ctrl_state = 1
@@ -156,82 +158,65 @@ class RemoteState:
 
                 match current_mtr_ctrl_state:
                     case 0:
-                        success = self._set_led_state(1, 0, 0)
+                        success = self._make_set_led_request(1, 0, 0)
                     case 1:
-                        success = self._set_led_state(1, 1, 32000)
+                        success = self._make_set_led_request(1, 1, 32000)
                     case 2:
-                        success = self._set_led_state(1, 0, 32000)
+                        success = self._make_set_led_request(1, 0, 32000)
                     case 3:
-                        success = self._set_led_state(1, 2, 32000)
+                        success = self._make_set_led_request(1, 2, 32000)
 
                 if success:
                     self._mtr_ctrl_last_state = current_mtr_ctrl_state
 
-        if is_gui_node_initialized():
-            # Enable/disable camera LEDs (all full-on/full-off)
-            if self.key_sw_en:
-                # TODO: Improve the logic of this.
-                if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
-                    get_main_window().ui.camLed1Check.setChecked(True)
-                    get_main_window().ui.camLed2Check.setChecked(True)
-                    get_main_window().ui.camLed3Check.setChecked(True)
-                    get_main_window().ui.camLed4Check.setChecked(True)
-                    get_main_window().ui.camLedsBrightnessSlider.setValue(0)
-                elif self.left_mid_a_sw_en and get_main_window().ui.camLedsBrightnessSlider.value() == 0:
-                    get_main_window().ui.camLed1Check.setChecked(True)
-                    get_main_window().ui.camLed2Check.setChecked(True)
-                    get_main_window().ui.camLed3Check.setChecked(True)
-                    get_main_window().ui.camLed4Check.setChecked(True)
-                    get_main_window().ui.camLedsBrightnessSlider.setValue(100)
+        # Enable/disable camera LEDs (all full-on/full-off)
+        if self.key_sw_en:
+            # TODO: Improve the logic of this.
+            if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
+                get_main_window().ui.camLed1Check.setChecked(True)
+                get_main_window().ui.camLed2Check.setChecked(True)
+                get_main_window().ui.camLed3Check.setChecked(True)
+                get_main_window().ui.camLed4Check.setChecked(True)
+                get_main_window().ui.camLedsBrightnessSlider.setValue(0)
+            elif self.left_mid_a_sw_en and get_main_window().ui.camLedsBrightnessSlider.value() == 0:
+                get_main_window().ui.camLed1Check.setChecked(True)
+                get_main_window().ui.camLed2Check.setChecked(True)
+                get_main_window().ui.camLed3Check.setChecked(True)
+                get_main_window().ui.camLed4Check.setChecked(True)
+                get_main_window().ui.camLedsBrightnessSlider.setValue(100)
 
-                # Joystick cmd_vel and navigation cmd_vel mixing mode switch state publication
-                joystick_mode_msg = Bool()
-                joystick_mode_msg.data = self.right_sw_en
-                get_gui_ros_node().joystick_cmd_vel_mode_pub.publish(joystick_mode_msg)
+            # Joystick cmd_vel and navigation cmd_vel mixing mode switch state publication
+            joystick_mode_msg = Bool()
+            joystick_mode_msg.data = self.right_sw_en
+            get_gui_ros_node().joystick_cmd_vel_mode_pub.publish(joystick_mode_msg)
 
-            # Motor controller enable (NO REMOTE LOCK CHECK)
-            # TODO: This could result in the motor controller enable service being called over and over again.
-            if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
-                self._enable_mtr_ctrl(False)
-            elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
-                self._enable_mtr_ctrl(True)
-
-            # Command vel. safety
-            if datetime.now() - self.last_joystick_pub > timedelta(milliseconds=ProgramConfig.CMD_VEL_SAFETY_TIMEOUT_MS) and self.right_kd2_en:
-                self._publish_cmd_vel(0.0, 0.0)
-                self.last_joystick_pub = datetime.now()
-
-        # Calculate max. linear & angular velocities based on potentiometer value
-        self.max_linear_velocity_mps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_LINEAR_VEL_MPS])
-        self.max_angular_velocity_rps = interp(self.potentiometer_val, [0, 1024], [0, ProgramConfig.MAX_ANGULAR_VEL_RPS])
-
-    @Slot()
-    def _publish_joystick(self) -> None:
-        if self.right_kd2_en and self.key_sw_en and is_gui_node_initialized():
-            linear_vel = interp(self.joystick_vals[1], [-512, 512], [-self.max_linear_velocity_mps, self.max_linear_velocity_mps])
-            angular_vel = interp(self.joystick_vals[0], [-512, 512], [-self.max_angular_velocity_rps, self.max_angular_velocity_rps])
-            self._publish_cmd_vel(linear_vel, angular_vel)
-            self.last_joystick_pub = datetime.now()
+        # Motor controller enable (NO REMOTE LOCK CHECK)
+        # TODO: This could result in the motor controller enable service being called over and over again.
+        if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+            self._enable_mtr_ctrl(False)
+        elif self.e_stop_sw_en and (not get_main_window().motor_tab_ui_handler.left_ctrl_enabled or not get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
+            self._enable_mtr_ctrl(True)
 
     # BUTTON NOT ASSIGNED
     @Slot()
     def left_l_kd2_btn_press(self) -> None:
         if self._get_led_state(9)[1] == 0:
-            self._set_led_state(9, 0, 65535)
+            self._make_set_led_request(9, 0, 65535)
         else:
-            self._set_led_state(9, 0, 0)
+            self._make_set_led_request(9, 0, 0)
 
     # BUTTON NOT ASSIGNED
     @Slot()
     def left_r_kd2_btn_press(self) -> None:
         if self._get_led_state(10)[1] == 0:
-            self._set_led_state(10, 0, 65535)
+            self._make_set_led_request(10, 0, 65535)
         else:
-            self._set_led_state(10, 0, 0)
+            self._make_set_led_request(10, 0, 0)
 
     # EMERGENCY STOP
     @Slot()
     def left_red_btn_press(self) -> None:
+        from ros_remote_gui.utils.gui_utils import get_msg_box_helper
         get_gui_ros_node().emergency_stop_pub.publish(Empty())
         ros_remote_pui.ros_main.get_ros_node().get_logger().warn("Emergency stop command published!")
         get_msg_box_helper().show_msg_box_sig.emit("warn", "Emergency Stop", "Emergency stop has been requested.")
@@ -253,56 +238,30 @@ class RemoteState:
             get_main_window().ui.pages.setCurrentIndex(next_index)
 
     @staticmethod
-    def _publish_cmd_vel(lin_vel: float, ang_vel: float):
-        cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = lin_vel
-        cmd_vel_msg.angular.z = ang_vel
-        get_gui_ros_node().cmd_vel_pub.publish(cmd_vel_msg)
-
-    @staticmethod
     def _led_set_request_done_call(future: Future) -> None:
         if future.exception() or (not future.result()):
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service call failure!")
 
-    def _make_set_led_request(self, mask: list[int], modes: list[int], pwm_vals: list[int]) -> bool:
-        if ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.service_is_ready():
-            req = SetLedStates.Request()
-            req.set_state_mask = mask
-            req.led_modes = modes
-            req.pwm_outputs = pwm_vals
+    def _make_set_led_request(self, led_num: int, mode: int, pwm_out: int) -> bool:
+        if ros_remote_pui.ros_main.get_ros_node().set_led_state_srvcl.service_is_ready():
+            req = SetLedState.Request()
+            req.index = led_num
+            req.led_mode = mode
+            req.pwm_output = pwm_out
 
-            future = ros_remote_pui.ros_main.get_ros_node().set_led_states_srvcl.call_async(req)
+            future = ros_remote_pui.ros_main.get_ros_node().set_led_state_srvcl.call_async(req)
             future.add_done_callback(self._led_set_request_done_call)
             return True
         else:
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Set LED states service unavailable!")
         return False
 
-    def _set_led_state(self, led_num: int, mode: int, pwm_out: int) -> bool:
-        mask = [False] * ProgramConfig.PICO_NUM_LEDS
-        modes = [0] * ProgramConfig.PICO_NUM_LEDS
-        pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
-
-        mask[led_num] = True
-        modes[led_num] = mode
-        pwm_vals[led_num] = pwm_out
-
-        return self._make_set_led_request(mask, modes, pwm_vals)
-
     @Slot()
     def _set_all_leds_off(self) -> bool:
-        mask = [True] * ProgramConfig.PICO_NUM_LEDS
-        modes = [0] * ProgramConfig.PICO_NUM_LEDS
-        pwm_vals = [0] * ProgramConfig.PICO_NUM_LEDS
-
-        return self._make_set_led_request(mask, modes, pwm_vals)
-
-    def _set_all_leds_on(self) -> bool:
-        mask = [True] * ProgramConfig.PICO_NUM_LEDS
-        modes = [0] * ProgramConfig.PICO_NUM_LEDS
-        pwm_vals = [65535] * ProgramConfig.PICO_NUM_LEDS
-
-        return self._make_set_led_request(mask, modes, pwm_vals)
+        for i in range(ProgramConfig.PICO_NUM_LEDS):
+            if not self._make_set_led_request(i, 0, 0):
+                return False
+        return True
 
     @staticmethod
     def _get_led_state(led_num: int, timeout_s = ProgramConfig.LED_SRVCL_TIMEOUT_S) -> tuple[int, int]:
@@ -310,8 +269,7 @@ class RemoteState:
             req = GetLedStates.Request()
             res = ros_remote_pui.ros_main.get_ros_node().srv_call_with_timeout(ros_remote_pui.ros_main.get_ros_node().get_led_states_srvcl, req, timeout_s)
 
-            if res:
-                return res.led_modes[led_num], res.pwm_outputs[led_num]
+            if res: return res.led_mode[led_num], res.pwm_output[led_num]
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Get LED states service timed-out!")
         else:
             ros_remote_pui.ros_main.get_ros_node().get_logger().error("Get LED states service unavailable!")
@@ -340,14 +298,43 @@ class RemoteState:
 
 
 # RemoteState instance
-_remote_state = RemoteState()
-
-def get_remote_state() -> RemoteState:
-    global _remote_state
+_remote_state: RemoteState | None = None
+def get_remote_state() -> RemoteState | None:
     return _remote_state
 
-# Raspberry Pi IO handler & encoder nav handler
-from ros_remote_pui.rpi_io_handler import RpiIoHandler
+
+# Raspberry Pi IO handler
+from gpiozero import Button
+class RpiIoHandler:
+    def __init__(self):
+        self.toggle_sw_a = Button(RpiIoConfig.TOGGLE_SW_A_PIN, pull_up=True)
+        self.toggle_sw_b = Button(RpiIoConfig.TOGGLE_SW_B_PIN, pull_up=True)
+        self.toggle_sw_c = Button(RpiIoConfig.TOGGLE_SW_C_PIN, pull_up=True)
+        self.toggle_sw_a.when_activated = self._set_toggle_a_state
+        self.toggle_sw_b.when_activated = self._set_toggle_b_state
+        self.toggle_sw_c.when_activated = self._set_toggle_c_state
+        self.toggle_sw_a.when_deactivated = self._set_toggle_a_state
+        self.toggle_sw_b.when_deactivated = self._set_toggle_b_state
+        self.toggle_sw_c.when_deactivated = self._set_toggle_c_state
+
+    def _set_toggle_a_state(self):
+        _remote_state.left_mid_a_sw_en = self.toggle_sw_a.is_active
+
+    def _set_toggle_b_state(self):
+        _remote_state.left_mid_b_sw_en = self.toggle_sw_b.is_active
+
+    def _set_toggle_c_state(self):
+        _remote_state.left_mid_c_sw_en = self.toggle_sw_c.is_active
+
+
+# Initialize the remote state and RPi IO handler
 from ros_remote_pui.encoder_handler import EncoderNavHandler
-_rpi_io_handler = RpiIoHandler()
-_encoder_handler = EncoderNavHandler()
+_io_handler: RpiIoHandler | None = None
+_encoder_nav_handler: EncoderNavHandler | None = None
+
+def init_remote_state() -> None:
+    global _remote_state, _io_handler, _encoder_nav_handler
+    if _remote_state is None:
+        _remote_state = RemoteState()
+        _io_handler = RpiIoHandler()
+        _encoder_nav_handler = EncoderNavHandler()

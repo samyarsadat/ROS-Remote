@@ -60,7 +60,7 @@ class LEDInterfaceNode : public rclcpp::Node {
 
             // Service servers
             set_led_state_service = create_service<ros_remote_hid::srv::SetLedState>(
-                "~/set_led_state",
+                "set_led_state",
                 std::bind(&LEDInterfaceNode::handle_set_led_state,
                           this,
                           std::placeholders::_1,
@@ -68,7 +68,7 @@ class LEDInterfaceNode : public rclcpp::Node {
                 rclcpp::ServicesQoS(),
                 multithread_cb_group);
             get_led_states_service = create_service<ros_remote_hid::srv::GetLedStates>(
-                "~/get_led_states",
+                "get_led_states",
                 std::bind(&LEDInterfaceNode::handle_get_led_states,
                           this,
                           std::placeholders::_1,
@@ -76,7 +76,7 @@ class LEDInterfaceNode : public rclcpp::Node {
                 rclcpp::ServicesQoS(),
                 multithread_cb_group);
             reopen_hid_device_service = create_service<std_srvs::srv::Trigger>(
-                "~/reopen_hid_device",
+                "reopen_hid_device",
                 std::bind(&LEDInterfaceNode::handle_reopen_hid_device,
                           this,
                           std::placeholders::_1,

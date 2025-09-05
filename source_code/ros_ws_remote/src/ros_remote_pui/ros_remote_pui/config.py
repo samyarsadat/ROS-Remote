@@ -16,14 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "2025.1.18"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
-
-
-# ---- Program Info ----
-class ProgramInfoConfig:
-    VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2025-01-18 @ 16:17 UTC"
 
 
 class ProgramConfig:
@@ -37,7 +30,6 @@ class ProgramConfig:
     CMD_VEL_SAFETY_TIMEOUT_MS = 800
     BATT_WARN_LED_TRIG_VOLT = 10.5
     BATT_WARN_POPUP_TRIG_VOLT = 10
-
 
 class RpiIoConfig:
     BUTTON_DEBOUNCE_TIME_S = 0.25
@@ -53,22 +45,11 @@ class RpiIoConfig:
 class RosConfig:
     NODE_NAME = "remote_pui_node"
     NODE_NAMESPACE = ""
-    EXECUTOR_DOMAIN_ID = 75
-    EXECUTOR_TIMEOUT = 0.05         # 50ms
-    EXECUTOR_SHUTDOWN_TIMEOUT = 5   # 5s
     QOS_BEST_EFFORT = QoSProfile(reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST, depth=1, liveliness=LivelinessPolicy.AUTOMATIC)
     QOS_RELIABLE = QoSProfile(reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=1, liveliness=LivelinessPolicy.AUTOMATIC)
-    THREAD_NAME = "ros_thread"
-
 
 class RosNames:
     # From remote Raspberry Pi Pico
-    BUTTON_STATES_TOPIC = "inputs/buttons"
-    SWITCH_STATES_TOPIC = "inputs/switches"
-    JOYSTICK_STATE_TOPIC = "inputs/joystick"
-    POTENTIOMETER_STATE_TOPIC = "inputs/potentiometer"
-    GET_JOYSTICK_CONFIG_SRV = "inputs/joystick/get_config"
-    SET_JOYSTICK_CONFIG_SRV = "inputs/joystick/set_config"
-    GET_LED_STATES_SRV = "outputs/leds/get_states"
-    SET_LED_STATES_SRV = "outputs/leds/set_states"
-    RUN_SELFTEST_SRV = "self_test/leds"
+    JOYSTICK_TOPIC = "remote_pui/joy"
+    GET_LED_STATES_SRV = "remote_pui/get_led_states"
+    SET_LED_STATES_SRV = "remote_pui/set_led_state"

@@ -3,14 +3,20 @@
 
 <package format="3">
     <name>ros_remote_pui</name>
-    <version>2025.1.18</version>
+    <version>25.9.6</version>
     <description>The PUI (Physical User Interface) package for the ROS Remote Project.</description>
     <maintainer email="samyarsadat@gigawhat.net">Samyar Sadat Akhavi</maintainer>
     <license>GPL-3.0-only</license>
 
+    <exec_depend>launch</exec_depend>
+    <exec_depend>launch_ros</exec_depend>
+
     <depend>rclpy</depend>
     <depend>std_msgs</depend>
     <depend>sensor_msgs</depend>
+    <depend>joy_linux</depend>
+    <depend>joy_teleop</depend>
+    <depend>ros_remote_hid</depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

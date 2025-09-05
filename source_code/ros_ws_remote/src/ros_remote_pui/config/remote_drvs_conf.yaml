@@ -1,0 +1,11 @@
+/**/led_interface_node:
+    ros__parameters:
+        vid: 0x1fc9
+        pid: 0x0001
+        itf_num: 1
+
+/**/joy_linux_node:
+    ros__parameters:
+        deadzone: 0.0
+        autorepeat_rate: 0.0
+        coalesce_interval: 0.01
