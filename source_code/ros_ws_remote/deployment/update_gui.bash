@@ -27,12 +27,12 @@ fi
 if [ "$IS_UPTODATE" != "" ] || [ "$FORCE_REBUILD" == "true" ]; then
     SOURCE_CODE_PATH="$HOME/ros_remote/source_code"
 
+    cd "$SOURCE_CODE_PATH/ros_ws_remote/src/ros_remote_gui/util_scripts" || exit 1
+    bash ./generate_ui_py_files.sh
+
     source /opt/ros/$ROS_DISTRO/setup.bash
     cd "$SOURCE_CODE_PATH/ros_ws_remote" || exit 1
     colcon build --packages-skip test_camera_publisher
-
-    cd "$SOURCE_CODE_PATH/ros_ws_remote/src/ros_remote_gui/util_scripts" || exit 1
-    bash ./generate_ui_py_files.sh
 
     if [ "$REBUILD_GUI_ONLY" == "" ]; then
         cd "$SOURCE_CODE_PATH/ros_robot_project/source_code/ros_ws_robot_infra" || exit 1

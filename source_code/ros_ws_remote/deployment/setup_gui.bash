@@ -59,6 +59,9 @@ cd "$SOURCE_CODE_PATH/ros_robot_project/source_code/ros_ws_robot_infra" || exit 
 colcon build --packages-select ros_robot_msgs
 source "./install/local_setup.sh"
 
+cd "$SOURCE_CODE_PATH/ros_ws_remote/src/ros_remote_gui/util_scripts" || exit 1
+bash ./generate_ui_py_files.sh
+
 cd "$SOURCE_CODE_PATH/ros_ws_remote" || exit 1
 export PIP_BREAK_SYSTEM_PACKAGES=1
 rosdep install --from-paths src -y --ignore-src
