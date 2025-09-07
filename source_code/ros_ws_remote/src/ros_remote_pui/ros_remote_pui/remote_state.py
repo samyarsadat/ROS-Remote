@@ -151,7 +151,7 @@ class RemoteState:
                     self._mtr_ctrl_last_state = current_mtr_ctrl_state
 
         # Enable/disable camera LEDs (all full-on/full-off)
-        if self.key_sw_en:
+        if not self.key_sw_en:
             # TODO: Improve the logic of this.
             if (not self.left_mid_a_sw_en) and get_main_window().ui.camLedsBrightnessSlider.value() > 0:
                 get_main_window().ui.camLed1Check.setChecked(True)
@@ -192,7 +192,7 @@ class RemoteState:
     # UI - PREVIOUS PAGE
     @Slot()
     def left_l_green_btn_press(self) -> None:
-        if self.key_sw_en:
+        if not self.key_sw_en:
             current_index = get_main_window().ui.pages.currentIndex()
             next_index = (current_index - 1) % get_main_window().ui.pages.count()
             get_main_window().ui.pages.setCurrentIndex(next_index)
@@ -200,7 +200,7 @@ class RemoteState:
     # UI - NEXT PAGE
     @Slot()
     def left_r_green_btn_press(self) -> None:
-        if self.key_sw_en:
+        if not self.key_sw_en:
             current_index = get_main_window().ui.pages.currentIndex()
             next_index = (current_index + 1) % get_main_window().ui.pages.count()
             get_main_window().ui.pages.setCurrentIndex(next_index)
