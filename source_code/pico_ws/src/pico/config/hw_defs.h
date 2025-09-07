@@ -46,10 +46,10 @@
 // Momentary buttons
 #define LEFT_GREEN_RIGHT_BTN_PIN     6
 #define LEFT_RED_BTN_PIN             7
-#define LEFT_GREEN_KD2_BTN_PIN       20
-#define LEFT_RED_KD2_BTN_PIN         21
+#define LEFT_GREEN_KD2_BTN_PIN       21
+#define LEFT_RED_KD2_BTN_PIN         20
 #define LEFT_GREEN_LEFT_BTN_PIN      22
-#define NUMBER_OF_MOMENTARY_BUTTONS  5     // Total number of momentary buttons
+#define NUMBER_OF_MOMENTARY_BUTTONS  5    // Total number of momentary buttons
 
 // Joystick
 #define JOYSTICK_Y_AXIS_PIN  26

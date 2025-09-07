@@ -17,6 +17,7 @@
     <depend>joy_linux</depend>
     <depend>joy_teleop</depend>
     <depend>ros_remote_hid</depend>
+    <depend>ros_remote_joy</depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

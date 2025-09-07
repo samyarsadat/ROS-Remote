@@ -18,8 +18,7 @@
 
 
 from geometry_msgs.msg import Quaternion, Vector3
-from math import atan2, copysign, asin
-
+from math import atan2, asin
 
 
 # ---- Quaternion to Euler (radians) ----

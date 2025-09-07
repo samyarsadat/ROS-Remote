@@ -23,6 +23,7 @@
 #include "utils_lib/hardware.h"
 #include "semphr.h"
 #include "common/opassert.h"
+#include "diagnostics.h"
 
 
 // ------- Global variables -------
@@ -39,15 +40,19 @@ const uint8_t led_pins_order[NUMBER_OF_LEDS] = {
 // ---- Initialize LEDs and LED state structs ----
 void init_led_pins() {
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        init_pin(led_pins_order[i], OUTPUT_PWM);
-        gpio_put_pwm(led_pins_order[i], 0);
+        const uint8_t led_pin = led_pins_order[i];
+        
+        init_pin(led_pin, OUTPUT_PWM);
+        gpio_put_pwm(led_pin, 0);
 
-        led_states[i].pin = led_pins_order[i];
-        led_states[i].mode = 0;
-        led_states[i].pwm_current_out = 0;
-        led_states[i].pwm_fade_steps_per_cycle = 0;
-        led_states[i].pwm_set_out = 0;
-        led_states[i].led_fade_rising = true;
+        led_states[i] = (led_state_t){
+            .pin = led_pin,
+            .mode = LED_SOLID_PWM,
+            .pwm_set_out = 0,
+            .pwm_current_out = 0,
+            .pwm_fade_steps_per_cycle = 0,
+            .led_fade_rising = true
+        };
     }
 }
 
@@ -63,11 +68,9 @@ void leds_enable_override(bool enable) {
 // 3: Flashing PWM output (fast), 4: Fading to and from PWM output (fast)
 void set_led_state(uint8_t index, LED_MODE_t mode, uint16_t pwm_output) {
     assert(index < NUMBER_OF_LEDS);
-    led_states[index].mode = mode;
-    led_states[index].pwm_set_out = pwm_output;
-    led_states[index].pwm_current_out = 0;
-    led_states[index].pwm_fade_steps_per_cycle = 0;
-    led_states[index].led_fade_rising = true;
+    led_state_t* led_state = &led_states[index];
+    led_state->mode = mode;
+    led_state->pwm_set_out = pwm_output;
 }
 
 // ---- Get a all LED states ----
@@ -119,9 +122,10 @@ void set_led_outputs() {
 // ---- This also only handles LEDs that are set to mode 0 (solid PWM) ----
 void set_led_output_index(uint8_t index) {
     assert(index < NUMBER_OF_LEDS);
-    if (led_states[index].mode == LED_SOLID_PWM) {
-        gpio_put_pwm_ovd(led_states[index].pin, led_states[index].pwm_set_out);
-        led_states[index].pwm_current_out = led_states[index].pwm_set_out;
+    led_state_t* led_state = &led_states[index];
+    if (led_state->mode == LED_SOLID_PWM) {
+        gpio_put_pwm_ovd(led_state->pin, led_state->pwm_set_out);
+        led_state->pwm_current_out = led_state->pwm_set_out;
     }
 }
 
@@ -130,15 +134,18 @@ void set_led_output_index(uint8_t index) {
 // ---- These are for the flashing and fading modes ----
 void led_slow_flashing_timer_call(TimerHandle_t timer) {
     (void) timer;
-    
+
+    led_state_t* led_state_curr = NULL;
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        if (led_states[i].mode == LED_SLOW_FLASH) {
-            if (led_states[i].pwm_current_out == 0) {
-                gpio_put_pwm_ovd(led_states[i].pin, led_states[i].pwm_set_out);
-                led_states[i].pwm_current_out = led_states[i].pwm_set_out;
+        led_state_curr = &led_states[i];
+
+        if (led_state_curr->mode == LED_SLOW_FLASH) {
+            if (led_state_curr->pwm_current_out == 0) {
+                gpio_put_pwm_ovd(led_state_curr->pin, led_state_curr->pwm_set_out);
+                led_state_curr->pwm_current_out = led_state_curr->pwm_set_out;
             } else {
-                gpio_put_pwm_ovd(led_states[i].pin, 0);
-                led_states[i].pwm_current_out = 0;
+                gpio_put_pwm_ovd(led_state_curr->pin, 0);
+                led_state_curr->pwm_current_out = 0;
             }
         }
     }
@@ -147,14 +154,17 @@ void led_slow_flashing_timer_call(TimerHandle_t timer) {
 void led_fast_flashing_timer_call(TimerHandle_t timer) {
     (void) timer;
 
+    led_state_t* led_state_curr = NULL;
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        if (led_states[i].mode == LED_FAST_FLASH) {
-            if (led_states[i].pwm_current_out == 0) {
-                gpio_put_pwm_ovd(led_states[i].pin, led_states[i].pwm_set_out);
-                led_states[i].pwm_current_out = led_states[i].pwm_set_out;
+        led_state_curr = &led_states[i];
+
+        if (led_state_curr->mode == LED_FAST_FLASH) {
+            if (led_state_curr->pwm_current_out == 0) {
+                gpio_put_pwm_ovd(led_state_curr->pin, led_state_curr->pwm_set_out);
+                led_state_curr->pwm_current_out = led_state_curr->pwm_set_out;
             } else {
-                gpio_put_pwm_ovd(led_states[i].pin, 0);
-                led_states[i].pwm_current_out = 0;
+                gpio_put_pwm_ovd(led_state_curr->pin, 0);
+                led_state_curr->pwm_current_out = 0;
             }
         }
     }
@@ -163,33 +173,36 @@ void led_fast_flashing_timer_call(TimerHandle_t timer) {
 void led_fading_timer_call(TimerHandle_t timer) {
     (void) timer;
 
+    led_state_t* led_state_curr = NULL;
     for (int i = 0; i < NUMBER_OF_LEDS; i++) {
-        if (led_states[i].mode == LED_SLOW_FADE || led_states[i].mode == LED_FAST_FADE) {
-            if (led_states[i].pwm_fade_steps_per_cycle == 0) {
-                if (led_states[i].mode == LED_SLOW_FADE) {
-                    led_states[i].pwm_fade_steps_per_cycle = led_states[i].pwm_set_out / (LED_SLOW_FADING_TIME_MS / LED_FADE_EXEC_INTERVAL);
+        led_state_curr = &led_states[i];
+
+        if (led_state_curr->mode == LED_SLOW_FADE || led_state_curr->mode == LED_FAST_FADE) {
+            if (led_state_curr->pwm_fade_steps_per_cycle == 0) {
+                if (led_state_curr->mode == LED_SLOW_FADE) {
+                    led_state_curr->pwm_fade_steps_per_cycle = led_state_curr->pwm_set_out / (LED_SLOW_FADING_TIME_MS / LED_FADE_EXEC_INTERVAL);
                 } else {   // Mode 4 (fast)
-                    led_states[i].pwm_fade_steps_per_cycle = led_states[i].pwm_set_out / (LED_FAST_FADING_TIME_MS / LED_FADE_EXEC_INTERVAL);
+                    led_state_curr->pwm_fade_steps_per_cycle = led_state_curr->pwm_set_out / (LED_FAST_FADING_TIME_MS / LED_FADE_EXEC_INTERVAL);
                 }
             }
 
-            if (led_states[i].led_fade_rising) {
-                led_states[i].pwm_current_out += led_states[i].pwm_fade_steps_per_cycle;
+            if (led_state_curr->led_fade_rising) {
+                led_state_curr->pwm_current_out += led_state_curr->pwm_fade_steps_per_cycle;
 
-                if (led_states[i].pwm_current_out >= led_states[i].pwm_set_out) {
-                    led_states[i].pwm_current_out = led_states[i].pwm_set_out;
-                    led_states[i].led_fade_rising = false;
+                if (led_state_curr->pwm_current_out >= led_state_curr->pwm_set_out) {
+                    led_state_curr->pwm_current_out = led_state_curr->pwm_set_out;
+                    led_state_curr->led_fade_rising = false;
                 }
             } else {
-                led_states[i].pwm_current_out -= led_states[i].pwm_fade_steps_per_cycle;
+                led_state_curr->pwm_current_out -= led_state_curr->pwm_fade_steps_per_cycle;
 
-                if (led_states[i].pwm_current_out <= 0) {
-                    led_states[i].pwm_current_out = 0;
-                    led_states[i].led_fade_rising = true;
+                if (led_state_curr->pwm_current_out <= 0) {
+                    led_state_curr->pwm_current_out = 0;
+                    led_state_curr->led_fade_rising = true;
                 }
             }
 
-            gpio_put_pwm_ovd(led_states[i].pin, led_states[i].pwm_current_out);
+            gpio_put_pwm_ovd(led_state_curr->pin, led_state_curr->pwm_current_out);
         }
     }
 }

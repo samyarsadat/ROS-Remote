@@ -9,3 +9,14 @@
         deadzone: 0.0
         autorepeat_rate: 0.0
         coalesce_interval: 0.01
+
+/**/joy_filter_node:
+    ros__parameters:
+        max_lin_vel_mult: 1.0
+        min_lin_vel_mult: 0.0
+        max_ang_vel_mult: 1.0
+        min_ang_vel_mult: 0.0
+        joy_mux_lock_pub_rate: 5
+        is_cmd_vel_source: true
+        joy_lin_vel_scale: -0.62  # Axes inverted
+        joy_ang_vel_scale: -5.0

@@ -46,7 +46,7 @@ typedef struct {
 
 // Input (potentiometer) report (ID: 0x02, 1 byte)
 typedef struct {
-    uint8_t pot;   // 0-100
+    int8_t pot;   // -100-0
 } __attribute__((packed)) hid_pot_report_t;
 
 // Input (momentary buttons) report (ID: 0x03, 1 byte)
@@ -95,8 +95,8 @@ static const uint8_t hid_joystick_report_desc[] = {
         0x85, POT_INPUT_REPORT_ID,   // Report ID for potentiometer input data
         0x05, 0x01,                  // Usage Page: Generic Desktop
         0x09, 0x36,                  // Usage: Slider
-        0x15, 0x00,                  // Logical minimum: 0
-        0x25, 0x64,                  // Logical maximum: 100
+        0x15, 0x9C,                  // Logical minimum: -100
+        0x25, 0x00,                  // Logical maximum: 0
         0x75, 0x08,                  // Report size: 8 bits
         0x95, 0x01,                  // Report count: 1
         0x81, 0x02,                  // Input: Data, Variable, Absolute

@@ -156,7 +156,7 @@ void report_pot_state_task(void *parameters) {
             retry_send = true;
         }
 
-        uint8_t pot_val = get_potentiometer_val();
+        int8_t pot_val = -get_potentiometer_val();
 
         if ((report.pot != pot_val || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report.pot = pot_val;

@@ -175,7 +175,6 @@ class MainWindow(QMainWindow):
 
 # ---- Main window instance ----
 _qt_main_window = MainWindow()
-
 def get_main_window() -> MainWindow:
     global _qt_main_window
     return _qt_main_window

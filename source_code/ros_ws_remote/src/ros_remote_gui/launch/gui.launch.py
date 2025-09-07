@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushROSNamespace
 from launch.actions import RegisterEventHandler, LogInfo, EmitEvent, IncludeLaunchDescription
 from launch import LaunchDescription
 from launch.event_handlers import OnProcessExit
@@ -31,7 +31,7 @@ def generate_launch_description():
         package="ros_remote_gui", 
         executable="remote_gui_node"
     )
-    
+
     ros_remote_pui_pkg = FindPackageShare("ros_remote_pui")
     launch_pui_drivers = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -40,6 +40,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        PushROSNamespace("remote"),
         launch_pui_drivers,
         launch_gui,
         RegisterEventHandler(

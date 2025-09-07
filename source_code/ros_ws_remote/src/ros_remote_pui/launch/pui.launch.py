@@ -26,7 +26,7 @@ package_name = "ros_remote_pui"
 
 def generate_launch_description():
     drv_config = "remote_drvs_conf.yaml"
-    remote_pui_topic_prefix = "remote_pui"
+    drv_config_path = PathJoinSubstitution([FindPackageShare(package_name), "config", drv_config])
 
     joystick_dev_arg = DeclareLaunchArgument("joystick_device", default_value="/dev/input/js0")
     joystick_dev = LaunchConfiguration("joystick_device")
@@ -35,12 +35,8 @@ def generate_launch_description():
         package="joy_linux",
         executable="joy_linux_node",
         parameters=[
-            PathJoinSubstitution([FindPackageShare(package_name), "config", drv_config]),
+            drv_config_path,
             {"dev": joystick_dev}
-        ],
-        remappings=[
-            ("joy", f"{remote_pui_topic_prefix}/joy"),
-            ("joy/set_feedback", f"{remote_pui_topic_prefix}/joy/set_feedback")
         ],
         output="screen"
     )
@@ -49,12 +45,19 @@ def generate_launch_description():
         package="ros_remote_hid",
         executable="led_interface_node",
         parameters=[
-            PathJoinSubstitution([FindPackageShare(package_name), "config", drv_config])
+            drv_config_path
+        ],
+        output="screen"
+    )
+
+    launch_joy_filter = Node(
+        package="ros_remote_joy",
+        executable="joy_filter_node",
+        parameters=[
+            drv_config_path
         ],
         remappings=[
-            ("set_led_state", f"{remote_pui_topic_prefix}/set_led_state"),
-            ("get_led_states", f"{remote_pui_topic_prefix}/get_led_states"),
-            ("reopen_hid_device", f"{remote_pui_topic_prefix}/reopen_hid_device")
+            ("cmd_vel_joy", "cmd_vel")
         ],
         output="screen"
     )
@@ -62,5 +65,6 @@ def generate_launch_description():
     return launch.LaunchDescription([
         joystick_dev_arg,
         launch_joy_linux,
-        launch_led_driver
+        launch_led_driver,
+        launch_joy_filter
     ])

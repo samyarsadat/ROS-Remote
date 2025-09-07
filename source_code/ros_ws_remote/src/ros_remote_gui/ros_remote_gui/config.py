@@ -16,14 +16,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https: www.gnu.org/licenses/>.
 
-PROGRAM_VERSION = "25.9.6"
+PROGRAM_VERSION = "25.9.7"
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPolicy
 
 
 # ---- Program Info ----
 class ProgramInfoConfig:
     VERSION = PROGRAM_VERSION
-    VERSION_DATE = "2025-09-06 @ 12:39 UTC"
+    VERSION_DATE = "2025-09-07 @ 12:39 UTC"
 
 class ProgramConfig:
     THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
@@ -46,14 +46,10 @@ class RosConfig:
     THREAD_NAME = "ros_thread"
 
 class RosNames:
-    ROBOT_NAMESPACE = "ros_robot"
+    ROBOT_NAMESPACE = "/ros_robot"
 
     CAMERA_FEED_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front/image_raw/compressed"
     CAMERA_OVERLAY_TOPIC = f"{ROBOT_NAMESPACE}/cameras/front_overlay/image"
-
-    #CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote"
-    CMD_VEL_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel"   # For testing only!
-    JOYSTICK_CMD_VEL_MODE_TOPIC = f"{ROBOT_NAMESPACE}/cmd_vel/remote/joystick_mode"
 
     DIAGNOSTICS_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics"
     PING_DRIVER_TOPIC = f"{ROBOT_NAMESPACE}/diagnostics/ping_driver"

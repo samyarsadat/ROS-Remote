@@ -20,16 +20,12 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, LivelinessPo
 
 
 class ProgramConfig:
-    THREADS_LIVELINESS_CHECK_INTERVAL_S = 2
     SW_ACT_TIMER_INTERVAL_MS = 250
     ENCODER_HIGHLIGHT_TIMEOUT_MS = 4000
     PICO_NUM_LEDS = 11
     LED_SRVCL_TIMEOUT_S = 4
-    MAX_LINEAR_VEL_MPS = 0.62    # Meters per second (max for robot)
-    MAX_ANGULAR_VEL_RPS = 5      # Radians per second (max for robot)
-    CMD_VEL_SAFETY_TIMEOUT_MS = 800
-    BATT_WARN_LED_TRIG_VOLT = 10.5
-    BATT_WARN_POPUP_TRIG_VOLT = 10
+    BATT_WARN_LED_TRIG_VOLT = 9.5
+    BATT_WARN_POPUP_TRIG_VOLT = 9
 
 class RpiIoConfig:
     BUTTON_DEBOUNCE_TIME_S = 0.25
@@ -50,6 +46,6 @@ class RosConfig:
 
 class RosNames:
     # From remote Raspberry Pi Pico
-    JOYSTICK_TOPIC = "remote_pui/joy"
-    GET_LED_STATES_SRV = "remote_pui/get_led_states"
-    SET_LED_STATES_SRV = "remote_pui/set_led_state"
+    JOYSTICK_TOPIC = "joy"
+    GET_LED_STATES_SRV = "get_led_states"
+    SET_LED_STATES_SRV = "set_led_state"

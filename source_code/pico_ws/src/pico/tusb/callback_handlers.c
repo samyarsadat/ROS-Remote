@@ -65,7 +65,6 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
                     hid_led_report_t* led_cmd = (hid_led_report_t*) buffer;
                     
                     if (led_cmd->index < NUMBER_OF_LEDS && led_cmd->mode <= LED_FAST_FADE) {
-                        LOG(LOG_LVL_DEBUG, "Setting LED %d to mode %d with PWM output %d.", led_cmd->index, led_cmd->mode, led_cmd->pwm_out);
                         set_led_state(led_cmd->index, (LED_MODE_t) led_cmd->mode, led_cmd->pwm_out);
                         set_led_output_index(led_cmd->index);
                     }

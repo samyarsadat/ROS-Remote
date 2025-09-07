@@ -77,16 +77,12 @@ class RemoteState:
         self.e_stop_sw_en = False       # Motor controller enable
         self.right_sw_en = False        # Joystick input override/avg with nav select
         self.right_kd2_en = False       # Joystick enable
-        self.potentiometer_val = 0      # Robot max. linear velocity
 
         self.left_red_btn_en = False          # Emergency stop
         self.left_green_kd2_btn_en = False    # Not assigned
         self.left_red_kd2_btn_en = False      # Not assigned
         self.left_green_left_btn_en = False   # UI - previous page
         self.left_green_right_btn_en = False  # UI - next page
-
-        self.max_linear_velocity_mps = 0.0
-        self.max_angular_velocity_rps = 0.0
 
         # Get the ID of the touchscreen from Xinput.
         # This will be used when locking/unlocking the remote.
@@ -101,8 +97,6 @@ class RemoteState:
         # LED-related state
         self._power_led_set = False
         self._mtr_ctrl_last_state = 0   # 0: one or more not enabled, 1: all enabled, 2: data stale
-        self._last_joystick_en_state = False
-        self._last_joystick_lock_state = False
         self._last_battery_led_state = False
 
         self._sw_state_act_tmr = QTimer()
@@ -115,11 +109,11 @@ class RemoteState:
     def _sw_state_act_tmr_call(self) -> None:
         if ros_remote_pui.ros_main.is_ros_node_initialized():
             # Lock/unlock remote
-            if (not self.key_sw_en) and get_main_window().isEnabled():
+            if self.key_sw_en and get_main_window().isEnabled():
                 get_main_window().setEnabled(False)
                 if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["disable", self._touchscreen_id])
                 self._make_set_led_request(3, 3, 65535)
-            elif self.key_sw_en and (not get_main_window().isEnabled()):
+            elif (not self.key_sw_en) and (not get_main_window().isEnabled()):
                 get_main_window().setEnabled(True)
                 if self._touchscreen_id: QProcess.startDetached("/bin/xinput", ["enable", self._touchscreen_id])
                 self._make_set_led_request(3, 0, 0)
@@ -127,15 +121,6 @@ class RemoteState:
             # LED states
             if not self._power_led_set:
                 self._power_led_set = self._make_set_led_request(4, 0, 32000)
-
-            if self.right_kd2_en != self._last_joystick_en_state or self._last_joystick_lock_state != self.key_sw_en:
-                self._last_joystick_en_state = self.right_kd2_en
-                self._last_joystick_lock_state = self.key_sw_en
-
-                if self.key_sw_en:
-                    self._make_set_led_request(0, 2, 65535 if self.right_kd2_en else 0)
-                else:
-                    self._make_set_led_request(0, 3, 65535 if self.right_kd2_en else 0)
 
             if get_main_window().power_tab_ui_handler.batt_voltage < ProgramConfig.BATT_WARN_LED_TRIG_VOLT and not self._last_battery_led_state:
                 self._last_battery_led_state = self._make_set_led_request(6, 2, 65535)

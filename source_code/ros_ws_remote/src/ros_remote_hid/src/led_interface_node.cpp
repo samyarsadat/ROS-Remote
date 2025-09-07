@@ -26,6 +26,14 @@
 #include <rclcpp_components/register_node_macro.hpp>
 
 
+#define DECLARE_PARAMETER(param_var_type, param_name, default_value, description_text)             \
+    rcl_interfaces::msg::ParameterDescriptor param_descr_##param_name;                             \
+    param_descr_##param_name.description = description_text;                                       \
+    param_descr_##param_name.read_only = true;                                                     \
+    param_name =                                                                                   \
+        declare_parameter<param_var_type>(#param_name, default_value, param_descr_##param_name);
+
+
 // Node class
 class LEDInterfaceNode : public rclcpp::Node {
     public:
@@ -34,20 +42,9 @@ class LEDInterfaceNode : public rclcpp::Node {
             RCLCPP_INFO(get_logger(), "LED HID interface node initializing...");
 
             // Parameters
-            rcl_interfaces::msg::ParameterDescriptor param_descr_vid;
-            param_descr_vid.description = "Vendor ID of the HID device";
-            param_descr_vid.read_only = true;
-            vid = declare_parameter<uint16_t>("vid", DEFAULT_VID, param_descr_vid);
-
-            rcl_interfaces::msg::ParameterDescriptor param_descr_pid;
-            param_descr_pid.description = "Product ID of the HID device";
-            param_descr_pid.read_only = true;
-            pid = declare_parameter<uint16_t>("pid", DEFAULT_PID, param_descr_pid);
-
-            rcl_interfaces::msg::ParameterDescriptor param_descr_itf_num;
-            param_descr_itf_num.description = "Interface number of the HID device";
-            param_descr_itf_num.read_only = true;
-            itf_num = declare_parameter<uint8_t>("itf_num", ITF_NUM_LEDS_HID, param_descr_itf_num);
+            DECLARE_PARAMETER(uint16_t, vid, DEFAULT_VID, "Vendor ID of HID device");
+            DECLARE_PARAMETER(uint16_t, pid, DEFAULT_PID, "Product ID of HID device");
+            DECLARE_PARAMETER(uint8_t, itf_num, ITF_NUM_LEDS_HID, "Interface number of HID device");
 
             // Open HID device
             auto res = hid_device.open_hid(vid, pid, itf_num);

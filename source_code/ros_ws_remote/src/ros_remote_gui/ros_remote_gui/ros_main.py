@@ -49,9 +49,6 @@ class RosNode(Node):
         self._emer_stop_cb_group = MutuallyExclusiveCallbackGroup()
         self._viewport_cb_group = ReentrantCallbackGroup()
 
-        self.cmd_vel_pub = self.create_publisher(Twist, RosNames.CMD_VEL_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
-        self.joystick_cmd_vel_mode_pub = self.create_publisher(Bool, RosNames.JOYSTICK_CMD_VEL_MODE_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
-
         # Viewport camera & camera overlay
         self.front_camera_comp_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_FEED_TOPIC, self.front_camera_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
         self.front_overlay_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_OVERLAY_TOPIC, self.front_overlay_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)

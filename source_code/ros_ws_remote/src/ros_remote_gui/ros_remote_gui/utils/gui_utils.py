@@ -49,7 +49,6 @@ class MessageBoxHelper(QObject):
 
 # MessageBoxHelper instance
 _msg_box_helper = MessageBoxHelper()
-
 def get_msg_box_helper() -> MessageBoxHelper:
     return _msg_box_helper
 

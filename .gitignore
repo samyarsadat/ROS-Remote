@@ -1,5 +1,6 @@
 source_code/pico_ws/build/**
 source_code/ros_ws_remote/src/ros_remote_gui/*.pyproject.*
+source_code/ros_ws_remote/src/ros_remote_gui/ros_remote_gui/gui_files/*.py
 source_code/ros_ws_remote/**/*.egg-info
 source_code/ros_ws_remote/build
 source_code/ros_ws_remote/install
