@@ -2,17 +2,17 @@
     The ROS remote project - HID report senders
     Copyright 2024-2025 Samyar Sadat Akhavi.
     Written by Samyar Sadat Akhavi, 2024-2025.
- 
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-  
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
- 
+
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
@@ -35,7 +35,7 @@
 
 // Timers & tasks
 struct repeating_timer report_sw_states_rt, report_axes_states_rt, report_pot_state_rt;
-TaskHandle_t report_sw_states_th = NULL, report_button_states_th = NULL, 
+TaskHandle_t report_sw_states_th = NULL, report_button_states_th = NULL,
              report_axes_states_th = NULL, report_pot_state_th = NULL;
 TickType_t report_sw_states_lst = 0, report_button_states_lst = 0,   // Last Send Tick
            report_pot_state_lst = 0, report_axes_states_lst = 0;
@@ -49,10 +49,10 @@ void report_button_states_task(void *parameters) {
 
     while (true) {
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
-        
+
         if (tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report.buttons = momen_btn_states;
-            
+
             if (tud_hid_n_report(ITF_NUM_JOYSTICK_HID, BUTTONS_INPUT_REPORT_ID, &report, sizeof(report))) {
                 momen_btn_ls_state = momen_btn_states;
             }
@@ -80,7 +80,7 @@ void report_sw_states_task(void *parameters) {
         if (notification_value) {
             retry_send = true;
         }
-        
+
         uint8_t state = 0;
         state |= (!gpio_get(LEFT_KEY_SW_PIN)         << 0);
         state |= (!gpio_get(LEFT_TOP_TOGGLE_SW_PIN)  << 1);
@@ -113,31 +113,31 @@ void report_axes_states_task(void *parameters) {
         }
 
         hid_joy_axes_report_t new_report;
-        new_report.y = get_joystick_y_val();
+        new_report.x = get_joystick_y_val();
 
         #if JOYSTICK_AXIS_SWAP_BUTTON_ENABLED
         if ((momen_btn_states >> JOYSTICK_AXIS_SWAP_BUTTON_NUM) & 1) {
-            new_report.x = get_joystick_x_val();
+            new_report.y = get_joystick_x_val();
             new_report.rz = 0;
         } else {
-            new_report.x = 0;
+            new_report.y = 0;
             new_report.rz = get_joystick_x_val();
         }
         #else
         new_report.rz = get_joystick_x_val();
-        new_report.x = 0;
+        new_report.y = 0;
         #endif
 
         bool report_changed = (new_report.x  != report.x) ||
                               (new_report.y  != report.y) ||
                               (new_report.rz != report.rz);
-        
+
         if ((report_changed || retry_send) && tud_hid_n_ready(ITF_NUM_JOYSTICK_HID)) {
             report = new_report;
             retry_send = !tud_hid_n_report(ITF_NUM_JOYSTICK_HID, AXES_INPUT_REPORT_ID, &report, sizeof(report));
             report_axes_states_lst = xTaskGetTickCount();
         }
-    }  
+    }
 }
 
 // ---- Potentiometer state ----
@@ -202,7 +202,7 @@ void stop_hid_reporters() {
 void create_hid_reporter_tasks() {
     assert(report_sw_states_th == NULL && report_button_states_th == NULL &&
            report_axes_states_th == NULL && report_pot_state_th == NULL);
-    
+
     (void) xTaskCreate(report_button_states_task, "button_report", TIMER_TASK_STACK_DEPTH, NULL, BUTTON_REPORT_TASK_PRIORITY, &report_button_states_th);
     (void) xTaskCreate(report_axes_states_task, "axes_report", TIMER_TASK_STACK_DEPTH, NULL, AXES_REPORT_TASK_PRIORITY, &report_axes_states_th);
     (void) xTaskCreate(report_sw_states_task, "switch_report", TIMER_TASK_STACK_DEPTH, NULL, SW_REPORT_TASK_PRIORITY, &report_sw_states_th);
@@ -210,9 +210,9 @@ void create_hid_reporter_tasks() {
 }
 
 void delete_hid_reporter_tasks() {
-    assert(report_sw_states_th != NULL && report_button_states_th != NULL && 
+    assert(report_sw_states_th != NULL && report_button_states_th != NULL &&
            report_axes_states_th != NULL && report_pot_state_th != NULL);
-    
+
     vTaskDelete(report_sw_states_th);
     report_sw_states_th = NULL;
 
