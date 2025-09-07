@@ -17,6 +17,7 @@ sudo dpkg -i /tmp/ros2-apt-source.deb
 sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install ros-dev-tools ros-${ROS_DISTRO}-ros-base python3-pip -y
 source /opt/ros/$ROS_DISTRO/setup.bash
+echo "source '/opt/ros/$ROS_DISTRO/setup.bash'" >> "$HOME/.bashrc"
 
 sudo rosdep init
 rosdep update
