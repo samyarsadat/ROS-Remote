@@ -25,7 +25,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from ros_remote_gui.config import RosConfig, RosFrameIds, RosNames
-from diagnostic_msgs.msg import DiagnosticStatus
+from diagnostic_msgs.msg import DiagnosticArray
 from diagnostic_msgs.srv import SelfTest
 from nav_msgs.msg import Odometry
 from rclpy.callback_groups import ReentrantCallbackGroup, MutuallyExclusiveCallbackGroup
@@ -53,7 +53,7 @@ class RosNode(Node):
         self.front_camera_comp_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_FEED_TOPIC, self.front_camera_comp_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
         self.front_overlay_sub = self.create_subscription(CompressedImage, RosNames.CAMERA_OVERLAY_TOPIC, self.front_overlay_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._viewport_cb_group)
 
-        self.diagnostics_sub = self.create_subscription(DiagnosticStatus, RosNames.DIAGNOSTICS_TOPIC, self.diagnostics_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
+        self.diagnostics_sub = self.create_subscription(DiagnosticArray, RosNames.DIAGNOSTICS_TOPIC, self.diagnostics_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
         self.ping_driver_srvcl = self.create_client(GetBool, RosNames.PING_DRIVER_TOPIC, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group)
         self.enable_relay_srvcl = self.create_client(SetBool, RosNames.ENABLE_RELAY_SRV, qos_profile=RosConfig.QOS_RELIABLE)
         self.battery_info_sub = self.create_subscription(BatteryState, RosNames.BATTERY_INFO_TOPIC, self.battery_info_callback, qos_profile=RosConfig.QOS_BEST_EFFORT, callback_group=self._reentrant_cb_group)
@@ -92,7 +92,7 @@ class RosNode(Node):
             self.cliff_sens_subs.append(self.create_subscription(Range, t_name, self.cliff_sens_callback, qos_profile=RosConfig.QOS_RELIABLE, callback_group=self._reentrant_cb_group))
 
     @staticmethod
-    def diagnostics_callback(msg: DiagnosticStatus) -> None:
+    def diagnostics_callback(msg: DiagnosticArray) -> None:
         get_main_window().diag_tab_ui_handler.rcv_diag_msg_sig.emit(msg)
 
     @staticmethod
@@ -192,21 +192,21 @@ class RosNode(Node):
 
     @staticmethod
     def cliff_sens_callback(msg: Range) -> None:
-        if msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[0]):
+        if msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[0]):
             get_main_window().sensors_tab_ui_handler.cliff_front_states[0] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[1]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[1]):
             get_main_window().sensors_tab_ui_handler.cliff_front_states[1] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[2]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[2]):
             get_main_window().sensors_tab_ui_handler.cliff_front_states[2] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[3]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[3]):
             get_main_window().sensors_tab_ui_handler.cliff_front_states[3] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[4]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[4]):
             get_main_window().sensors_tab_ui_handler.cliff_back_states[0] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[5]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[5]):
             get_main_window().sensors_tab_ui_handler.cliff_back_states[1] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[6]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[6]):
             get_main_window().sensors_tab_ui_handler.cliff_back_states[2] = msg.range
-        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosNames.CLIFF_SENS_TOPIC_NAMES[7]):
+        elif msg.header.frame_id == RosFrameIds.CLIFF_SENS_BASE_FRAME_ID.format(RosFrameIds.CLIFF_SENS_FRAME_IDS[7]):
             get_main_window().sensors_tab_ui_handler.cliff_back_states[3] = msg.range
         else:
             get_ros_node().get_logger().error("Received cliff sensor data for unknown sensor.")

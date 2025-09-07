@@ -81,9 +81,10 @@ class RosNames:
     ULTRASONIC_SENS_TOPIC_NAMES = ["front", "back", "right", "left"]
 
     CLIFF_SENS_TOPIC_BASE = ROBOT_NAMESPACE + "/range_sens/cliff/{}"
-    CLIFF_SENS_TOPIC_NAMES = ["f1", "f2", "f3", "f4", "b1", "b2", "b3", "b4"]
+    CLIFF_SENS_TOPIC_NAMES = ["front_{i}".format(i=i) for i in range(1, 5)] + ["back_{i}".format(i=i) for i in range(1, 5)]
 
 class RosFrameIds:
+    CLIFF_SENS_FRAME_IDS = ["f{i}".format(i=i) for i in range(1, 5)] + ["b{i}".format(i=i) for i in range(1, 5)]
     CLIFF_SENS_BASE_FRAME_ID = "{}_cliff_sens_link"
     ULTRASONIC_SENS_BASE_FRAME_ID = "{}_ultrasonic_emit_link"
     MICRO_SW_SENS_BASE_FRAME_ID = "{}_microswitch_link"

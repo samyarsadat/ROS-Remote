@@ -19,7 +19,7 @@ import struct
 from datetime import datetime
 from enum import Enum
 from time import sleep
-from diagnostic_msgs.msg import DiagnosticStatus
+from diagnostic_msgs.msg import DiagnosticStatus, DiagnosticArray
 from asyncio import Future
 from PySide6.QtCore import Slot, Signal, QObject
 from diagnostic_msgs.srv import SelfTest
@@ -71,7 +71,7 @@ class DiagMsgObj:
 
 # ---- Tab data display update and interaction handler ----
 class DiagnosticsTab(QObject):
-    rcv_diag_msg_sig = Signal(DiagnosticStatus)
+    rcv_diag_msg_sig = Signal(DiagnosticArray)
     _show_calib_res_sig = Signal(str, bool)
     _show_selftest_res_sig = Signal(str, bool, str)
     _message_buffer: list[DiagMsgObj]
@@ -96,14 +96,15 @@ class DiagnosticsTab(QObject):
         get_main_window().ui.selftestPicoAButton.clicked.connect(self._selftest_pico_a_clicked)
         get_main_window().ui.selftestPicoBButton.clicked.connect(self._selftest_pico_b_clicked)
 
-    @Slot(DiagnosticStatus)
-    def _rcv_diag_msg_call(self, msg: DiagnosticStatus) -> None:
-        diag_msg_obj = DiagMsgObj()
-        diag_msg_obj.from_ros_message(msg)
-        self._message_buffer.append(diag_msg_obj)
-        if len(self._message_buffer) > ProgramConfig.MAX_DIAG_MSG_HISTORY: del self._message_buffer[-1]
-        get_main_window().ui.diagMsgsText.append(self._generate_diag_msg_txt(diag_msg_obj, get_main_window().ui.diagMsgOptsShowTimeCheck.isChecked(),
-                                                                             get_main_window().ui.diagMsgOptsShowKeyValCheck.isChecked()))
+    @Slot(DiagnosticArray)
+    def _rcv_diag_msg_call(self, msg: DiagnosticArray) -> None:
+        for diag_msg in msg.status:
+            diag_msg_obj = DiagMsgObj()
+            diag_msg_obj.from_ros_message(diag_msg)
+            self._message_buffer.append(diag_msg_obj)
+            if len(self._message_buffer) > ProgramConfig.MAX_DIAG_MSG_HISTORY: del self._message_buffer[-1]
+            get_main_window().ui.diagMsgsText.append(self._generate_diag_msg_txt(diag_msg_obj, get_main_window().ui.diagMsgOptsShowTimeCheck.isChecked(),
+                                                                                 get_main_window().ui.diagMsgOptsShowKeyValCheck.isChecked()))
         self._handle_auto_scroll()
 
     @Slot()
