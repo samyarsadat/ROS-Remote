@@ -65,11 +65,7 @@ class RosNode(Node):
         else:
             remote_state.left_green_right_btn_en = msg.buttons[0] == 1
 
-        if msg.buttons[1] == 1 and not remote_state.left_red_btn_en:
-            remote_state.left_red_btn_en = True
-            remote_state._ros_signals.left_red_btn_press_sig.emit()
-        else:
-            remote_state.left_red_btn_en = msg.buttons[1] == 1
+        # Skip button[1]. It's used as the axis swap button in firmware.
 
         if msg.buttons[2] == 1 and not remote_state.left_green_kd2_btn_en:
             remote_state.left_green_kd2_btn_en = True

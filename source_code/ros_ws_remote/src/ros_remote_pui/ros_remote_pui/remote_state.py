@@ -35,7 +35,6 @@ from std_srvs.srv import SetBool
 class RosSignals(QObject):
     left_l_kd2_btn_press_sig = Signal()
     left_r_kd2_btn_press_sig = Signal()
-    left_red_btn_press_sig = Signal()
     left_l_green_btn_press_sig = Signal()
     left_r_green_btn_press_sig = Signal()
 
@@ -55,7 +54,6 @@ class RemoteState:
     last_joystick_pub: datetime
     max_linear_velocity_mps: float
     max_angular_velocity_rps: float
-    left_red_btn_en: bool
     left_green_kd2_btn_en: bool
     left_red_kd2_btn_en: bool
     left_green_left_btn_en: bool
@@ -65,7 +63,6 @@ class RemoteState:
         self._ros_signals = RosSignals()
         self._ros_signals.left_l_kd2_btn_press_sig.connect(self.left_l_kd2_btn_press)
         self._ros_signals.left_r_kd2_btn_press_sig.connect(self.left_r_kd2_btn_press)
-        self._ros_signals.left_red_btn_press_sig.connect(self.left_red_btn_press)
         self._ros_signals.left_l_green_btn_press_sig.connect(self.left_l_green_btn_press)
         self._ros_signals.left_r_green_btn_press_sig.connect(self.left_r_green_btn_press)
 
@@ -78,7 +75,6 @@ class RemoteState:
         self.right_sw_en = False        # Joystick input override/avg with nav select
         self.right_kd2_en = False       # Joystick enable
 
-        self.left_red_btn_en = False          # Emergency stop
         self.left_green_kd2_btn_en = False    # Not assigned
         self.left_red_kd2_btn_en = False      # Not assigned
         self.left_green_left_btn_en = False   # UI - previous page
@@ -170,11 +166,6 @@ class RemoteState:
                 get_main_window().ui.camLed4Check.setChecked(True)
                 get_main_window().ui.camLedsBrightnessSlider.setValue(100)
 
-            # Joystick cmd_vel and navigation cmd_vel mixing mode switch state publication
-            joystick_mode_msg = Bool()
-            joystick_mode_msg.data = self.right_sw_en
-            get_gui_ros_node().joystick_cmd_vel_mode_pub.publish(joystick_mode_msg)
-
         # Motor controller enable (NO REMOTE LOCK CHECK)
         # TODO: This could result in the motor controller enable service being called over and over again.
         if (not self.e_stop_sw_en) and (get_main_window().motor_tab_ui_handler.left_ctrl_enabled or get_main_window().motor_tab_ui_handler.right_ctrl_enabled):
@@ -197,14 +188,6 @@ class RemoteState:
             self._make_set_led_request(10, 0, 65535)
         else:
             self._make_set_led_request(10, 0, 0)
-
-    # EMERGENCY STOP
-    @Slot()
-    def left_red_btn_press(self) -> None:
-        from ros_remote_gui.utils.gui_utils import get_msg_box_helper
-        get_gui_ros_node().emergency_stop_pub.publish(Empty())
-        ros_remote_pui.ros_main.get_ros_node().get_logger().warn("Emergency stop command published!")
-        get_msg_box_helper().show_msg_box_sig.emit("warn", "Emergency Stop", "Emergency stop has been requested.")
 
     # UI - PREVIOUS PAGE
     @Slot()
