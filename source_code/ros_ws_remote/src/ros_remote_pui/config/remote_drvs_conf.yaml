@@ -18,5 +18,5 @@
         min_ang_vel_mult: 0.0
         joy_mux_lock_pub_rate: 5
         is_cmd_vel_source: true
-        joy_lin_vel_scale: -0.62  # Axes inverted
-        joy_ang_vel_scale: -5.0
+        joy_lin_vel_scale: -0.62  # Axis inverted
+        joy_ang_vel_scale: 5.0
