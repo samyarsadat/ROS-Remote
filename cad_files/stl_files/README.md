@@ -11,3 +11,4 @@
     - 1X Housing_Left.stl
     - 1X Housing_Right.stl
     - 2X Housing_Sides_Backplate.stl
+    - 1X RPi_Fan_Mount.stl (optional)

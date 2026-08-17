@@ -12,7 +12,7 @@
 
 ----
 > [!NOTE]
-> This project is under active development.
+> All features of the remote are currently functional; however, further development is expected.
 
 <br>
 
